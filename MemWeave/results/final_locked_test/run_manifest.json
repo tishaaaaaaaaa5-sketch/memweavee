@@ -1,0 +1,91 @@
+{
+  "project": "MemWeave",
+  "experiment": "role_aware_locked_test_followup",
+  "status": "executed_notebook_results_transcribed_to_repository_summary",
+  "dataset": "LongMemEval-S cleaned",
+  "pool": "same_pipeline",
+  "split": {
+    "dev_questions": 235,
+    "test_questions": 235,
+    "abstention_questions_excluded": true
+  },
+  "model": {
+    "class": "LogisticRegression",
+    "C": 0.3
+  },
+  "comparison": {
+    "baseline_feature_indices": [
+      0,
+      1,
+      7,
+      8,
+      9
+    ],
+    "role_aware_additional_feature_indices": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ]
+  },
+  "budget": {
+    "fraction": 0.1,
+    "unit": "pool_word_count_proxy",
+    "exact_tokenizer_budget": false
+  },
+  "training_rows": {
+    "baseline_retained": 4216,
+    "total": 5523,
+    "role_aware_retained": 4216,
+    "total_role_aware": 5523
+  },
+  "oof_reconstruction": {
+    "baseline_max_absolute_score_error": 0,
+    "role_aware_max_absolute_score_error": 0,
+    "status": "passed"
+  },
+  "primary_test": {
+    "n": 235,
+    "baseline_budgeted_evidence_recall": 0.40418439716312055,
+    "role_aware_budgeted_evidence_recall": 0.7094326241134753,
+    "paired_gain": 0.30524822695035464,
+    "paired_bootstrap_ci95": [
+      0.25297872,
+      0.35957447
+    ],
+    "bootstrap_resamples": 50000,
+    "bootstrap_seed": 20261112,
+    "sign_flip_permutations": 200000,
+    "sign_flip_seed": 20261113,
+    "sign_flip_p_monte_carlo": 0.0000049999750001249995,
+    "exact_paired_sign_test_p": 5.105507778590388e-25,
+    "positive": 96,
+    "negative": 3,
+    "ties": 136,
+    "rank_improved": 127,
+    "rank_worsened": 3,
+    "rank_unchanged": 105,
+    "rank_direction_sign_test_p": 5.381942110522302e-34
+  },
+  "subgroup_inference": {
+    "bootstrap_resamples_per_category": 20000,
+    "holm_correction_family_size": 6
+  },
+  "limitations": [
+    "Question-level bootstrap is not conversation-clustered.",
+    "The research process was iterative and not preregistered.",
+    "The test split is from the same benchmark and is not independent external replication.",
+    "The role-aware feature bundle has not been fully ablated.",
+    "Evidence recall is not end-to-end answer accuracy.",
+    "Preference subgroup has only 15 questions and is inconclusive.",
+    "Budget is a word-count proxy, not exact tokenization."
+  ],
+  "notebook_outputs_saved_in_kaggle": [
+    "memweave_role_aware_locked_test.csv",
+    "memweave_role_aware_question_type_audit.csv",
+    "memweave_role_aware_audit_manifest.json"
+  ],
+  "note": "Raw per-question outputs and the executed notebook are not included in this repository update; aggregate values are documented in README.md and the final audit report."
+}
