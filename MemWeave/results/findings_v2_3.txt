@@ -1,0 +1,9 @@
+MemWeave 2.3 corrected inference (Setting B, 10% budget). Replaces the H2/H3 verdicts in findings.txt; every number comes from a CSV written above.
+
+H2 vs best simple rule (low_novelty): diff +0.028 [+0.004, +0.052]; Holm p = 0.035 in the de-duplicated family of 8.
+FRAGILE: the advantage is reliable under 1 of 6 analysis choices (see table_h2_spec_curve.csv). Report it as a small, non-robust gain of about 0.03 recall, not as superiority.
+Budget sweep (Holm across 4 budgets): 5%: p=0.138; 10%: p=0.138; 20%: p=0.138; 30%: p=0.138.
+single_feature_cv is the same rule as low_novelty (identical on all questions) and is no longer counted separately.
+H3: redundancy penalty and cost-awareness were never active (lambda = gamma = 0 in all 15 folds). Neither component is supported; the earlier +0.003 cost-awareness effect comes from one fold's nu choice.
+Abstention: 30 _abs questions carry evidence labels that do not contain the answer; recall excluding them: LR 0.404, low_novelty 0.380, random 0.097.
+Session reuse: exposure gradient Spearman +0.033 (p = 0.458); grouped CV is impossible because all histories are connected.
