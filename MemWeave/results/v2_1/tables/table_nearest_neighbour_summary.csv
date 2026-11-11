@@ -1,0 +1,7 @@
+metric,value,n,notes
+nearest_neighbor_gold_to_gold_rate_mean,0.8197016460905351,324,Mean observed share of nearest neighbors that are also gold evidence sessions
+nearest_neighbor_chance_mean,0.03008944144690753,324,Mean question-specific chance rate
+gold_to_gold_similarity_mean,0.3312201424053422,324,Mean similarity for gold-to-gold nearest-neighbor pairs
+gold_to_nongold_similarity_mean,0.20150742548759337,324,Mean similarity for gold-to-nongold nearest-neighbor pairs
+nearest_neighbor_gold_to_gold_rate_median,1.0,324,Median observed share across questions
+nearest_neighbor_chance_median,0.0222222222222222,324,Median question-specific chance rate
