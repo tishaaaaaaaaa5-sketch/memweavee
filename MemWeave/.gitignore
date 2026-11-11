@@ -1,0 +1,12 @@
+# Local benchmark data (download separately)
+data/
+
+# Generated model/features and run outputs
+memweave2_results/
+*.pkl
+*.pickle
+
+# Local notebook/runtime artifacts
+.ipynb_checkpoints/
+__pycache__/
+*.py[cod]
