@@ -89,9 +89,16 @@ The largest absolute gain was in single-session-user questions (+62.50 pp), foll
 
 ## Reproduction artifacts
 
-The executed notebook writes the following audit outputs in the Kaggle working environment:
+Committed:
+- [Cleaned executed notebook](../../notebooks/04_MemWeave_Final_Executed.ipynb), retaining 94 executed code-cell counts and the final locked-test/statistical-audit outputs. Debug outputs containing full conversation text were removed.
+- [Paired test audit JSON](paired_test_audit.json).
+- [Question-type aggregate CSV](question_type_breakdown.csv).
+- [Data provenance and export inventory](data_provenance.md).
+- [Run manifest](run_manifest.json).
+
+The notebook reports writing these per-question exports in the Kaggle working directory:
 - `memweave_role_aware_locked_test.csv`
 - `memweave_role_aware_question_type_audit.csv`
 - `memweave_role_aware_audit_manifest.json`
 
-These raw files are not included in this repository update. The committed report and CSV contain aggregate values transcribed from the executed notebook output. Preserve the raw per-question files and their checksums with the research release before making a full reproducibility claim.
+The three raw files themselves were not present in the uploaded notebook/output archive used for this repository update. The question-level CSV has therefore not been fabricated or inferred from aggregate statistics. The committed CSV is a **question-type aggregate**, not a per-question raw export. See `data_provenance.md` for the exact inventory and the recommended privacy-preserving export schema. A full per-question reproduction package remains incomplete until the original exports and their checksums are recovered or regenerated from the source dataset.
