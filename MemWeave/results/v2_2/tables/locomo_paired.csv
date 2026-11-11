@@ -1,0 +1,7 @@
+comparison,n_conversations,mean_diff,cluster_ci_low,cluster_ci_high,equivalent
+MemWeave-LR trained on LongMemEval - low_novelty,10,0.006926816665600223,-0.010279715150382488,0.02643357350678085,True
+MemWeave-LR trained on LongMemEval - recency,10,-0.002167048922109495,-0.03137553227332104,0.023874803510459452,False
+MemWeave-LR trained on LongMemEval - random (100-run mean),10,-0.001901462777666239,-0.021858905931328037,0.018114537758107695,True
+MemWeave-LR (no role-dependent features) - low_novelty,10,0.0015148022882258128,-0.00903241549016126,0.012232859351416091,True
+MemWeave-LR (no role-dependent features) - random (100-run mean),10,-0.00731347715504065,-0.01812241663916233,0.0035007248977194237,True
+MemWeave-LR trained on LongMemEval - MemWeave-LR (no role-dependent features),10,0.005412014377374411,-0.01784546310665214,0.028269957757916457,True
