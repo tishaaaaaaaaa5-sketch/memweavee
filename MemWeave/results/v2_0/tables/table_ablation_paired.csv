@@ -1,0 +1,10 @@
+setting,budget,comparison,n,mean_diff,ci_low,ci_high,wilcoxon_p,holm_p,ci_excludes_0,mean_diff_meaning
+B,0.1,MemWeave-2.0 (full) - - importance cues,500,0.0036111111111111088,-0.017711666666666667,0.025290277777777755,0.6823836823250916,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - rarity,500,-0.007444444444444446,-0.028500833333333333,0.013400277777777775,0.6086153779232295,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - uniqueness/novelty,500,-0.00198888888888889,-0.020588888888888882,0.016522777777777768,0.9213145781345946,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - temporal engine,500,-0.013011111111111114,-0.03337833333333333,0.006644999999999992,0.24289555688044184,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - base (recency/length),500,0.0040888888888888884,-0.01563361111111111,0.024623055555555547,0.7175454208094372,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - redundancy penalty,500,-0.0028777777777777777,-0.006911111111111112,0.0011558333333333292,0.17667440889492037,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - - cost-awareness,500,0.0026555555555555555,-0.003978055555555556,0.0096,0.3640773777843239,1.0,False,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - utility=logreg,500,-0.056455555555555564,-0.08240444444444445,-0.030809722222222245,1.0650971625775715e-05,9.585874463198143e-05,True,full minus ablated (positive = component helps)
+B,0.1,MemWeave-2.0 (full) - utility=gradient-boosting,500,-0.0505888888888889,-0.07565722222222222,-0.02582166666666668,2.756495726636482e-05,0.00022051965813091857,True,full minus ablated (positive = component helps)
