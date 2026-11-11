@@ -102,7 +102,8 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
     │   ├── 01_MemWeave_2_1.ipynb
     │   ├── 02_MemWeave_2_2.ipynb
     │   ├── 03_memweave_v2_3_addendum.ipynb
-    │   └── 04_MemWeave_Final.ipynb
+    │   ├── 04_MemWeave_Final.ipynb
+    │   └── 04_MemWeave_Final_Executed.ipynb
     └── results/
         ├── README.md
         ├── findings_v2_3.txt
