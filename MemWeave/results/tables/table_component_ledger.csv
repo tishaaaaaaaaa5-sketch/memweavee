@@ -1,0 +1,11 @@
+component,mean_diff,ci_low,ci_high,holm_p,contributes,note
+importance cues,0.0142111111111111,-0.0012222222222222,0.0299777777777777,0.6042919172555139,no reliable contribution,
+rarity,0.0097,-0.0065783333333333,0.0263016666666666,1.0,no reliable contribution,
+uniqueness/novelty,0.0166777777777777,0.0042772222222222,0.0291336111111111,0.241735770688397,no reliable contribution,
+temporal engine,0.0042333333333333,-0.0068333333333333,0.0153333333333333,1.0,no reliable contribution,
+base (recency/length),0.0071111111111111,-0.0028561111111111,0.0174444444444444,1.0,no reliable contribution,
+question-date feature,0.0077444444444444,0.0008888888888888,0.0150786111111111,0.6042919172555139,no reliable contribution,
+redundancy penalty,0.0,0.0,0.0,1.0,no reliable contribution,never active (lambda=0 in all folds): ablation is vacuous
+cost-awareness,0.003,0.001,0.0055555555555555,0.1598033035263244,no reliable contribution,never active (gamma=0 in all folds): ablation is vacuous
+all pairwise-similarity features,0.1064888888888888,0.0763552777777777,0.1381583333333333,3.894294022914621e-11,"YES (CI > 0, Holm p < .05)",
+pairwise-similarity features only,0.0175999999999999,-0.0023011111111111,0.0380358333333332,0.604291917688397,no reliable contribution,
