@@ -1,46 +1,56 @@
 # MemWeave research project
 
-MemWeave investigates query-agnostic memory retention: given a conversation history and a fixed token budget, which sessions should be kept so later questions can still be answered?
+MemWeave investigates how to retain useful conversational sessions under a constrained memory budget. The repository contains two related but distinct research stages: the original query-agnostic retention study (v2.0–v2.3) and a later role-aware feature experiment evaluated on a held-out test split.
 
-## Research setup
+## Research stages
 
-- **Benchmark:** LongMemEval-S (cleaned), 500-question evaluation in the reported runs.
-- **Primary setting:** memory selection without access to the future question.
-- **Primary metric:** session-level evidence recall.
-- **Primary budget:** 10% of each history's token count; 5%, 20% and 30% are secondary budget checks.
-- **Baselines:** recency, random selection, and non-learned heuristic/single-feature rules.
-- **External validation:** LoCoMo is reported separately and should not be conflated with the LongMemEval-S primary evaluation.
+### Stage A — Original retention study (v2.0–v2.3)
 
-## Canonical research sequence
+- Benchmark: LongMemEval-S cleaned, 500 questions in the reported study.
+- Primary task: query-agnostic session retention.
+- Primary metric: session-level evidence recall.
+- The v2.3 corrected-inference addendum found a small, sensitivity-dependent advantage over the strongest simple rule. Read `../results/findings_v2_3.txt`; do not describe that result as robust superiority.
+- External LoCoMo and downstream QA-proxy results are reported separately and have their own limitations.
 
-See [the notebook index](notebooks/README.md) for the role and execution status of each file.
+### Stage B — Role-aware follow-up (final locked-test audit)
 
-1. `notebooks/00_MemWeave_2_0.ipynb` — initial real-data pipeline and early model/heuristic comparisons.
-2. `notebooks/01_MemWeave_2_1.ipynb` — fair-baseline and benchmark-structure audit; the supplied canonical copy preserves executed cell outputs.
-3. `notebooks/02_MemWeave_2_2.ipynb` — revised tuning, inference, and external/QA analyses.
-4. `notebooks/03_memweave_v2_3_addendum.ipynb` — corrected inference and evidence-limit addendum; reads saved outputs and does not rerun model training.
-5. `notebooks/04_MemWeave_Final.ipynb` — leak-controlled, locked-test evaluation stage; the supplied copy has no saved outputs.
+- Pool: `same_pipeline`.
+- Split: 235 DEV / 235 locked TEST questions; abstention questions excluded.
+- Model: logistic regression, `C = 0.3`.
+- Comparison: baseline feature set vs. baseline plus six message-role-aware features.
+- Budget: 10% of pool word count (a proxy, not exact tokenization).
+- Held-out budgeted evidence recall: 0.4042 baseline vs. 0.7094 role-aware (+0.3052).
+- Paired bootstrap 95% CI: [0.252979, 0.359574].
+- Exact paired sign test: p = 5.11e-25; sign-flip Monte Carlo p = 5e-6 at 200,000 permutations.
+- OOF reconstruction was exact for both variants before locked-test scoring.
 
-The multiple v2.1 Kaggle/export copies were consolidated into one canonical notebook. They are not separate research versions.
+The follow-up result is not a replacement for the v2.3 result: it is a separate feature experiment and evaluation. See [the final locked-test report](results/final_locked_test/README.md).
+
+## Canonical notebook sequence
+
+See [the notebook index](notebooks/README.md).
+
+1. `notebooks/00_MemWeave_2_0.ipynb` — initial real-data pipeline.
+2. `notebooks/01_MemWeave_2_1.ipynb` — fair-baseline and benchmark-structure audit.
+3. `notebooks/02_MemWeave_2_2.ipynb` — revised tuning, inference, external and QA analyses.
+4. `notebooks/03_memweave_v2_3_addendum.ipynb` — corrected inference and evidence-limit addendum.
+5. `notebooks/04_MemWeave_Final.ipynb` — leak-controlled final evaluation workflow and role-aware follow-up audit cells.
 
 ## Reproduction
 
-Use Python in Jupyter or Google Colab. Run notebooks from top to bottom and inspect each configuration cell before execution. The v2.2 notebook writes run outputs under `memweave2_results/v2_2/` in its default configuration. The v2.3 addendum reads saved results and dataset files; it does not retrain or change the split.
+Use Python in Jupyter or Google Colab. Run from a clean kernel and preserve:
+- exact notebook version and execution outputs;
+- dataset names, source URLs and SHA-256 checksums;
+- Python and package versions;
+- split seed, model parameters and selection budget;
+- per-question result CSVs and statistical audit outputs.
 
-The notebooks may use NumPy, pandas, Matplotlib, SciPy, scikit-learn, and optional tokenizer/dense-retrieval packages. Follow the imports and optional dependency checks in each notebook; the exact environment can affect tokenizer and dense-feature behavior.
-
-## Results interpretation
-
-The corrected v2.3 analysis reports a small, fragile advantage over `low_novelty` in one de-duplicated comparison (+0.028 recall; Holm-adjusted p=0.035), but the result is not robust across the full sensitivity set: the four-budget Holm result and abstention sensitivity do not support a reliable advantage. Therefore, do not state that MemWeave robustly outperforms the strongest simple rule.
-
-The component audit found that pairwise-similarity features carry much of the measured signal. Redundancy penalty and cost-awareness were inactive in the audited folds and their ablations are vacuous. QA-proxy results are supplementary, not an official LLM-judge score.
-
-See [results/README.md](results/README.md) and the accompanying tables for the precise values and caveats. Historical v2.0 outputs are preserved separately under [results/v2_0/](results/v2_0/).
+The final role-aware audit uses 50,000 question-level paired bootstrap resamples and 200,000 sign-flip permutations. Its question-level inference is not conversation-clustered.
 
 ## Data and large files
 
-Do not commit raw benchmark datasets, feature caches, or the 135 MB `results.zip` as ordinary Git files. The archive contains the 277 MB LongMemEval-S JSON, a feature cache, raw result exports and plots. Store large artifacts with Git LFS or an external artifact store, and document the download location and checksum if you publish them.
+Raw benchmark JSONs, feature caches and large per-question exports are not stored in this source tree. Keep data outside Git unless licensing and size have been reviewed. For large reproducibility artifacts, use Git LFS or a stable artifact host and record checksums.
 
-## Citation and claims
+## Reporting guidance
 
-When writing about this project, cite the benchmark and related methods independently. Clearly distinguish confirmatory/pre-specified tests from post-hoc analyses, and report the negative/fragile findings alongside positive results.
+Distinguish evidence retention from answer accuracy, the original v2.3 experiment from the role-aware follow-up, and a held-out split from independent replication. The research process was iterative rather than preregistered. Do not claim that the six role-aware features have individually established causal effects.
