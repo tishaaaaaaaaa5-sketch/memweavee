@@ -1,0 +1,12 @@
+MemWeave 2.2 findings | Setting B at 10% budget | 500 questions | seeds [100, 101, 102] | tune_rule=one_se | equivalence margin +/-0.03 (post-hoc)
+
+H1, pre-registered MLP: recall 0.377 vs recency 0.111 (diff +0.266, 95% CI [+0.231,+0.302]); vs random 0.097 (diff +0.280, CI [+0.249,+0.312]).
+H1, post-hoc LR primary: recall 0.411 vs recency 0.111 (diff +0.300, CI [+0.258,+0.341]); vs random 0.097 (diff +0.315, CI [+0.276,+0.355]).
+H2, post-hoc: LR vs low_novelty 0.383, diff +0.028 [+0.004,+0.052]; the original v2.2 findings called this higher, but v2.3 later corrected the inference family and found the effect fragile.
+H3: removing redundancy penalty diff +0.000; removing cost-awareness diff +0.003. v2.3 later audited component activity and found both terms inactive in all/most folds, so these ablations are not valid component tests.
+H4: temporal engine overall diff +0.004 [-0.007,+0.015], not supported after correction.
+H5: LR minus random for 1 evidence session diff -0.025 [-0.068,+0.021]; for 2+ evidence sessions +0.499 [+0.456,+0.541].
+H6: removing all pairwise-similarity features diff +0.106 [+0.076,+0.138]; pairwise-only vs full model diff +0.018 [-0.002,+0.038], inconclusive.
+Setting A, question known: LR-Q recall 0.903 vs TF-IDF 0.871, BM25 0.866, dense 0.859.
+ID leak confirmed: true. IDs and has_answer flags were not used as features; IDs defined evaluation pools only.
+Caveats: one benchmark; same 500 questions as v2.0; fresh CV seeds are not independent confirmation; retention recall is not answer accuracy. Several analyses and model choices were post-hoc.
