@@ -24,3 +24,7 @@ The redundancy penalty and cost-awareness components were inactive in the audite
 The original `results.zip` is about 135 MB and contains the LongMemEval-S JSON dataset (about 277 MB uncompressed), LoCoMo data, a feature cache, raw result exports and plots. The archive cannot be committed as a normal Git file because it exceeds GitHub's 100 MB per-file limit. The full raw export `all_results_raw.csv` is about 34 MB; the feature cache is about 10 MB. Large artifacts should be published through Git LFS or a dedicated artifact store.
 
 The tables committed here are a curated, human-reviewable subset of the full archive. The raw archive, full raw CSV, feature cache, benchmark datasets and plot image have not been uploaded in this pass.
+
+### Full archive checksum
+
+Original `results.zip` SHA-256: `6f9d54fab2b9870c16982ef0d77e1e4b80204f27ab7018756da664ba34be1c35` (135,252,137 bytes). Use this to verify the original archive if you transfer it through Git LFS or an artifact store.
