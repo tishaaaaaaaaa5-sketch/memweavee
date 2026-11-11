@@ -1,0 +1,5 @@
+vs,LR_only_correct,other_only_correct,exact_mcnemar_p,questions_needed_for_5pt_gap
+full_history_bm25,4,19,0.002599477767944336,720
+low_novelty,5,3,0.7265625,249
+random,8,2,0.109375,312
+recency,8,11,0.6476050508583679,595
