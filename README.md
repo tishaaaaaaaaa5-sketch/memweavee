@@ -130,7 +130,7 @@ For the role-aware follow-up, the notebook reports:
 - Exact OOF score reconstruction before the TEST evaluation.
 - 50,000 paired bootstrap resamples and 200,000 sign-flip permutations for the primary audit.
 
-The currently committed `04_MemWeave_Final.ipynb` is the source notebook. The executed notebook uploaded during the repository update contains saved outputs, but those outputs are not silently represented as committed notebook outputs. The aggregate results and protocol are documented under `MemWeave/results/final_locked_test/`.
+The source notebook is `04_MemWeave_Final.ipynb`. A cleaned executed copy, [`04_MemWeave_Final_Executed.ipynb`](MemWeave/notebooks/04_MemWeave_Final_Executed.ipynb), is now committed with 94 execution counts and the final locked-test/statistical-audit outputs. Debug outputs containing full conversation text were removed. See the [paired audit JSON](MemWeave/results/final_locked_test/paired_test_audit.json) and [data provenance note](MemWeave/results/final_locked_test/data_provenance.md). The per-question CSV reported by the notebook was not present in the uploaded artifacts and is not fabricated here.
 
 ## Limitations and responsible claims
 
