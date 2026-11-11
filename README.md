@@ -1,100 +1,121 @@
 # MemWeave
-### Budget-Constrained Memory Retention for Long-Horizon Conversational Assistants
+### Role-aware, budget-constrained memory retention for long-horizon conversations
 
-MemWeave studies **query-agnostic session-memory retention**: when an assistant cannot keep its entire conversation history, which sessions should it preserve under a fixed token budget so that future questions remain answerable?
+MemWeave studies a practical question for conversational assistants: **when the full conversation history cannot fit in memory, which sessions should be retained so that future questions remain answerable?**
 
-The project evaluates learned retention policies and interpretable session features on LongMemEval-S, compares them with simple baselines, and audits whether apparent gains survive corrected inference, harder distractor pools, and external evaluation.
+This repository contains a multi-stage research project: the original query-agnostic retention study and benchmark audit (v2.0–v2.3), followed by a role-aware feature experiment with a held-out locked-test evaluation. The stages answer related but distinct questions; their headline numbers should not be pooled or presented as one continuous model comparison.
 
-> **Research takeaway:** The strongest contribution is the benchmark and evaluation audit—not a claim of robust algorithmic superiority. The learned selector's advantage over the best simple rule is small and sensitive to analysis choices, and it does not clearly transfer to the same-pipeline distractor pool or LoCoMo.
+> **Current headline (role-aware follow-up):** on 235 held-out test questions from the `same_pipeline` pool, role-aware session scoring increased 10%-budget evidence recall from **40.42% to 70.94%** (+30.52 percentage points). The paired question-level bootstrap 95% CI was **[25.30, 35.96] pp**. This is a promising result on one benchmark split, not proof of improved end-to-end answer accuracy or independent generalization.
 
 ---
 
-## At a glance
+## Research snapshot
 
-| Item | Description |
+| Item | Current role-aware follow-up |
 |---|---|
-| Problem | Retain useful conversation sessions under a fixed token budget |
-| Primary setting | Query-agnostic retention (the future question is unknown at selection time) |
-| Main benchmark | LongMemEval-S (cleaned), 500 questions |
-| External evaluation | LoCoMo; restricted usable subset reported in the research report |
-| Primary budget | 10% of history tokens; also evaluated at 5%, 20%, and 30% |
-| Primary metric | Session-level evidence recall |
-| Learned selector | Logistic regression (LR); HistGradientBoosting (HGB) comparison |
-| Feature families | Recency/length, temporal signals, rarity, importance cues, novelty, and pairwise similarity |
-| Statistical analysis | Paired bootstrap, Holm correction, equivalence checks, sensitivity/specification analyses |
+| Benchmark | LongMemEval-S cleaned |
+| Evaluation pool | `same_pipeline` (primary pool in the final notebook) |
+| Split | 235 DEV / 235 locked TEST questions; abstention questions excluded |
+| Model | Logistic regression, `C = 0.3` |
+| Comparison | Baseline feature set vs. baseline + six message-role-aware features |
+| Selection budget | 10% of pool word count (word count is the notebook's budget proxy) |
+| Primary outcome | Question-level budgeted evidence recall |
+| Held-out sample | 235 questions |
+| OOF reconstruction | Exact for baseline and role-aware scores (maximum absolute error 0.0) |
 
-## Main findings
+## Main held-out result
 
-### Query-agnostic retention (Setting B, 10% budget)
+| Metric | Baseline | Role-aware | Change |
+|---|---:|---:|---:|
+| Budgeted evidence recall | 0.4042 | **0.7094** | **+0.3052** |
+| Recall@1 | 0.4255 | **0.8000** | +0.3745 |
+| Recall@3 | 0.6128 | **0.8979** | +0.2851 |
+| Recall@5 | 0.7064 | **0.9447** | +0.2383 |
+| Recall@10 | 0.8000 | **0.9702** | +0.1702 |
+| MRR | 0.5486 | **0.8546** | +0.3060 |
+| Mean gold rank | 5.8553 | **1.9277** | -3.9277 |
 
-| Selector | Evidence recall |
-|---|---:|
-| MemWeave-LR | **0.411** |
-| Best simple rule: `low_novelty` | 0.383 |
-| Difference | **+0.028** [+0.004, +0.052] |
+Paired inference for budgeted recall:
+- Paired mean gain: **+0.305248**.
+- Question-level paired bootstrap 95% CI: **[0.252979, 0.359574]**.
+- Sign-flip permutation: Monte Carlo `p = 0.000005` at the resolution of 200,000 permutations (plus-one correction; report as `p ≤ 0.000005`).
+- Exact paired sign test: `p = 5.11 × 10⁻²⁵`; 96 positive differences, 3 negative, 136 ties.
+- Gold-rank direction: 127 improved, 3 worsened, 105 unchanged.
 
-The +0.028 difference passes the de-duplicated eight-comparison Holm family (adjusted p = 0.035), but it is **not robust across the full sensitivity analysis**. The four-budget Holm sensitivity and abstention-exclusion sensitivity do not support a reliable advantage. On a same-pipeline distractor pool, the difference is +0.004 [-0.023, +0.030], and on LoCoMo it is +0.007 [-0.010, +0.026]; both are statistically compatible with no difference.
+The bootstrap resamples questions, not conversation clusters. Conversation-level dependence has not been ruled out.
 
-### Question-known retrieval (Setting A)
+## Results by question type
 
-When the question is available at selection time, MemWeave-LR-Q reaches 0.903 recall, compared with 0.871 for TF-IDF, 0.866 for BM25, and 0.859 for dense retrieval. The full-history BM25 reference is 0.911 at recall@5. This is a different, question-aware setting and should not be conflated with the primary query-agnostic retention task.
+| Question type | n | Baseline | Role-aware | Gain |
+|---|---:|---:|---:|---:|
+| Single-session user | 32 | 0.0625 | 0.6875 | +0.6250 |
+| Knowledge update | 36 | 0.4444 | 0.8333 | +0.3889 |
+| Temporal reasoning | 63 | 0.4082 | 0.6648 | +0.2566 |
+| Single-session assistant | 28 | 0.6786 | 0.9286 | +0.2500 |
+| Single-session preference | 15 | 0.0000 | 0.2000 | +0.2000 |
+| Multi-session | 61 | 0.5290 | 0.7186 | +0.1896 |
 
-### What the audit revealed
+Holm-adjusted paired sign tests were significant for five of six groups. The preference group was inconclusive (`p_{Holm} = 0.25`) and has only 15 questions. Category-level estimates are exploratory subgroup results; they do not establish causal feature attribution.
 
-- All 948 gold evidence-session IDs in the audited pool use the `answer_` prefix, while none of 22,919 non-gold IDs do. IDs and answer flags were not model features, but the pool construction exposes a benchmark shortcut.
-- For questions with multiple evidence sessions, evidence sessions are unusually clustered: the nearest neighbour of an evidence session is another evidence session at an observed rate of 0.82 versus 0.03 chance.
-- The learned selector's signal is concentrated in questions with two or more evidence sessions; single-evidence questions remain close to random.
-- Pairwise-similarity features carry much of the measured signal. The temporal-engine contribution does not survive the reported Holm correction.
-- Redundancy and cost-awareness terms were inactive in all 15 audited folds (`lambda = gamma = 0`); their ablations therefore do not establish that these mechanisms help.
-- Retention recall is not the same as downstream answer accuracy. The small QA proxy is supplementary and underpowered; it is not an official LLM-judge evaluation.
+## Research lineage: do not conflate the stages
 
-**Interpretation:** MemWeave is best presented as a careful study of budgeted conversational-memory retention and benchmark validity, with a useful negative/fragile result and concrete lessons for future evaluations.
+- **v2.0–v2.3:** the original 500-question query-agnostic retention study, its benchmark-shortcut audit, corrected inference, and external/QA proxy analyses. The corrected v2.3 result found only a small and sensitivity-dependent advantage over the strongest simple heuristic; see `MemWeave/results/findings_v2_3.txt`.
+- **Role-aware follow-up:** the separate 235-question held-out evaluation documented in `MemWeave/results/final_locked_test/`. It compares a baseline feature set with an augmented set containing six message-role-aware features. It does not retroactively change the v2.3 result.
 
-## Method overview
+## Repository map
 
-1. **Represent each session** with interpretable signals: recency and length; temporal/update cues; vocabulary rarity; importance cues; novelty; and pairwise similarity/centrality.
-2. **Estimate retention utility** using learned selectors. The later pipeline uses logistic regression as the primary model and HGB as a comparison.
-3. **Select within a token budget** using a budgeted optimization stage with utility, redundancy, and cost terms. The audit found that some intended terms were not active in the reported folds, which limits the mechanism claims.
-4. **Evaluate retention** against evidence-session labels at multiple memory budgets, with paired uncertainty estimates and multiple-comparison/sensitivity analyses.
-5. **Audit generalization and validity** using distractor-pool analysis, LoCoMo, component checks, and a supplementary downstream QA proxy.
-
-Token counts in the reported pipeline use `tiktoken` with `cl100k_base`. Similarity signals include TF-IDF, BM25, and `all-MiniLM-L6-v2`.
-
-## Repository guide
-
-The repository contains a versioned research workflow and curated outputs:
-
-- [Project guide](MemWeave/README.md) — notebook order, setup notes, and reproduction guidance.
-- [Research overview](MemWeave/PROJECT_OVERVIEW.md) — concise scope and limitations.
-- [Notebooks](MemWeave/notebooks/) — versioned experiments, addendum, and final locked-test notebook.
-- [Results guide](MemWeave/results/README.md) — result generations, provenance, and interpretation.
-- [Corrected v2.3 findings](MemWeave/results/findings_v2_3.txt) — compact corrected-inference summary.
-- [Results tables](MemWeave/results/tables/) — curated tables supporting the audit and sensitivity findings.
+```text
+.
+├── README.md
+└── MemWeave/
+    ├── README.md                    # project guide and research lineage
+    ├── PROJECT_OVERVIEW.md           # concise project scope
+    ├── notebooks/
+    │   ├── README.md                # canonical notebook index
+    │   ├── 00_MemWeave_2_0.ipynb
+    │   ├── 01_MemWeave_2_1.ipynb
+    │   ├── 02_MemWeave_2_2.ipynb
+    │   ├── 03_memweave_v2_3_addendum.ipynb
+    │   └── 04_MemWeave_Final.ipynb
+    └── results/
+        ├── README.md
+        ├── findings_v2_3.txt
+        ├── tables/                  # curated v2.3 tables
+        ├── v2_0/ ... v2_2/          # historical, versioned results
+        └── final_locked_test/       # role-aware held-out audit
+```
 
 ### Recommended reading order
 
-1. Read this README for the research question and headline findings.
-2. Read `MemWeave/README.md` for the experiment/reproduction sequence.
-3. Inspect the v2.2 results and run manifest for the original experiment.
-4. Read the v2.3 corrected-inference findings and tables before quoting the learned-selector comparison.
-5. Treat `04_MemWeave_Final.ipynb` as a locked-test evaluation artifact. The research report states that it was uploaded without saved outputs; do not imply its locked-test result has been executed or verified unless fresh outputs are committed.
+1. Read this page for the current headline and the distinction between research stages.
+2. Read [the project guide](MemWeave/README.md) and [notebook index](MemWeave/notebooks/README.md).
+3. Read [the final locked-test report](MemWeave/results/final_locked_test/README.md) before quoting the role-aware result.
+4. Read [the v2.3 corrected findings](MemWeave/results/findings_v2_3.txt) for the earlier study's more cautious result.
+5. Inspect the notebook source and run manifests before attempting reproduction.
 
-## Reproducibility and data
+## Reproducibility
 
-The notebooks are intended for Jupyter or Google Colab. Follow each notebook's setup and dependency checks, then run cells in order. Exact package versions, tokenizer availability, and dense-encoder setup can affect feature generation.
+The notebooks are designed for Jupyter/Google Colab. Run them from a clean kernel, in order, and retain the generated outputs and manifests. Dataset JSONs, feature caches, and raw per-question exports are not committed here; obtain the datasets under their applicable terms and verify the checksums recorded by the relevant run.
 
-The benchmark JSONs, feature cache, and large raw exports are **not included as ordinary Git files**. The original `results.zip` is approximately 135 MB and contains a LongMemEval-S JSON of approximately 277 MB uncompressed, LoCoMo data, a feature cache, raw result exports, and plots. GitHub's ordinary file limit is 100 MB; use Git LFS or a dedicated artifact host for large files. Do not commit private or license-restricted benchmark data without checking its distribution terms.
+For the role-aware follow-up, the notebook reports:
+- `same_pipeline` pool; `C = 0.3`; 10% word-count budget.
+- 235 DEV and 235 locked TEST questions.
+- 4,216 / 5,523 retained training rows for both model variants after the held-out content-overlap filter.
+- Exact OOF score reconstruction before the TEST evaluation.
+- 50,000 paired bootstrap resamples and 200,000 sign-flip permutations for the primary audit.
 
-The published curated results are a reviewable subset of the full experiment artifacts. See [the results provenance notes](MemWeave/results/README.md) for the recorded archive checksum and artifact details.
+The currently committed `04_MemWeave_Final.ipynb` is the source notebook. The executed notebook uploaded during the repository update contains saved outputs, but those outputs are not silently represented as committed notebook outputs. The aggregate results and protocol are documented under `MemWeave/results/final_locked_test/`.
 
-## Limitations and reporting guidance
-- The QA proxy uses 100 questions and a small reader model. It should not be presented as definitive answer-quality validation.
-- The related-work ledger is a research aid; its entries were not all full-text verified. Verify sources independently before citing them in a paper.
+## Limitations and responsible claims
 
-## Research status and next experiments
+- Evidence retention/retrieval metrics are not end-to-end answer correctness.
+- The result comes from one benchmark and one locked split; the split is not an independent external replication.
+- The project evolved iteratively. The final test was held out for the reported evaluation, but the overall research process was not preregistered.
+- The role-aware feature bundle has not been isolated by a complete feature ablation; subgroup gains do not prove which feature caused the improvement.
+- Question-level bootstrap inference may understate uncertainty if questions share conversations.
+- The single-session preference subgroup is small and inconclusive.
+- The 10% budget uses word count as a proxy in the final notebook; it should not be described as an exact tokenizer-based token budget.
 
-The most valuable next steps are to execute and preserve the final locked-test notebook outputs, tune the optimizer over genuinely active redundancy/cost settings and test those mechanisms, evaluate answer quality with a substantially larger and stronger-reader study, and validate on a harder-distractor benchmark with more independent conversation clusters.
+## Citation
 
----
-
-*Research snapshot: MemWeave v2.1–v2.3 addendum and final locked-test notebook inventory, as documented in the project report dated November 11, 2026.*
+A formal citation entry should be added when the manuscript's author list, title, venue/status, and year are finalized. Until then, cite the repository and identify the work as an ongoing research project; do not invent a publication venue or DOI.
