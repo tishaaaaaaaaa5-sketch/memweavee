@@ -1,0 +1,4 @@
+ablation,term,folds_term_active,folds,folds_with_any_difference,mean_diff,VALID_TEST_OF_COMPONENT
+- redundancy penalty,lam,0,15,0,0.0,False
+- cost-awareness,gamma,0,15,1,0.003,False
+- temporal engine,nu,1,15,15,0.004233333333333334,True
