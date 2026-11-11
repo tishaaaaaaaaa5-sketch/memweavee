@@ -1,38 +1,44 @@
 # MemWeave results
 
-Results are grouped by experiment generation so source notebooks, run manifests and outputs remain aligned. The repository keeps compact, reviewable tables and metadata; large raw exports, benchmark JSONs and feature caches are intentionally excluded from ordinary Git history.
+Results are versioned by research stage. Do not merge the headline numbers across stages: v2.0–v2.3 and the role-aware follow-up use distinct experimental comparisons and should be interpreted separately.
 
 ## v2.0 historical baseline
 
-`v2_0/` contains the curated tables and original run manifest from the v2.0 archive. These are historical outputs from the initial pipeline and should not be quoted as the project's final result.
+`v2_0/` contains curated outputs and the original run manifest from the initial pipeline. These are historical results, not the current role-aware headline.
 
 ## v2.1 benchmark audit
 
-`v2_1/` contains the feature-AUC and nearest-neighbour diagnostics extracted from the v2.1 archive. The nearest-neighbour diagnostic is important context for the later evidence-clustering audit.
+`v2_1/` contains feature-AUC and nearest-neighbour diagnostics. These analyses motivate the later benchmark-shortcut and evidence-clustering discussion.
 
 ## v2.2 main run
 
-`v2_2/` contains the 500-question run findings, run manifest, primary Setting A/B tables, ablation/category/evidence-group tables, efficiency measurements and LoCoMo paired/external summary. The v2.2 narrative findings are historical; read the v2.3 corrected-inference findings before making H2/H3 claims.
+`v2_2/` contains the 500-question run findings, manifest, primary Setting A/B tables, ablation/category/evidence-group tables, efficiency measurements and LoCoMo summaries. The v2.2 H2/H3 narrative is superseded by the v2.3 corrected-inference analysis.
 
 ## v2.3 corrected inference
 
-The root of this folder contains compact, reviewable outputs from the v2.3 corrected-inference addendum. These files are intended to be read alongside `../notebooks/03_memweave_v2_3_addendum.ipynb`.
+The folder root contains the corrected-inference summary; `tables/` contains the curated comparisons and sensitivity analyses. The original learned-selector edge over `low_novelty` was small (+0.028 recall) and sensitivity-dependent. It should not be described as robust superiority.
 
-- `findings_v2_3.txt` — concise narrative findings and caveats.
-- `tables/` — H2 Holm comparison, specification curve, budget sweep, abstention sensitivity, component activity/ledger, benchmark artifact facts, LoCoMo power, QA-proxy context, exposure gradient, audit lift and related-work ledger.
+## Final role-aware locked-test follow-up
 
-## Interpretation
+`final_locked_test/` documents the separate role-aware feature experiment. On 235 held-out `same_pipeline` questions at a 10% word-count budget:
+- Baseline budgeted evidence recall: 0.404184.
+- Role-aware budgeted evidence recall: 0.709433.
+- Paired mean improvement: +0.305248 (30.52 percentage points).
+- Paired question-level bootstrap 95% CI: [0.252979, 0.359574].
+- Exact paired sign test: p = 5.1055e-25 (96 positive, 3 negative, 136 ties).
+- Sign-flip Monte Carlo p = 5.0e-6 using 200,000 permutations and plus-one correction; this is the Monte Carlo resolution, so report p ≤ 0.000005.
+- Gold rank improved for 127 questions, worsened for 3, and was unchanged for 105.
 
-The corrected v2.3 analysis finds a small, analysis-sensitive gain over `low_novelty` (+0.028 recall). It passes the de-duplicated eight-comparison Holm family but not the four-budget Holm sensitivity or the abstention-exclusion sensitivity. Report it as fragile, not robust superiority.
+The feature matrix reconstruction reproduced both OOF score sets exactly (maximum absolute score error 0.0). Both variants used logistic regression with C=0.3 and 4,216/5,523 training rows after the content-overlap filter.
 
-The redundancy penalty and cost-awareness components were inactive in the audited folds; their ablations are vacuous. Pairwise-similarity features account for much of the measured signal. QA-proxy accuracy is supplementary and is not an official LLM-judge score.
+### Question-type breakdown
+
+See `final_locked_test/question_type_breakdown.csv`. Five of six categories have Holm-adjusted exact sign-test p-values below 0.05. The single-session-preference category is inconclusive (n=15; Holm p=0.25).
+
+### Interpretation limits
+
+The result is from one held-out split of one benchmark. The development process was iterative, not preregistered. The bootstrap resamples questions, not conversation clusters; cluster dependence remains a limitation. The role-aware bundle has not been fully ablated, so category gains do not identify causal feature contributions. Evidence recall is not answer correctness. The 10% budget is based on word count as a proxy, not exact tokenizer tokens.
 
 ## Provenance and large artifacts
 
-The original `results.zip` is about 135 MB and contains the LongMemEval-S JSON dataset (about 277 MB uncompressed), LoCoMo data, a feature cache, raw result exports and plots. The archive cannot be committed as a normal Git file because it exceeds GitHub's 100 MB per-file limit. The full raw export `all_results_raw.csv` is about 34 MB; the feature cache is about 10 MB. Large artifacts should be published through Git LFS or a dedicated artifact store.
-
-The tables committed here are curated, human-reviewable subsets of the full archives. Raw per-question exports, feature caches and benchmark datasets are not copied into the source tree.
-
-### Full archive checksum
-
-Original v2.2 `results.zip` SHA-256: `6f9d54fab2b9870c16982ef0d77e1e4b80204f27ab7018756da664ba34be1c35` (135,252,137 bytes). Use this to verify the original archive if you transfer it through Git LFS or an artifact store.
+Raw benchmark JSONs, feature caches and large per-question exports are intentionally excluded from ordinary Git history. Store large artifacts in Git LFS or an external artifact host and publish checksums and dataset terms. The uploaded executed notebook used for the latest audit is not silently represented as committed notebook output; the committed notebook remains the source workflow and the aggregate results are captured here.
