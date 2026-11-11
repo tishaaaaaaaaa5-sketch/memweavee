@@ -1,0 +1,6 @@
+statement,value
+gold sessions whose ID starts with 'answer_',948 / 948
+non-gold sessions whose ID starts with 'answer_',0 / 22919
+abstention (_abs) questions that still list evidence sessions,30 / 30 (58 sessions)
+questions with 2+ evidence sessions,324 / 500
+2+ evidence: nearest neighbour of an evidence session is another evidence session (observed vs chance),0.820 vs 0.030
