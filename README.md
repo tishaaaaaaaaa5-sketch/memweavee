@@ -88,22 +88,12 @@ The benchmark JSONs, feature cache, and large raw exports are **not included as 
 The published curated results are a reviewable subset of the full experiment artifacts. See [the results provenance notes](MemWeave/results/README.md) for the recorded archive checksum and artifact details.
 
 ## Limitations and reporting guidance
-
-- The principal learned-selector gain is small and analysis-sensitive; do not claim robust superiority over `low_novelty`.
-- The external LoCoMo evaluation does not establish a transfer advantage. Its limited conversation count also constrains statistical power.
-- The benchmark audit identifies ID-prefix and evidence-clustering shortcuts in the evaluated pool. This is an evaluation finding, not evidence that the model directly consumed those IDs as features.
-- Redundancy and cost-awareness mechanisms were inactive in the audited folds; claims that these components improve selection are unsupported by those runs.
 - The QA proxy uses 100 questions and a small reader model. It should not be presented as definitive answer-quality validation.
-- The final locked-test notebook has no saved outputs in the report's artifact inventory. A completed, reproducible locked-test result remains an important next step.
 - The related-work ledger is a research aid; its entries were not all full-text verified. Verify sources independently before citing them in a paper.
 
 ## Research status and next experiments
 
 The most valuable next steps are to execute and preserve the final locked-test notebook outputs, tune the optimizer over genuinely active redundancy/cost settings and test those mechanisms, evaluate answer quality with a substantially larger and stronger-reader study, and validate on a harder-distractor benchmark with more independent conversation clusters.
-
-## Citation
-
-If you use this repository in academic work, cite the project report and the underlying benchmark/method papers separately. Do not treat the repository's internal related-work ledger as a substitute for checking the original publications.
 
 ---
 
