@@ -1,0 +1,80 @@
+{
+  "project": "MemWeave",
+  "experiment": "role-aware locked-test follow-up",
+  "dataset": "LongMemEval-S cleaned",
+  "dataset_source": "https://huggingface.co/datasets/xiaowu0162/longmemeval-cleaned",
+  "pool": "same_pipeline",
+  "dev_questions": 235,
+  "test_questions": 235,
+  "abstention_questions_excluded": true,
+  "model": "sklearn.linear_model.LogisticRegression",
+  "C": 0.3,
+  "baseline_feature_indices": [
+    0,
+    1,
+    7,
+    8,
+    9
+  ],
+  "role_aware_added_feature_indices": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "training_rows_retained": {
+    "baseline": 4216,
+    "augmented": 4216,
+    "total": 5523
+  },
+  "budget": {
+    "fraction": 0.1,
+    "unit": "pool word count; proxy, not exact tokenizer tokens"
+  },
+  "oof_reconstruction": {
+    "baseline_max_abs_error": 0.0,
+    "role_aware_max_abs_error": 0.0,
+    "passed": true
+  },
+  "test_metrics": {
+    "baseline_budgeted_evidence_recall": 0.40418439716312055,
+    "role_aware_budgeted_evidence_recall": 0.7094326241134753,
+    "paired_mean_gain": 0.30524822695035464,
+    "paired_bootstrap_95_ci": [
+      0.25297872,
+      0.35957447
+    ],
+    "paired_bootstrap_resamples": 50000,
+    "paired_bootstrap_seed": 20261112,
+    "sign_flip_permutation_draws": 200000,
+    "sign_flip_permutation_seed": 20261113,
+    "sign_flip_permutation_p_plus_one": 4.9999750001249995e-06,
+    "exact_paired_sign_test_p": 5.105507778590388e-25,
+    "positive_differences": 96,
+    "negative_differences": 3,
+    "ties": 136,
+    "rank_improved": 127,
+    "rank_worsened": 3,
+    "rank_unchanged": 105
+  },
+  "provenance": {
+    "notebook": "notebook529e9395ae (3).ipynb, uploaded 2026-11-12",
+    "executed_code_cells": 94,
+    "saved_final_output_cells": [
+      106,
+      107
+    ],
+    "dataset_file_sha256": "not present in the executed notebook's final audit output",
+    "raw_per_question_export": "memweave_role_aware_locked_test.csv",
+    "raw_per_question_export_available_in_uploaded_files": false,
+    "raw_export_note": "The executed notebook reports writing the CSV in the Kaggle working directory, but the CSV itself was not present in the supplied files or the uploaded output archive. No per-question rows have been fabricated."
+  },
+  "limitations": [
+    "Single LongMemEval-S split; no independent external replication.",
+    "Question-level bootstrap may not account for shared conversation dependence.",
+    "Role-aware features were evaluated as a bundle; complete feature ablations are still needed.",
+    "Evidence recall is not end-to-end answer accuracy."
+  ]
+}
