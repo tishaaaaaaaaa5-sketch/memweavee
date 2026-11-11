@@ -8,7 +8,7 @@ This directory is the canonical notebook sequence for the MemWeave research proj
 | 01 | `01_MemWeave_2_1.ipynb` | Fair-baseline and benchmark-structure audit | Executed notebook copy with saved cell outputs |
 | 02 | `02_MemWeave_2_2.ipynb` | Revised model selection, tuning and external/QA analyses | Uploaded source notebook; run outputs are preserved separately under `../results/v2_2/` |
 | 03 | `03_memweave_v2_3_addendum.ipynb` | Corrected inference, component activity, abstention and power audits | Standalone addendum; reads saved outputs and does not retrain the model |
-| 04 | `04_MemWeave_Final.ipynb` | Leak-controlled, pre-declared, locked-test evaluation | Uploaded source notebook; no saved execution outputs were supplied |
+| 04 | `04_MemWeave_Final.ipynb` | Leak-controlled, post-hoc held-out evaluation | Uploaded source notebook; no saved execution outputs were supplied |
 
 ## Recommended execution
 
@@ -16,7 +16,7 @@ This directory is the canonical notebook sequence for the MemWeave research proj
 2. Run v2.0 and v2.1 only when reproducing those historical stages.
 3. For v2.2, follow its setup/configuration cells and preserve the generated run manifest and tables in `../results/v2_2/`.
 4. Run the v2.3 addendum against the saved v2.2 artifacts. It is an analysis layer, not a fresh training run.
-5. Treat the final notebook as a separate locked-test stage. Run it from a clean kernel and preserve outputs, configuration, dataset checksums and a run manifest before reporting any final-test result.
+5. Treat the final notebook as a post-hoc held-out analysis, not a pristine confirmatory test. Its split was inspected during earlier development. Run it from a clean kernel and preserve outputs, configuration, dataset checksums, environment details and a run manifest; replicate on a genuinely untouched split before making confirmatory claims.
 
 ## Duplicate uploads and archive
 
