@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Local benchmark data
+data/
+**/longmemeval_s_cleaned.json
+**/locomo10.json
+
+# Generated experiment intermediates
+**/all_results_raw.csv
+**/*feature_cache*.pkl
+**/feature_cache/
+**/cache/
+**/addendum_workdir/
+**/memweave2_results/
+
+# Model/checkpoint artifacts
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Local exports and logs
+*.log
+.DS_Store
+Thumbs.db
