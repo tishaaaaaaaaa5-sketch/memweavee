@@ -77,7 +77,7 @@ The repository contains a versioned research workflow and curated outputs:
 2. Read `MemWeave/README.md` for the experiment/reproduction sequence.
 3. Inspect the v2.2 results and run manifest for the original experiment.
 4. Read the v2.3 corrected-inference findings and tables before quoting the learned-selector comparison.
-5. Treat `04_MemWeave_Final.ipynb` as a locked-test evaluation artifact. The research report states that it was uploaded without saved outputs; do not imply its locked-test result has been executed or verified unless fresh outputs are committed.
+5. Treat `04_MemWeave_Final.ipynb` as an unexecuted, post-hoc held-out evaluation notebook. Its split was inspected during earlier development, so it is not a pristine preregistered test. The supplied notebook has no saved outputs; do not report a final held-out result until a full run, dataset checksums, environment manifest and outputs are committed.
 
 ## Reproducibility and data
 
