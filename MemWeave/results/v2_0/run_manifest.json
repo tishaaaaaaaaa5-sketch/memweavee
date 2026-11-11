@@ -31,8 +31,8 @@
   "dense_baseline_enabled": true,
   "smoke_test_mode": false,
   "timestamp_utc": "2026-11-09T12:22:52.697254+00:00",
-  "python": "3.13.16",
-  "platform": "Linux-6.6.159+-x86_64",
+  "python": "3.13.16 (main, Oct 1 2026, 15:40:24) [GCC 13.3.0]",
+  "platform": "Linux-6.6.159+-x86_64-with-glibc2.39",
   "packages": {
     "numpy": "2.4.6",
     "pandas": "2.2.3",
