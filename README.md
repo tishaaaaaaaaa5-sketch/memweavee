@@ -35,6 +35,32 @@ This repository contains a multi-stage research project: the original query-agno
 | MRR | 0.5486 | **0.8546** | +0.3060 |
 | Mean gold rank | 5.8553 | **1.9277** | -3.9277 |
 
+
+## Visual results
+
+The primary comparison below summarizes the held-out result at the notebook's **10% word-count budget**. The confidence interval shown is for the *paired gain*, not separate intervals for each model.
+
+<p align="center">
+  <img src="docs/images/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
+</p>
+
+The role-aware model also improves recall across all six reported question categories. The chart shows the category-level point estimates; subgroup uncertainty and corrected tests are reported in the audit table below.
+
+<p align="center">
+  <img src="docs/images/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
+</p>
+
+| Question type | n | Baseline | Role-aware | Gain | Holm-adjusted sign-test p |
+|---|---:|---:|---:|---:|---:|
+| Single-session user | 32 | 6.25% | 68.75% | **+62.50 pp** | 0.000010 |
+| Knowledge update | 36 | 44.44% | 83.33% | **+38.89 pp** | 0.000015 |
+| Temporal reasoning | 63 | 40.82% | 66.48% | +25.66 pp | 0.000001 |
+| Single-session assistant | 28 | 67.86% | 92.86% | +25.00 pp | 0.031250 |
+| Single-session preference | 15 | 0.00% | 20.00% | +20.00 pp | 0.250000 |
+| Multi-session | 61 | 52.90% | 71.86% | +18.96 pp | 0.000363 |
+
+**Interpretation.** Five of six category-level paired sign tests remain significant after Holm correction. The preference subgroup is small and inconclusive. These descriptive subgroup differences do not identify which individual feature caused the overall gain.
+
 Paired inference for budgeted recall:
 - Paired mean gain: **+0.305248**.
 - Question-level paired bootstrap 95% CI: **[0.252979, 0.359574]**.
