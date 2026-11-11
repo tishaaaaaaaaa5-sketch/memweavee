@@ -66,7 +66,7 @@ The repository contains a versioned research workflow and curated outputs:
 
 - [Project guide](MemWeave/README.md) — notebook order, setup notes, and reproduction guidance.
 - [Research overview](MemWeave/PROJECT_OVERVIEW.md) — concise scope and limitations.
-- [Notebooks](MemWeave/notebooks/) — versioned experiments, addendum, and final locked-test notebook.
+- [Notebooks](MemWeave/notebooks/) — versioned experiments, addendum, and final held-out evaluation notebook.
 - [Results guide](MemWeave/results/README.md) — result generations, provenance, and interpretation.
 - [Corrected v2.3 findings](MemWeave/results/findings_v2_3.txt) — compact corrected-inference summary.
 - [Results tables](MemWeave/results/tables/) — curated tables supporting the audit and sensitivity findings.
@@ -77,7 +77,7 @@ The repository contains a versioned research workflow and curated outputs:
 2. Read `MemWeave/README.md` for the experiment/reproduction sequence.
 3. Inspect the v2.2 results and run manifest for the original experiment.
 4. Read the v2.3 corrected-inference findings and tables before quoting the learned-selector comparison.
-5. Treat `04_MemWeave_Final.ipynb` as a locked-test evaluation artifact. The research report states that it was uploaded without saved outputs; do not imply its locked-test result has been executed or verified unless fresh outputs are committed.
+5. Treat `04_MemWeave_Final.ipynb` as an unexecuted, post-hoc held-out evaluation notebook. Its split was inspected during earlier development, so it is not a pristine preregistered test. The supplied notebook has no saved outputs; do not report a final held-out result until a full run, dataset checksums, environment manifest and outputs are committed.
 
 ## Reproducibility and data
 
@@ -93,8 +93,8 @@ The published curated results are a reviewable subset of the full experiment art
 
 ## Research status and next experiments
 
-The most valuable next steps are to execute and preserve the final locked-test notebook outputs, tune the optimizer over genuinely active redundancy/cost settings and test those mechanisms, evaluate answer quality with a substantially larger and stronger-reader study, and validate on a harder-distractor benchmark with more independent conversation clusters.
+The most valuable next steps are to execute and preserve outputs from the final held-out evaluation notebook (which is post-hoc, not a pristine confirmatory test), tune the optimizer over genuinely active redundancy/cost settings and test those mechanisms, evaluate answer quality with a substantially larger and stronger-reader study, and validate on a harder-distractor benchmark with more independent conversation clusters.
 
 ---
 
-*Research snapshot: MemWeave v2.1–v2.3 addendum and final locked-test notebook inventory, as documented in the project report dated November 11, 2026.*
+*Research snapshot: MemWeave v2.1–v2.3 addendum and final held-out evaluation notebook inventory, as documented in the project report dated November 11, 2026.*

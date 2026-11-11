@@ -19,7 +19,7 @@ See [the notebook index](notebooks/README.md) for the role and execution status 
 2. `notebooks/01_MemWeave_2_1.ipynb` — fair-baseline and benchmark-structure audit; the supplied canonical copy preserves executed cell outputs.
 3. `notebooks/02_MemWeave_2_2.ipynb` — revised tuning, inference, and external/QA analyses.
 4. `notebooks/03_memweave_v2_3_addendum.ipynb` — corrected inference and evidence-limit addendum; reads saved outputs and does not rerun model training.
-5. `notebooks/04_MemWeave_Final.ipynb` — leak-controlled, locked-test evaluation stage; the supplied copy has no saved outputs.
+5. `notebooks/04_MemWeave_Final.ipynb` — leak-controlled, post-hoc held-out evaluation stage; the supplied copy has no saved outputs and the held-out split was inspected during earlier development.
 
 The multiple v2.1 Kaggle/export copies were consolidated into one canonical notebook. They are not separate research versions.
 
