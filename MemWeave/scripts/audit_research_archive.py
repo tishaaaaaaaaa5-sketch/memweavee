@@ -71,7 +71,7 @@ def main() -> int:
             }
             REPORT_DIR.mkdir(exist_ok=True)
             (REPORT_DIR / "archive_audit_report.json").write_text(
-                json.dumps(report, indent=2) + "\\n", encoding="utf-8"
+                json.dumps(report, indent=2) + "\n", encoding="utf-8"
             )
             print(json.dumps(report, indent=2))
             print("PASS: archive is intentionally withdrawn pending a sanitized rebuild")
