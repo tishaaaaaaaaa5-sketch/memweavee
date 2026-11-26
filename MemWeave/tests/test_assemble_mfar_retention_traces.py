@@ -61,6 +61,30 @@ class RetentionTraceAdapterTests(unittest.TestCase):
         self.assertEqual(trace["outcome"]["status"], "not_evaluated")
         self.assertIsNone(trace["outcome"]["answer_id"])
 
+    def test_repeated_source_session_preserves_distinct_candidate_occurrences(self):
+        repeated = [dict(row) for row in self.rows]
+        repeated[1].update({
+            "candidate_index": 1,
+            "source_id": repeated[0]["source_id"],
+            "content_hash": repeated[0]["content_hash"],
+            "grade": "irrelevant",
+        })
+        trace = adapter.build_trace(
+            "c" * 20, "baseline", repeated, self.manifest,
+            "2026-11-26T00:00:00Z",
+        )
+        evidence_ids = [x["evidence_id"] for x in trace["pipeline"]["source_evidence"]]
+        memory_ids = [x["memory_id"] for x in trace["pipeline"]["candidate_memory"]]
+        self.assertEqual(len(evidence_ids), len(set(evidence_ids)))
+        self.assertEqual(len(memory_ids), len(set(memory_ids)))
+        self.assertEqual(
+            [x["source_id"] for x in trace["pipeline"]["source_evidence"]],
+            [repeated[0]["source_id"], repeated[1]["source_id"]],
+        )
+        adapter.validate_groups({
+            ("c" * 20, "baseline"): repeated,
+        })
+
     def test_candidate_pool_must_match_across_variants(self):
         groups = {
             ("c" * 20, "baseline"): [dict(row) for row in self.rows],
