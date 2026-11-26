@@ -10,6 +10,7 @@ This directory contains the canonical notebook sequence for MemWeave. The projec
 | 03 | `03_memweave_v2_3_addendum.ipynb` | Corrected inference and component/evidence-limit audit | Addendum; reads saved outputs |
 | 04 | `04_MemWeave_Final.ipynb` | Leak-controlled evaluation workflow and role-aware locked-test follow-up | Source notebook |
 | 04e | `04_MemWeave_Final_Executed.ipynb` | Executed record of the final locked-test and paired statistical audit | 94 executed code cells; final audit outputs retained; debug conversation outputs removed |
+| 05 | `05_MemWeave_Kaggle_Followup.ipynb` | Stage C recovery, feature ablation, and frozen LoCoMo transfer follow-up | Executed Kaggle record; corrected artifact audit retained; raw dataset text is not exported |
 
 ## Current role-aware evaluation
 
@@ -17,7 +18,7 @@ The final follow-up compares a baseline feature set with the same baseline plus 
 
 The held-out budgeted evidence recall was 0.4042 (baseline) and 0.7094 (role-aware), a paired gain of 0.3052 (95% question-level bootstrap CI [0.252979, 0.359574]). See [the full audit summary](../results/final_locked_test/README.md) and [aggregated category table](../results/final_locked_test/question_type_breakdown.csv).
 
-The executed notebook is a record of the run, not a guarantee that its external dataset can still be fetched unchanged. See [`data_provenance.md`](../results/final_locked_test/data_provenance.md) for the missing per-question export and checksum limitations.
+The Stage C Kaggle notebook is a separate follow-up record; its regenerated results must not be conflated with the historical Stage B run. The executed notebook is a record of the run, not a guarantee that its external dataset can still be fetched unchanged. See [`data_provenance.md`](../results/final_locked_test/data_provenance.md) for the missing per-question export and checksum limitations.
 
 ## Recommended execution
 
