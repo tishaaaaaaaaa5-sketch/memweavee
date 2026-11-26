@@ -11,6 +11,7 @@ This directory contains the canonical notebook sequence for MemWeave. The projec
 | 04 | `04_MemWeave_Final.ipynb` | Leak-controlled evaluation workflow and role-aware locked-test follow-up | Source notebook |
 | 04e | `04_MemWeave_Final_Executed.ipynb` | Executed record of the final locked-test and paired statistical audit | 94 executed code cells; final audit outputs retained; debug conversation outputs removed |
 | 05 | `05_MemWeave_Kaggle_Followup.ipynb` | Stage C recovery, feature ablation, and frozen LoCoMo transfer follow-up | Executed Kaggle record; corrected artifact audit retained; raw dataset text is not exported |
+| 06 | `06_Stage_BC_Controlled_Reconciliation.ipynb` | New 2×2×2 factorial reconstruction of Stage B/C role-feature scaling, vocabulary cap, and message-filter differences | New experiment specification; not yet executed; writes privacy-minimised CSV/JSON traces |
 
 ## Current role-aware evaluation
 
@@ -20,13 +21,18 @@ The held-out budgeted evidence recall was 0.4042 (baseline) and 0.7094 (role-awa
 
 The Stage C Kaggle notebook is a separate follow-up record; its regenerated results must not be conflated with the historical Stage B run. The executed notebook is a record of the run, not a guarantee that its external dataset can still be fetched unchanged. See [`data_provenance.md`](../results/final_locked_test/data_provenance.md) for the missing per-question export and checksum limitations.
 
+## Stage B/C reconciliation (new)
+
+Notebook 06 reconstructs both historical feature-construction endpoints inside one controlled run: raw vs within-question z-scored role features; 20,000-feature cap vs unlimited vocabulary; and all-message vs filtered user/assistant messages. It holds the pinned LongMemEval source, DEV/TEST split, base features, logistic regression settings, overlap exclusion, and 10% word-count proxy budget constant. It evaluates all eight factorial combinations, reports paired per-question effects and interactions, and exports feature diagnostics, per-question metrics, selection traces, and a run manifest. The notebook has been committed but has **not** yet been executed; no new reconciliation result is claimed.
+
 ## Recommended execution
 
 1. Read the [project guide](../README.md) and the relevant result notes.
 2. Run historical v2.0–v2.2 notebooks only when reproducing those stages.
 3. Run the v2.3 addendum against its saved artifacts; it is not a fresh training run.
 4. Run the final notebook from a clean kernel and preserve its complete outputs, configuration, dataset checksums and per-question CSVs.
-5. Before reporting the role-aware result, verify OOF reconstruction and confirm that no test data are used for tuning.
+5. Run notebook 06 from a clean kernel after reviewing the dataset terms and explicitly confirming them in its environment variables. Preserve all six reconciliation outputs.
+6. Before reporting any reconciliation result, inspect all eight factorial conditions; use DEV/CV—not TEST—to choose a canonical implementation.
 
 ## Reproducibility and limitations
 
