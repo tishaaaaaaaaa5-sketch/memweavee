@@ -63,3 +63,8 @@ This is a controlled reconstruction, not proof of which implementation generated
 ## Novelty-aware DEV follow-up
 
 The fixed relevance/novelty blend experiment in Notebook 06 did not establish a benefit from novelty weighting. On 235 DEV questions with five answer-session-grouped folds, relevance-only achieved 0.4049 OOF budgeted evidence recall. A 90/10 relevance/novelty blend achieved 0.4060, but its paired group-bootstrap 95% CI versus relevance-only was [-0.0159, +0.0191]. The 75/25 and 50/50 blends reduced recall to 0.3727 and 0.1833. **Keep relevance-only as the reference; do not promote these tested novelty blends.** See [the experiment report](stage_bc_reconciliation/NOVELTY_AWARE_DEV_EXPERIMENT.md). This is exploratory DEV evidence, not independent confirmation.
+
+
+### Next experiment: constrained novelty tie-breaker
+
+The unconstrained novelty blends did not establish a benefit. A predeclared relevance-first tie-breaker experiment is now implemented in notebook 06; novelty can reorder candidates only within 5-percentile relevance bands. See [the protocol](stage_bc_reconciliation/CONSTRAINED_NOVELTY_TIEBREAKER_PROTOCOL.md). Results are pending Kaggle execution; no outcome is claimed yet.
