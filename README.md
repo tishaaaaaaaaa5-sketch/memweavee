@@ -122,6 +122,8 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 
 ## Reproducibility
 
+Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md).
+
 The notebooks are designed for Jupyter/Google Colab. Run them from a clean kernel, in order, and retain the generated outputs and manifests. Dataset JSONs, feature caches, and raw per-question exports are not committed here; obtain the datasets under their applicable terms and verify the checksums recorded by the relevant run.
 
 For the role-aware follow-up, the notebook reports:
