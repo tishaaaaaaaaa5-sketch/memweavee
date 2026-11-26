@@ -11,7 +11,14 @@ from memweave.registry import RunRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results" / "final_locked_test"
-DEFAULT_REGISTRY = ROOT.parent / "results" / "run_registry.sqlite3"
+REGISTRY_CANDIDATES = [
+    ROOT.parent / "results" / "run_registry.sqlite3",
+    ROOT / "results" / "run_registry.sqlite3",
+]
+DEFAULT_REGISTRY = next(
+    (candidate for candidate in REGISTRY_CANDIDATES if candidate.is_file()),
+    REGISTRY_CANDIDATES[0],
+)
 
 st.set_page_config(page_title="MemWeave Research Explorer", layout="wide")
 st.title("MemWeave | Research Explorer")
