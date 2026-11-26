@@ -21,17 +21,13 @@ The held-out budgeted evidence recall was 0.4042 (baseline) and 0.7094 (role-awa
 
 The Stage C Kaggle notebook is a separate follow-up record; its regenerated results must not be conflated with the historical Stage B run. The executed notebook is a record of the run, not a guarantee that its external dataset can still be fetched unchanged. See [`data_provenance.md`](../results/final_locked_test/data_provenance.md) for the missing per-question export and checksum limitations.
 
-## Stage B/C reconciliation (new)
+## Stage B/C reconciliation — latest results
 
-Notebook 06 reconstructs both historical feature-construction endpoints inside one controlled run: raw vs within-question z-scored role features; 20,000-feature cap vs unlimited vocabulary; and all-message vs filtered user/assistant messages. It holds the pinned LongMemEval source, DEV/TEST split, base features, logistic regression settings, overlap exclusion, and 10% word-count proxy budget constant. It evaluates all eight factorial combinations, reports paired per-question effects and interactions, and exports feature diagnostics, per-question metrics, selection traces, a run manifest, and a privacy-minimised candidate-level retention trace. The updated export cell also records the candidate CSV SHA-256 in the manifest. The controlled reconstruction run supplied seven original exports; the separately generated candidate trace was uploaded later and is checked against an audit-enriched companion manifest. The existing run results are described separately in the reconciliation notes; no new result is inferred from the added export code.
+Notebook 06 reconstructs both endpoint configurations in one controlled factorial run. The primary factorial endpoint finds +12.68 pp for z-score scaling vs raw and +1.56 pp for the 20,000-feature cap vs unlimited vocabulary; the scale × cap interaction is not established. The message filter retained all 65,288 audited messages and had zero observed effect in this population.
 
-## Latest controlled reconciliation status
+The direct paired comparison on 235 TEST questions reports Stage B-like mean budgeted evidence recall 0.709433 and Stage C-like 0.820638: **+11.121 pp** (95% paired-bootstrap CI [+7.099, +15.411] pp). Stage C-like was better on 39 questions, Stage B-like on 8, with 188 ties (exact paired sign-test p=5.5396×10⁻⁶). This analysis reused existing run metrics; no training or experiment rerun was performed.
 
-The first paired factorial main-effect analysis is recorded in [the Stage B/C reconciliation report](../results/stage_bc_reconciliation/README.md). Z-score scaling and the 20,000-term cap have positive effects on candidate-selection gold fraction; message filtering is observationally identical across the 235-question test set. The scale × cap interaction and the cause of filtering equivalence are the next analyses. No answer-quality claim is supported by these candidate traces.
-
-## Latest Stage B/C reconciliation findings
-
-The primary Notebook 06 factorial endpoint is budgeted evidence recall. Z-score scaling improves it by 12.68 pp (95% paired-bootstrap CI [+8.66, +16.90] pp), and the 20,000-feature cap improves it by 1.56 pp versus unlimited vocabulary (95% CI [+0.67, +2.62] pp). The scale × cap interaction is not established. The filtering audit found that all 65,288 candidate-session messages already passed the filter, explaining its zero effect on this population. See the [full reconciliation report](../results/stage_bc_reconciliation/README.md). These findings do not establish the cause of the historical Stage B/C discrepancy.
+See the [full reconciliation report](../results/stage_bc_reconciliation/README.md). This controlled reconstruction does not prove which code state generated the historical Stage B and Stage C artifacts; historical headline metrics remain unchanged. Evidence recall is not answer accuracy.
 
 ## Recommended execution
 
