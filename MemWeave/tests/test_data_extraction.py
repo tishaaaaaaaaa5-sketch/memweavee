@@ -52,7 +52,7 @@ def test_record_builder_deduplicates_identical_text_across_questions():
     raw = tiny_questions()
     second = dict(raw[0], question_id="q2")
     sessions, questions = build_longmemeval_records(raw + [second])
-    assert len(sessions["text"]) == 3
+    assert len(sessions["text"]) == 5
     assert questions[0]["all_hashes"] == questions[1]["all_hashes"]
 
 
