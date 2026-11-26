@@ -80,8 +80,8 @@ def read_candidate_rows(path: Path) -> dict[tuple[str, str], list[dict[str, Any]
                     fail(f"line {line_no}: question id must be a 20-char SHA-256 prefix")
                 if not HEX64.fullmatch(query_hash) or not HEX64.fullmatch(content_hash):
                     fail(f"line {line_no}: invalid SHA-256 field")
-                if not ID.fullmatch(source_id):
-                    fail(f"line {line_no}: invalid source_id")
+                if not re.fullmatch(r"src_[0-9a-f]{32}", source_id):
+                    fail(f"line {line_no}: source_id must be src_ plus a 32-character lowercase hex digest")
                 if not variant:
                     fail(f"line {line_no}: empty variant")
                 try:
@@ -339,6 +339,8 @@ def main() -> int:
     for qid, variant in groups:
         variants_per_question[qid].add(variant)
     for qid, variants in variants_per_question.items():
+        if "baseline" not in variants:
+            fail(f"question {qid} is missing the baseline retention condition")
         if len(variants) != expected_variants:
             fail(
                 f"question {qid} has {len(variants)} variants; "
