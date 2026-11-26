@@ -5,13 +5,15 @@ MemWeave studies a practical question for conversational assistants: **when the 
 
 This repository contains a multi-stage research project: the original query-agnostic retention study and benchmark audit (v2.0–v2.3), followed by a role-aware feature experiment with a held-out locked-test evaluation. The stages answer related but distinct questions; their headline numbers should not be pooled or presented as one continuous model comparison.
 
-> **Current headline (role-aware follow-up):** on 235 held-out test questions from the `same_pipeline` pool, role-aware session scoring increased 10%-budget evidence recall from **40.42% to 70.94%** (+30.52 percentage points). The paired question-level bootstrap 95% CI was **[25.30, 35.96] pp**. This is a promising result on one benchmark split, not proof of improved end-to-end answer accuracy or independent generalization.
+> **Latest regenerated follow-up (Stage C):** the supplied recovery/ablation notebook reports evidence recall of **40.42% baseline vs. 82.06% role-aware** (+41.65 pp) on a regenerated 235-question test split, with paired bootstrap 95% CI **[35.87, 47.42] pp**. This is a separate run from the earlier Stage B result below; the difference is not yet reconciled. See [the Stage C report](MemWeave/results/followup_2026/README.md). The notebook's final artifact audit passed with three warnings; its notebook and output files are not yet committed.
 
 ---
 
-## Research snapshot
+## Research snapshot — Stage B historical run
 
-| Item | Current role-aware follow-up |
+The table and charts in this section describe the earlier Stage B run (70.94% role-aware recall), not the regenerated Stage C result.
+
+| Item | Stage B historical run |
 |---|---|
 | Benchmark | LongMemEval-S cleaned |
 | Evaluation pool | `same_pipeline` (primary pool in the final notebook) |
@@ -86,7 +88,8 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 ## Research lineage: do not conflate the stages
 
 - **v2.0–v2.3:** the original 500-question query-agnostic retention study, its benchmark-shortcut audit, corrected inference, and external/QA proxy analyses. The corrected v2.3 result found only a small and sensitivity-dependent advantage over the strongest simple heuristic; see `MemWeave/results/findings_v2_3.txt`.
-- **Role-aware follow-up:** the separate 235-question held-out evaluation documented in `MemWeave/results/final_locked_test/`. It compares a baseline feature set with an augmented set containing six message-role-aware features. It does not retroactively change the v2.3 result.
+- **Stage B role-aware follow-up:** the earlier 235-question held-out evaluation documented in `MemWeave/results/final_locked_test/` (70.94% role-aware recall).
+- **Stage C regenerated follow-up:** a separate recovery/ablation and frozen LoCoMo transfer run documented in `MemWeave/results/followup_2026/` (82.06% role-aware recall). Its difference from Stage B remains an open reproducibility question; do not combine the values or imply Stage B was independently replicated.
 
 ## Repository map
 
