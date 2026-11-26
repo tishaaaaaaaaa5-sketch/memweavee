@@ -35,11 +35,11 @@ The supplied executed Kaggle notebook regenerated a new result set under pinned 
 - Frozen LongMemEval-trained role-aware macro recall was 0.6169 / 0.6165 across two speaker-role orientations, versus baseline 0.0935. This is preliminary transfer evidence over only 10 conversation clusters, not definitive independent replication.
 - The final notebook audit reported 54 PASS, 3 WARNING, 0 FAIL. The warnings concern independent budget reconstruction, end-to-end evidence mapping, and independent replication.
 
-Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The notebook and generated CSV/JSON files still need to be added as release artifacts; the report does not pretend they are already committed.
+Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The [Stage C Kaggle follow-up notebook](notebooks/05_MemWeave_Kaggle_Followup.ipynb) is now committed. Its six generated CSV/JSON result exports remain separate release artifacts and are not included in this notebook-only commit.
 
 ## Canonical notebook sequence
 
-See [the notebook index](notebooks/README.md). The uploaded Stage C notebook is pending repository publication and privacy review; it should be added only after obsolete/debug outputs are removed and the separate result exports are attached.
+See [the notebook index](notebooks/README.md). The Stage C Kaggle notebook is published at [05_MemWeave_Kaggle_Followup.ipynb](notebooks/05_MemWeave_Kaggle_Followup.ipynb). The obsolete false-positive audit cell and automatic terms-confirmation cell were removed; the corrected audit remains. The six generated CSV/JSON exports are still pending separate publication and privacy review.
 
 ## Reproduction
 
