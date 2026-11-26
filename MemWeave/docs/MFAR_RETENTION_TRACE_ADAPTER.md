@@ -3,7 +3,7 @@
 **Adapter version:** 0.1.0  
 **Input:** the candidate-level export from notebook 06  
 **Output:** partial MFAR trace records using schema 0.2.0  
-**Status:** implementation committed; export-cell rerun and end-to-end execution still required.
+**Status:** candidate export received and checksum-verified; end-to-end adapter execution and independent validation remain pending.
 
 ## Why this adapter is deliberately partial
 
@@ -85,3 +85,14 @@ Expected record count for the standard notebook run is 235 test questions × 9 p
 - It does not replace the word-count proxy with exact tokenizer-based storage accounting.
 
 The next milestone is to execute the updated export and assembler, inspect the resulting trace coverage and referential integrity, and conduct a privacy review. A genuine MFAR lifecycle study will additionally need an instrumented system that logs source ingestion, pre-compression candidates, stored memory, retrieval results, and answer/evidence support.
+
+
+## Audit of the supplied candidate export (2026-11-26)
+
+The supplied candidate CSV contains 49,140 rows across 235 test questions and nine conditions (baseline plus eight factorial variants). Its SHA-256 is `79610897e7401a297434b8a5b9703c9407658a4e4fc04fdd7b56981b6c860065`. The audited companion manifest binds this exact checksum and records `variant_count: 8`, matching the adapter's expected nine conditions including baseline.
+
+Repeated source IDs occur in 18 question-condition groups affecting two questions. These are repeated candidate occurrences, not corrupt duplicates: each repeated source ID maps to the same content hash. The adapter preserves them with occurrence-specific trace-local IDs derived from candidate index. Do not deduplicate these rows.
+
+Independent artifact checks found that all seven derived-file hashes in the audited manifest match the bundle. Candidate-level recall agrees with all 2,115 per-question records; selected candidate sets and selected word costs agree with all 1,880 role-aware selection-trace groups.
+
+The assembler has **not yet been run end-to-end on the supplied files**. The next validation step is the exact CLI command below, followed by the unit suite and a referential-integrity/privacy review.
