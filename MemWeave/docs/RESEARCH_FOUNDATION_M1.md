@@ -189,6 +189,8 @@ The repository currently documents:
 - Preliminary frozen LongMemEval-to-LoCoMo transfer: 10 conversation clusters; promising but insufficient to claim definitive independent replication.
 - Stage C audit: 54 PASS, 3 WARNING, 0 FAIL; warnings include independent budget reconstruction, end-to-end evidence mapping, and independent replication.
 
+A preliminary source-code comparison found differences between the Stage B corrected test path and Stage C in role-feature scaling, TF-IDF vocabulary capping, and message filtering. These are plausible contributors to the differing role-aware results, but causality is unproven. See [the preliminary reconciliation report](STAGE_B_C_RECONCILIATION_PRELIMINARY.md); a controlled reconstruction remains required.
+
 **Non-negotiable reporting rules**
 1. Stage B and Stage C remain separate records until their discrepancy is explained.
 2. The word-count proxy is not exact token-budget validation.
