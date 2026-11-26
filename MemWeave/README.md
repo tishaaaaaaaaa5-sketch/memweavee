@@ -1,53 +1,57 @@
 # MemWeave research project
 
-MemWeave investigates how to retain useful conversational sessions under a constrained memory budget. The repository contains two related but distinct research stages: the original query-agnostic retention study (v2.0–v2.3) and a later role-aware feature experiment evaluated on a held-out test split.
+MemWeave investigates how to retain useful conversational sessions under a constrained memory budget. The repository contains three related but distinct research stages. Their metrics must remain separately attributed; do not pool them into one headline.
 
 ## Research stages
 
 ### Stage A — Original retention study (v2.0–v2.3)
 
-- Benchmark: LongMemEval-S cleaned, 500 questions in the reported study.
+- Benchmark: LongMemEval-S cleaned.
 - Primary task: query-agnostic session retention.
 - Primary metric: session-level evidence recall.
 - The v2.3 corrected-inference addendum found a small, sensitivity-dependent advantage over the strongest simple rule. Read `../results/findings_v2_3.txt`; do not describe that result as robust superiority.
 - External LoCoMo and downstream QA-proxy results are reported separately and have their own limitations.
 
-### Stage B — Role-aware follow-up (final locked-test audit)
+### Stage B — Earlier role-aware locked-test run
 
-- Pool: `same_pipeline`.
-- Split: 235 DEV / 235 locked TEST questions; abstention questions excluded.
-- Model: logistic regression, `C = 0.3`.
-- Comparison: baseline feature set vs. baseline plus six message-role-aware features.
+- Pool: `same_pipeline`; 235 DEV / 235 TEST questions.
+- Model: logistic regression, `C=0.3`; six role/message features added to the baseline.
 - Budget: 10% of pool word count (a proxy, not exact tokenization).
-- Held-out budgeted evidence recall: 0.4042 baseline vs. 0.7094 role-aware (+0.3052).
+- Evidence recall: 0.4042 baseline vs. 0.7094 role-aware (+0.3052).
 - Paired bootstrap 95% CI: [0.252979, 0.359574].
-- Exact paired sign test: p = 5.11e-25; sign-flip Monte Carlo p = 5e-6 at 200,000 permutations.
-- OOF reconstruction was exact for both variants before locked-test scoring.
+- This historical run remains documented in [the original locked-test report](results/final_locked_test/README.md).
 
-The follow-up result is not a replacement for the v2.3 result: it is a separate feature experiment and evaluation. See [the final locked-test report](results/final_locked_test/README.md).
+### Stage C — Regenerated recovery, ablation, and LoCoMo transfer follow-up
+
+The supplied executed Kaggle notebook regenerated a new result set under pinned dataset revisions and added feature ablations plus frozen-model LoCoMo evaluation.
+
+- LongMemEval-S revision: `98d7416c24c778c2fee6e6f3006e7a073259d48f`.
+- LongMemEval SHA-256: `d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442`.
+- DEV / TEST: 235 / 235; `same_pipeline`; logistic regression `C=0.3`.
+- Evidence recall: 0.404184 baseline vs. 0.820638 role-aware (+0.416454).
+- Paired bootstrap 95% CI: [0.358723, 0.474184].
+- The regenerated result differs materially from Stage B. Preserve both records and investigate the difference; do not silently replace the earlier result.
+- LoCoMo was pinned to commit `cbfbc1dba6bc53d00625212a0f22d55ffee7c1fc`, SHA-256 `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`.
+- Frozen LongMemEval-trained role-aware macro recall was 0.6169 / 0.6165 across two speaker-role orientations, versus baseline 0.0935. This is preliminary transfer evidence over only 10 conversation clusters, not definitive independent replication.
+- The final notebook audit reported 54 PASS, 3 WARNING, 0 FAIL. The warnings concern independent budget reconstruction, end-to-end evidence mapping, and independent replication.
+
+Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The notebook and generated CSV/JSON files still need to be added as release artifacts; the report does not pretend they are already committed.
 
 ## Canonical notebook sequence
 
-See [the notebook index](notebooks/README.md).
-
-1. `notebooks/00_MemWeave_2_0.ipynb` — initial real-data pipeline.
-2. `notebooks/01_MemWeave_2_1.ipynb` — fair-baseline and benchmark-structure audit.
-3. `notebooks/02_MemWeave_2_2.ipynb` — revised tuning, inference, external and QA analyses.
-4. `notebooks/03_memweave_v2_3_addendum.ipynb` — corrected inference and evidence-limit addendum.
-5. `notebooks/04_MemWeave_Final.ipynb` — leak-controlled final evaluation workflow and role-aware follow-up audit cells.
+See [the notebook index](notebooks/README.md). The uploaded Stage C notebook is pending repository publication and privacy review; it should be added only after obsolete/debug outputs are removed and the separate result exports are attached.
 
 ## Reproduction
 
-Before attempting a full rerun, check the committed aggregate artifacts from the repository root with `python MemWeave/scripts/validate_release.py`. This standard-library validator checks internal consistency across the run manifest, paired audit JSON, and question-type CSV. A pass is **not** a model rerun or independent replication; the current dataset checksum and per-question export are still missing. See [the reproducibility utilities](scripts/README.md) and [the reproducibility audit](docs/REPRODUCIBILITY_AUDIT.md).
+For the earlier committed aggregate release, run:
 
-Use Python in Jupyter or Google Colab. Run from a clean kernel and preserve:
-- exact notebook version and execution outputs;
-- dataset names, source URLs and SHA-256 checksums;
-- Python and package versions;
-- split seed, model parameters and selection budget;
-- per-question result CSVs and statistical audit outputs.
+```bash
+python MemWeave/scripts/validate_release.py
+```
 
-The final role-aware audit uses 50,000 question-level paired bootstrap resamples and 200,000 sign-flip permutations. Its question-level inference is not conversation-clustered.
+This standard-library validator checks internal consistency across the earlier run manifest, paired audit JSON, and question-type CSV. A pass is not a model rerun or independent replication. Stage C has its own audit embedded in the supplied notebook; its CSV/JSON outputs are not yet committed. See [the reproducibility utilities](scripts/README.md) and [the reproducibility audit](docs/REPRODUCIBILITY_AUDIT.md).
+
+For every run, preserve the exact notebook version and outputs, dataset revisions and SHA-256 checksums, Python/package versions, split seed, feature schema, hyperparameters, selection budget, and privacy-safe per-question exports. Do not commit raw benchmark conversations, answers, or session text.
 
 ## Data and large files
 
@@ -55,4 +59,4 @@ Raw benchmark JSONs, feature caches and large per-question exports are not store
 
 ## Reporting guidance
 
-Distinguish evidence retention from answer accuracy, the original v2.3 experiment from the role-aware follow-up, and a held-out split from independent replication. The research process was iterative rather than preregistered. Do not claim that the six role-aware features have individually established causal effects.
+Distinguish evidence retention from answer accuracy, Stage A from Stages B/C, and a held-out split from independent replication. The research process was iterative rather than preregistered. The Stage C ablation suggests the message-similarity group accounts for much of the measured gain; do not attribute the full improvement to role-awareness without further controlled experiments.
