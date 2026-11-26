@@ -68,3 +68,10 @@ The fixed relevance/novelty blend experiment in Notebook 06 did not establish a 
 ### Next experiment: constrained novelty tie-breaker
 
 The unconstrained novelty blends did not establish a benefit. A predeclared relevance-first tie-breaker experiment is now implemented in notebook 06; novelty can reorder candidates only within 5-percentile relevance bands. See [the protocol](stage_bc_reconciliation/CONSTRAINED_NOVELTY_TIEBREAKER_PROTOCOL.md). The completed DEV run found relevance-only recall of 0.4049 and constrained tie-breaker recall of 0.4028. The paired delta was -0.0021 (95% group-bootstrap CI [-0.0086, +0.0043]), crossing zero. **Retain relevance-only; do not promote the tie-breaker.** See the [results report](stage_bc_reconciliation/CONSTRAINED_NOVELTY_TIEBREAKER_RESULTS.md). This remains exploratory DEV evidence, not independent confirmation.
+
+
+## LoCoMo end-to-end reader QA (initial exploratory run)
+
+The first FLAN-T5-small reader evaluation scored 200 questions across 10 LoCoMo conversation clusters (20 per cluster). Role-aware selection achieved token F1 0.0408 versus 0.0264 for the baseline and 0.0273 for recency. Paired conversation-cluster bootstrap deltas were +0.0144 versus baseline (95% CI [+0.0043, +0.0253]) and +0.0136 versus recency (95% CI [+0.0016, +0.0266]). Question-only had the highest point estimate at 0.0467; exact match was 0 for role-aware, baseline, and recency. These results are exploratory and do not establish overall superiority.
+
+**Important caveat:** the reader input is capped at 512 tokens with truncation enabled. The run emitted a 680-token sequence warning, and reported reader-context token counts are measured before model-input truncation. Consequently, the reader may not have consumed all selected context, and the comparison is conditional on the 512-token prompt cap. A controlled follow-up must log post-truncation context usage and apply a consistent context-packing policy before this is used as a headline answer-quality result. See [the full initial QA report](LOCOMO_END_TO_END_READER_QA_INITIAL_RESULTS.md).
