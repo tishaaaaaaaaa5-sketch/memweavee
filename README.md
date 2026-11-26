@@ -96,23 +96,29 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 ```text
 .
 ├── README.md
+├── .github/workflows/
 └── MemWeave/
-    ├── README.md                    # project guide and research lineage
-    ├── PROJECT_OVERVIEW.md           # concise project scope
+    ├── README.md
+    ├── PROJECT_OVERVIEW.md
+    ├── docs/
+    │   ├── research/
+    │   ├── reproducibility/
+    │   ├── instrumentation/
+    │   └── figures/
     ├── notebooks/
-    │   ├── README.md                # canonical notebook index
-    │   ├── 00_MemWeave_2_0.ipynb
-    │   ├── 01_MemWeave_2_1.ipynb
-    │   ├── 02_MemWeave_2_2.ipynb
-    │   ├── 03_memweave_v2_3_addendum.ipynb
-    │   ├── 04_MemWeave_Final.ipynb
-    │   └── 04_MemWeave_Final_Executed.ipynb
-    └── results/
-        ├── README.md
-        ├── findings_v2_3.txt
-        ├── tables/                  # curated v2.3 tables
-        ├── v2_0/ ... v2_2/          # historical, versioned results
-        └── final_locked_test/       # role-aware held-out audit
+    │   ├── 00–06 canonical sequence
+    │   └── archive/
+    ├── results/
+    │   ├── final_locked_test/
+    │   ├── followup_2026/
+    │   ├── stage_bc_reconciliation/
+    │   ├── stage_bc_2026-11-26/
+    │   ├── v2_0/ … v2_2/
+    │   ├── tables/
+    │   └── artifacts/
+    ├── schemas/
+    ├── scripts/
+    └── tests/
 ```
 
 ### Recommended reading order
