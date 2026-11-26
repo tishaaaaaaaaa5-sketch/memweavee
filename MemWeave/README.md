@@ -52,6 +52,8 @@ The Stage B/C notebook now includes an additional candidate-level trace export. 
 
 MFAR development proceeds only from original benchmark artifacts and observable events from the real memory pipeline. Synthetic failure fixtures are excluded from the research workflow. The existing Stage B/C adapter records retention selection only; retrieval and answer stages remain unobserved until real pipeline instrumentation is available. No failure labels or probabilities may be inferred for those missing stages. The original retention traces can now be audited with [the real-data retention audit utility](scripts/audit_mfar_retention_traces.py) and [its usage note](docs/MFAR_RETENTION_AUDIT.md). It reports retained/missed gold candidates and budget-proxy utilization without assigning any MFAR failure labels.
 
+The real-backend integration dependency and event-capture contract are documented in [MFAR_REAL_BACKEND_INSTRUMENTATION.md](docs/MFAR_REAL_BACKEND_INSTRUMENTATION.md). The repository's benchmark notebooks do not currently expose a live construction/compression/retrieval/answer backend; detector training and intervention evaluation remain blocked until the actual backend is instrumented.
+
 ## Canonical notebook sequence
 
 See [the notebook index](notebooks/README.md). The Stage C Kaggle notebook is published at [05_MemWeave_Kaggle_Followup.ipynb](notebooks/05_MemWeave_Kaggle_Followup.ipynb). The obsolete false-positive audit cell and automatic terms-confirmation cell were removed; the corrected audit remains. The six generated CSV/JSON exports are still pending separate publication and privacy review.
