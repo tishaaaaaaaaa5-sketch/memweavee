@@ -1,6 +1,6 @@
 # Stage B/C controlled reconciliation — interim results
 
-**Status:** controlled reconstruction completed; candidate-selection analysis in progress.  
+**Status:** controlled reconstruction and paired endpoint analysis completed; historical artifact provenance remains unresolved.  
 **Notebook:** `notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb`  
 **Branch:** `research/memweave-followup-release`
 
