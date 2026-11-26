@@ -1,7 +1,9 @@
 """Configuration loading and validation."""
 from pathlib import Path
 from typing import Any
+
 import yaml
+
 
 def load_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path).expanduser().resolve()
@@ -15,6 +17,14 @@ def load_config(path: str | Path) -> dict[str, Any]:
     if not isinstance(evaluation, dict):
         raise ValueError("'evaluation' must be a mapping")
     mode = evaluation.get("mode", "artifact_audit")
-    if mode != "artifact_audit":
-        raise ValueError(f"Unsupported evaluation mode {mode!r}; current CLI supports artifact_audit only.")
+    if mode not in {"artifact_audit", "pipeline"}:
+        raise ValueError(
+            f"Unsupported evaluation mode {mode!r}; expected 'artifact_audit' or 'pipeline'."
+        )
+    if mode == "pipeline":
+        pipeline = config.get("pipeline", {})
+        if not isinstance(pipeline, dict):
+            raise ValueError("'pipeline' must be a mapping")
+        if not pipeline.get("longmemeval_path"):
+            raise ValueError("pipeline.longmemeval_path is required for pipeline mode")
     return config
