@@ -78,41 +78,19 @@ python MemWeave/scripts/validate_mfar_trace_integrity.py \
 This complements JSON Schema validation by checking that memory-to-source lineage, transformation inputs/outputs, and answer-to-retrieved-evidence references resolve within each trace. It also rejects answer/retrieval records that contradict the corresponding unobserved-stage flags. It does not infer missing events or failure labels.
 
 
-## Record real MemWeave runtime events (Notebook 01 instrumentation)
+## Capture real MemWeave runtime events (Notebook 01)
 
-`mfar_runtime_event_writer.py` provides an append-only, privacy-minimised JSONL writer for actual notebook events. It does not create events automatically: call `emit()` only at an operation that really executed. It accepts hashes and opaque IDs, not raw text. Metadata is allow-listed to reduce accidental text leakage.
+The event writer is integrated into `MemWeave/notebooks/01_MemWeave_2_1.ipynb`. Do not manually create events or copy placeholder IDs into a trace.
 
-A minimal setup cell in the existing Notebook 01 run:
-
-```python
-from MemWeave.scripts.mfar_runtime_event_writer import (
-    MFARRuntimeEventWriter,
-    sha256_text,
-)
-
-trace_writer = MFARRuntimeEventWriter(
-    "/kaggle/working/mfar_runtime_events.jsonl",
-    run_id=RUN_ID,  # set once for this real execution
-    repository_commit=GIT_COMMIT,
-    dataset_revision=DATASET_REVISION,
-    dataset_sha256=DATASET_SHA256,
-    split="test",
-)
-```
-
-At the existing code boundaries, emit records using the actual session/question IDs and selected indices. For example, after `encode_session(session)` has returned a real representation:
+To enable it in Kaggle, run this setup cell before running the notebook from the first cell:
 
 ```python
-trace_writer.emit(
-    "candidate_constructed",
-    question_id=question_id,
-    source_session_id=source_session_id,
-    candidate_occurrence_id=f"{question_id}:{candidate_index}",
-    content_sha256=sha256_text(encoded["full"]),
-    metadata={"cost_unit": TOKENIZER},
-)
+import os
+os.environ["MFAR_TRACE_ENABLED"] = "1"
 ```
 
-This is a usage pattern, not a ready-to-run notebook cell: names such as `RUN_ID`, `GIT_COMMIT`, `DATASET_REVISION`, `question_id`, and `source_session_id` must be bound to the actual run variables in the notebook. Do not invent them or emit a record when the operation did not occur. The instrumentation map specifies each event boundary and semantic constraint.
+Restart the kernel and run all cells in order. Keep `MEMWEAVE_SMOKE` unset. The notebook automatically rebuilds the feature cache during tracing so source and candidate construction events correspond to real execution. It writes a run-specific `mfar_runtime_events_<run_id>.jsonl` and a `mfar_runtime_trace_manifest_<run_id>.json` under the v2.1 results directory.
 
-The writer is an intermediate ledger, not yet an MFAR schema v0.2.0 trace assembler. Do not report runtime coverage or failure labels until the existing notebook has been instrumented, run on the approved original data, and its event lineage has been validated. Never commit raw benchmark content or generated answers.
+The event hooks cover source/candidate construction, candidate pools, test-fold retention selections, and (when `CFG["run_qa_proxy"]` is enabled) QA evidence assembly and answer generation. QA generation remains off by default. The retention selection is not a persistent storage write, and the metric-time BM25 ranking is not represented as a live retrieval service call.
+
+The manifest reports observed event counts and question coverage; it does not infer failure labels. Compare traced and untraced outputs on the same approved original data before treating instrumentation as behavior-preserving. Never commit raw benchmark data, event ledgers, prompts, or generated answers. Hashes are linkable metadata, not anonymisation.
