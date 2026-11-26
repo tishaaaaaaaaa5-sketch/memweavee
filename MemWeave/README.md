@@ -52,7 +52,7 @@ The current CLI evaluate mode validates the consistency of committed aggregate a
 
 ### Public web application
 
-A dark research website and private memory-workspace MVP are available in [web/](web/) and [the web app guide](WEB_APP_GUIDE.md). The current workspace uses transparent lexical-overlap retrieval; it is not the learned research selector. See the guide for local and Replit setup, API routes, and deployment security limitations.
+A dark research website and private memory-workspace MVP are available in [web/](web/) and [the web app guide](WEB_APP_GUIDE.md). The current workspace uses transparent lexical-overlap retrieval; it is not the learned research selector. See the guide for GitHub Pages publishing, local API setup, and deployment security limitations.
 
 ## Canonical notebook sequence
 

@@ -1,40 +1,47 @@
-# MemWeave public web application
+# MemWeave public website and application
 
-## What this adds
-- Responsive dark research website with project overview, architecture and scoped results.
-- Public visitors can create isolated private workspaces.
-- Workspace users can add, list, delete and search memory notes.
-- Workspace keys are high-entropy bearer credentials returned once and stored in that browser.
-- Retrieval is deterministic lexical overlap. It returns matching source memories and matched terms; it does not call an LLM or generate answers.
-- Existing research aggregate endpoints remain read-only and separate from workspace data.
+## GitHub Pages website
 
-## Run locally
-From the repository root:
+The public research website is a static site in `MemWeave/web/`. A GitHub Actions workflow publishes this directory to GitHub Pages when changes reach the `main` branch.
+
+To enable it in the repository:
+1. Open **Settings → Pages**.
+2. Under **Build and deployment**, choose **GitHub Actions** as the source.
+3. Merge the website workflow to `main`.
+4. Open the Pages URL shown in the repository's Pages settings.
+
+The website uses relative asset paths so it works at the repository's GitHub Pages project URL.
+
+## What GitHub Pages can and cannot run
+
+GitHub Pages hosts static HTML, CSS, JavaScript, and other static assets. It does not run Python, FastAPI, SQLite, or other server-side application processes.
+
+Accordingly, the Pages site is the public research/portfolio website. It does not provide live private workspaces, memory persistence, or API retrieval. The interactive workspace UI is not exposed on the static site.
+
+## Application backend source
+
+The FastAPI workspace backend remains in `MemWeave/api/` for local development or future deployment to a Python-capable host.
+
+Run locally from the repository root:
+
     python -m pip install -e "MemWeave[api]"
-    uvicorn api.app:app --app-dir MemWeave --host 0.0.0.0 --port 8000
-Open http://localhost:8000.
+    uvicorn api.app:app --app-dir MemWeave --host 127.0.0.1 --port 8000
 
-Set MEMWEAVE_DB_PATH to a persistent writable path before launch. The default is MemWeave/data/memweave_app.sqlite3.
+Open http://127.0.0.1:8000.
 
-## API
-- POST /workspaces creates a workspace and returns a one-time workspace key.
-- GET /workspaces/{workspace_id}/memories lists memories (requires X-Workspace-Key).
-- POST /workspaces/{workspace_id}/memories creates a memory.
-- DELETE /workspaces/{workspace_id}/memories/{memory_id} deletes a memory.
-- POST /workspaces/{workspace_id}/retrieve performs lexical-overlap retrieval.
-- GET /health, /results/summary and /results/question-types are research endpoints.
+Set `MEMWEAVE_DB_PATH` to a persistent writable path before launch. The default is `MemWeave/data/memweave_app.sqlite3`.
 
-## Security and deployment
-The workspace key is a bearer secret: anyone who obtains it can access that workspace. The browser stores it in local storage; clearing browser storage loses the key. Do not store secrets or sensitive personal data in this early preview. Use HTTPS, configure persistent storage for SQLite, back up the database, and set request-size limits at the hosting layer. Before a wider public launch, add account-based authentication, key rotation, workspace export/deletion, abuse controls and managed PostgreSQL.
+## API endpoints
 
-The public retrieval baseline is intentionally transparent and must not be described as the learned research model. Research results shown on the website are scoped to their source evaluations and limitations.
+- `POST /workspaces` creates a workspace and returns a one-time workspace key.
+- `GET /workspaces/{workspace_id}/memories` lists memories (requires `X-Workspace-Key`).
+- `POST /workspaces/{workspace_id}/memories` creates a memory.
+- `DELETE /workspaces/{workspace_id}/memories/{memory_id}` deletes a memory.
+- `POST /workspaces/{workspace_id}/retrieve` performs lexical-overlap retrieval.
+- `GET /health`, `/results/summary` and `/results/question-types` are research endpoints.
 
-## Launch on Replit
+## Security and research scope
 
-1. Import this GitHub repository into a Replit workspace.
-2. Replit reads the root .replit run command, installs the API extra, and starts Uvicorn on port 3000.
-3. Open the web preview; the research site and workspace API are served from the same origin.
-4. Before publishing, configure a persistent writable database path with the Replit Secrets/environment setting MEMWEAVE_DB_PATH. Confirm the selected deployment supports persistent storage and back up the SQLite database.
-5. Deploy only after running the test suite and reviewing the deployment's HTTPS and storage configuration.
+The workspace key is a bearer secret. Anyone who obtains it can access that workspace. Do not store sensitive personal information in this early preview. Before wider public launch, add account-based authentication, key rotation, workspace export/deletion, abuse controls, HTTPS, persistent managed storage and backups.
 
-The .replit file is a run configuration, not proof that a Replit deployment has been created. Deployment still requires the repository to be imported and the hosting configuration to be completed in Replit.
+The public workspace retrieval baseline is deterministic lexical overlap. It returns matching source memories and matched terms; it does not call an LLM or generate answers, and it must not be described as the learned research model. Research results shown on the website are scoped to their source evaluations and limitations.

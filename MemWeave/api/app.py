@@ -94,6 +94,10 @@ def question_types():
 if WEB.is_dir():
     app.mount("/assets", StaticFiles(directory=WEB), name="assets")
 
+    @app.get("/styles.css", include_in_schema=False)
+    def stylesheet():
+        return FileResponse(WEB / "styles.css", media_type="text/css")
+
     @app.get("/", include_in_schema=False)
     def website():
         return FileResponse(WEB / "index.html")
