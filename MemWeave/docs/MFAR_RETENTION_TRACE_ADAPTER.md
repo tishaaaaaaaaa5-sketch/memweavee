@@ -18,7 +18,7 @@ The updated final export cell in `06_Stage_BC_Controlled_Reconciliation.ipynb` w
 - `stage_bc_candidate_trace.csv`
 - the existing `stage_bc_reconciliation_manifest.json`
 
-The candidate CSV contains one row per test question × variant × candidate session. It includes:
+The candidate CSV contains one row per test question × variant × ranked candidate occurrence. A source session can appear more than once in a candidate list; these repeated occurrences are preserved by their distinct candidate indices rather than deduplicated. It includes:
 - a truncated hash of the benchmark question identifier;
 - a full SHA-256 hash of the question content;
 - variant name and candidate index;
@@ -71,7 +71,7 @@ python MemWeave/scripts/assemble_mfar_retention_traces.py \
   --output /path/to/mfar_retention_traces.jsonl
 ```
 
-The script checks required columns, rejects common raw-text columns, validates hashes and IDs, checks that candidate pools match across variants, checks the dataset revision/checksum in the manifest, and validates every assembled record against the Draft 2020-12 schema.
+The script checks required columns, rejects unexpected columns (including accidental raw-text fields), validates hashes and IDs, checks that candidate pools match across variants, checks the dataset revision/checksum in the manifest, and validates every assembled record against the Draft 2020-12 schema. Repeated source IDs are allowed only when they map to the same content hash; each candidate occurrence receives a distinct trace-local evidence/memory ID based on its candidate index. This preserves the ranked candidate list without collapsing repeated rows.
 
 Expected record count for the standard notebook run is 235 test questions × 9 policies (baseline plus eight factorial variants) = 2,115 traces. The script reports the actual count; do not assume this count if the input differs.
 
