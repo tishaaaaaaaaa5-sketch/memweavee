@@ -1,6 +1,6 @@
 # Constrained Novelty Tie-Breaker — Protocol
 
-**Status:** Implemented in the notebook; awaiting Kaggle execution and results.  
+**Status:** Completed on DEV; no evidence of improvement over relevance-only. See [the results report](CONSTRAINED_NOVELTY_TIEBREAKER_RESULTS.md).  
 **Evaluation split:** DEV only. TEST is not read.
 
 ## Motivation
@@ -46,3 +46,8 @@ The final notebook cell writes the following under `memweave_followup_outputs/co
 ## Interpretation guardrails
 
 This is an exploratory DEV-only grouped cross-validation experiment, not independent confirmation. The answer-session connected-component grouping is a provisional dependence-control proxy, not proof of independent sampling units. The budget is a word-count proxy, not exact tokenizer accounting. Do not inspect or use TEST for this experiment. Do not claim a benefit unless the paired interval and practical effect support it; if the interval crosses zero, retain relevance-only as the reference and report the result as inconclusive.
+
+
+## Observed result
+
+The completed run covered 235 DEV questions in five folds (47 validation questions per fold) and 233 answer-session connected-component groups. Relevance-only mean OOF budgeted evidence recall was 0.4049; the constrained 5-percentile novelty tie-breaker achieved 0.4028. The paired recall delta was -0.0021, with a 95% paired group-bootstrap interval of [-0.0086, +0.0043]. The interval crosses zero and selected novelty percentile was effectively unchanged (0.1654 vs 0.1648). **Decision: retain relevance-only; do not promote the constrained novelty tie-breaker.** This is exploratory DEV evidence, not independent confirmation. Full metrics and limitations are in [the results report](CONSTRAINED_NOVELTY_TIEBREAKER_RESULTS.md).
