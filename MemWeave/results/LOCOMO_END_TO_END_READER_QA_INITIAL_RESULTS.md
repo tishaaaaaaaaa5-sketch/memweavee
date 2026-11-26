@@ -67,3 +67,20 @@ Next:
 - Repeat with more independent conversations and preferably a second reader model.
 - Keep reader model revision, sample, prompt template, context budget, and decoding settings fixed for paired comparisons.
 - Preserve the per-question output, summary, bootstrap JSON, and manifest as run artifacts; do not claim those raw outputs are committed unless they are separately uploaded.
+
+## Gold-evidence retention after current prefix packing
+
+A post-run diagnostic reconstructed retrieval and the exact 512-token prompt packing for the same 200 questions (600 memory-method rows; 10 conversation clusters). Results:
+
+| Method | Mean retrieved-gold recall | Mean full-session packed-gold recall | Mean partial packed-gold recall | Questions with any gold retrieved | Questions with any gold fully packed | Questions with any gold partially packed |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline | 0.100833 | 0.014167 | 0.086667 | 0.120 | 0.020 | 0.100 |
+| Recency | 0.073750 | 0.001667 | 0.072083 | 0.085 | 0.005 | 0.085 |
+| Role-aware | 0.672667 | 0.019167 | 0.511417 | 0.735 | 0.025 | 0.570 |
+
+The role-aware selector retrieves substantially more annotated gold evidence than baseline and recency. However, under the current retrieval ordering and prefix-truncation packer, only a small fraction of gold sessions survive in full. The partial-retention measure is a conservative diagnostic based on whether the first 80 normalized characters of a gold session occur in the packed context; it is not a semantic evidence-coverage metric.
+
+This points to a concrete pipeline bottleneck: the reader receives a truncated prefix of a concatenated context, which can cut through a relevant session. The next experiment should compare the existing prefix packer with a whole-session packer that ranks retrieved sessions by query similarity and includes only complete sessions that fit within the same 512-token input limit. Keep the selector scores, selected memory budget, sample, reader, decoding, and answer metrics fixed. This isolates the packing-policy change more cleanly than changing the selector and reader simultaneously.
+
+The current gold-retention diagnostic does not change the answer-quality results and does not establish that the extra retrieved gold evidence caused the role-aware QA improvement. Only ten conversation clusters are represented; continue to label the result exploratory.
+
