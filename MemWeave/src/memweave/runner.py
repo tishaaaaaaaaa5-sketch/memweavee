@@ -35,7 +35,11 @@ def _sha256(path: Path) -> str:
 
 
 def _stable_ids_sha256(values: list[int]) -> str:
-    encoded = json.dumps(values, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    encoded = json.dumps(
+        [int(value) for value in values],
+        separators=(",", ":"),
+        ensure_ascii=True,
+    ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
