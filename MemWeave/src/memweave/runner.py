@@ -34,6 +34,11 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _stable_ids_sha256(values: list[int]) -> str:
+    encoded = json.dumps(values, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
 def _json_default(value):
     if isinstance(value, (np.integer,)):
         return int(value)
@@ -274,6 +279,21 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
         "tuned_dev_only": tuned,
         "best_simple_dev_only": best_simple,
         "locomo": transfer_meta,
+        "provenance": {
+            "dataset_sha256": _sha256(data_path.resolve()),
+            "dataset_revision": pipeline.get("longmemeval_revision"),
+            "dev_split_sha256": _stable_ids_sha256(dev_ids),
+            "test_split_sha256": _stable_ids_sha256(test_ids),
+            "metric_protocol": "memweave.session_evidence_recall.v1",
+            "budget_fraction": float(evaluation.get("budget", 0.10)),
+            "budget_unit": "word_count_proxy",
+            "primary_pool": evaluation.get("primary_pool", "same_pipeline"),
+            "split_seed": int(pipeline.get("split_seed", 2026)),
+            "cv_seed": int(pipeline.get("cv_seed", 2026)),
+            "cv_folds": int(pipeline.get("cv_folds", 5)),
+            "locomo_dataset_sha256": transfer_meta.get("input_sha256"),
+            "locomo_dataset_revision": pipeline.get("locomo_revision"),
+        },
         "limitations": [
             "No automatic dataset download.",
             "No full parity claim without comparison to a saved canonical notebook run.",
@@ -302,6 +322,7 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
             "n_valid": payload["split"]["n_valid"],
             "n_dev": payload["split"]["n_dev"],
             "n_test": payload["split"]["n_test"],
+            "provenance": payload["provenance"],
             "main_results": locked["main_results"].to_dict(orient="records"),
         },
     )
