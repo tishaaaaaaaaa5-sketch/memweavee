@@ -20,7 +20,7 @@ EVENT_TYPES = {
     "retention_selected", "ranking_metric_computed", "qa_evidence_assembled",
     "answer_generated",
 }
-OPAQUE_ID = re.compile(r"^[a-z]{2,8}_[0-9a-f]{16,64}$")
+OPAQUE_ID = re.compile(r"^[a-z]{1,8}_[0-9a-f]{16,64}$")
 RUN_ID = re.compile(r"^run_[0-9a-f]{16,64}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 SAFE_ENUMS = {
