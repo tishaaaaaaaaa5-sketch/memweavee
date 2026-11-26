@@ -29,6 +29,10 @@ Notebook 06 reconstructs both historical feature-construction endpoints inside o
 
 The first paired factorial main-effect analysis is recorded in [the Stage B/C reconciliation report](../results/stage_bc_reconciliation/README.md). Z-score scaling and the 20,000-term cap have positive effects on candidate-selection gold fraction; message filtering is observationally identical across the 235-question test set. The scale × cap interaction and the cause of filtering equivalence are the next analyses. No answer-quality claim is supported by these candidate traces.
 
+## Latest Stage B/C reconciliation findings
+
+The primary Notebook 06 factorial endpoint is budgeted evidence recall. Z-score scaling improves it by 12.68 pp (95% paired-bootstrap CI [+8.66, +16.90] pp), and the 20,000-feature cap improves it by 1.56 pp versus unlimited vocabulary (95% CI [+0.67, +2.62] pp). The scale × cap interaction is not established. The filtering audit found that all 65,288 candidate-session messages already passed the filter, explaining its zero effect on this population. See the [full reconciliation report](../results/stage_bc_reconciliation/README.md). These findings do not establish the cause of the historical Stage B/C discrepancy.
+
 ## Recommended execution
 
 1. Read the [project guide](../README.md) and the relevant result notes.
