@@ -119,3 +119,19 @@ The whole-session reader inputs were not token-budget matched across methods: me
 ### Decision
 
 Do not replace prefix packing with the tested greedy whole-session packer. The next packing experiment should preserve evidence-bearing portions of sessions rather than requiring every selected session to fit in full, and should measure both exact tokenizer use and gold-evidence retention. A more efficient evidence-span or sentence-level packer is a logical next candidate. Do not infer semantic grounding or causality from lexical QA metrics or annotated-gold overlap alone.
+
+
+### Paired conversation-cluster bootstrap for prefix vs whole-session packing
+
+A paired bootstrap resampled the 10 conversation clusters (20,000 replicates) for each method's whole-session-minus-prefix difference:
+
+| Method | Token-F1 delta | 95% cluster-bootstrap CI | Exact-match delta | 95% cluster-bootstrap CI |
+|---|---:|---:|---:|---:|
+| Baseline | -0.05909 | [-0.09872, -0.03073] | -0.030 | [-0.070, 0.000] |
+| Question-only | 0.00000 | [0.00000, 0.00000] | 0.000 | [0.000, 0.000] |
+| Recency | -0.03695 | [-0.06302, -0.01179] | -0.005 | [-0.020, 0.010] |
+| Role-aware | -0.15709 | [-0.20037, -0.11048] | -0.070 | [-0.100, -0.040] |
+
+The token-F1 intervals for all three memory methods lie below zero. For exact match, the role-aware interval lies below zero, baseline reaches zero at its upper endpoint, and recency's interval crosses zero. These are paired cluster-bootstrap intervals over only 10 conversations and should remain exploratory.
+
+A second-reader validation was initiated with `google/flan-t5-base`; the pasted execution log confirms model loading but does not include generated predictions or QA metrics. No second-reader result is reported until those metrics are available.
