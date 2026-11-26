@@ -1,43 +1,28 @@
 # Reproducibility audit
 
-This checklist distinguishes artifacts currently documented in the repository from items still required for a complete independent rerun.
+## Current state
 
-## Available in the repository
+The role-aware locked-test report records LongMemEval-S cleaned and the expected file name, but the exact dataset revision and SHA-256 for the evaluated file were not preserved in the supplied run outputs. The raw per-question export and audit manifest described by the notebook are also absent from the repository snapshot.
 
-- Canonical notebook sequence and a cleaned executed final notebook.
-- Locked-test report with the 235-question test configuration.
-- Paired aggregate audit JSON and question-type aggregate CSV.
-- OOF reconstruction check and statistical procedure details.
-- Data provenance note and explicit statement that raw per-question exports were not present in the recovered artifact bundle.
+The repository supports inspection of the notebook and aggregate findings, but is not yet a complete end-to-end reproduction package.
 
-## Known gaps
+## Required additions for the next rerun
 
-- The role-aware locked-test report does not include the raw per-question export referenced by the notebook.
-- The reported budget is a 10% word-count proxy, not tokenizer-exact tokenization.
-- The primary uncertainty analysis resamples questions rather than conversation clusters.
-- The current reported role-aware test is one split from one benchmark, not an external replication.
-- The repository does not yet provide a fully frozen, independently tested environment lock for every notebook stage.
+- [ ] Pin the LongMemEval dataset revision or immutable download URL.
+- [ ] Save SHA-256 of the exact source dataset file before preprocessing.
+- [ ] Record Python, OS, package versions, and a full dependency lock.
+- [ ] Record preprocessing configuration and hash the processed dataset.
+- [ ] Record git commit SHA, random seeds, feature schema, hyperparameters, and split IDs.
+- [ ] Save a run manifest with exact commands and timestamps.
+- [ ] Export per-example identifiers, ranks, recall values, and paired differences without conversation text or answers.
+- [ ] Hash each result export and link it to source data and code commit.
+- [ ] Provide a clean-kernel reproduction command or notebook sequence.
+- [ ] Verify a clean rerun reproduces aggregate tables within a stated tolerance.
 
-## Required additions before claiming full reproduction
+## Privacy and licensing
 
-- [ ] Recover or regenerate the permitted per-question result export and publish its checksum.
-- [ ] Record dataset release/version, source URL, preprocessing commit and checksums.
-- [ ] Export a complete environment lock from the successful clean run.
-- [ ] Add a one-command or one-cell clean-kernel reproduction path.
-- [ ] Add conversation-cluster bootstrap sensitivity analysis if conversation IDs are available.
-- [ ] Run the frozen feature pipeline on an independent benchmark.
-- [ ] Add prespecified feature ablations.
+Do not commit raw conversation histories, answers, or session text merely to make the experiment reproducible. Use benchmark-provided access routes and publish only minimal derived audit data allowed by the dataset terms. Include license and attribution for every dataset.
 
-## Environment capture
+## Claims
 
-For each successful run, capture at minimum:
-```bash
-python --version
-python -m pip freeze > requirements-lock.txt
-```
-
-Also record the operating system, CPU, accelerator, driver/runtime, notebook execution order, dataset identifiers and random seeds. A lock file should be generated from the actual successful environment; do not invent package versions from an unpinned requirements list.
-
-## Reporting rule
-
-Do not describe the current aggregate artifacts as a complete raw-data reproduction package. Do not claim independent generalization, causal feature attribution or end-to-end answer accuracy from evidence-recall results alone.
+Until missing provenance and exports are restored, describe the result as an aggregate result documented by the saved notebook, not as a fully independently reproducible artifact. See [INDEPENDENT_VALIDATION_PLAN.md](INDEPENDENT_VALIDATION_PLAN.md).

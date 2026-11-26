@@ -18,7 +18,7 @@ Research prototype exploring ternary projections and power-of-two decay approxim
 Research project on role-aware, budget-constrained memory retention for long-horizon conversations. The current LongMemEval-S result is an aggregate held-out evidence-recall result; independent benchmark validation remains planned.
 
 ### [Compliance Assistant](https://github.com/tishaaaaaaaaa5-sketch/COMPLIANCE-ASSISTANT)
-A Node.js/Gemini prototype for bounded source-code triage, compliance-oriented Q&A, modernization suggestions, and MCP-based workflows. It is decision support, not a compliance certification.
+A Node.js/Gemini prototype for bounded source-code triage, compliance-oriented Q&A, modernization suggestions, and MCP workflows. It is decision support, not a compliance certification.
 
 ## How I work
 

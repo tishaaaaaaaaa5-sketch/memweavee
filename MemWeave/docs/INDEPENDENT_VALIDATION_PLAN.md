@@ -1,54 +1,44 @@
 # Independent validation plan
 
-This is a prospective protocol. No new benchmark result is claimed in this document.
+This is a proposed protocol, not a report of a completed external replication.
 
-## Why this is needed
+## Why another benchmark is needed
 
-The current role-aware result is a held-out evaluation on one LongMemEval-S split. It is promising, but it does not establish generalization to a different benchmark, dataset construction process or conversation distribution.
+The role-aware result is currently reported on one LongMemEval-S cleaned split. It is promising evidence-retrieval performance, but does not establish generalization to a different benchmark or conversation style.
 
-## Proposed external benchmark
+## Candidate benchmark: LoCoMo
 
-Use **LoCoMo** as the first external evaluation, subject to its license and task-format compatibility. Preserve the benchmark's official conversation/question split and do not merge its scores with LongMemEval-S.
+Evaluate the frozen role-aware scoring method on the LoCoMo long-conversation benchmark, subject to its current license and access terms.
 
-A second independent benchmark may be added after the first pipeline is stable. Keep each benchmark's metrics and sample counts separate.
+Before running:
+1. Verify benchmark version, license, source URL, and permitted use.
+2. Record exact dataset revision and SHA-256.
+3. Map examples to the same abstract task without using benchmark-specific labels as features.
+4. Freeze the LongMemEval-trained model and preprocessing. Do not tune on LoCoMo test examples.
+5. If feature-schema adaptation is required, define it using a separate development split and disclose it.
 
-## Evaluation design
+## Comparators
 
-1. Freeze the current baseline feature set, six role-aware features, logistic-regression hyperparameter and retention budget before external evaluation.
-2. Implement a benchmark adapter that maps the external dataset into the same session/message schema without using answer labels to construct features.
-3. Define evidence relevance and gold-session matching using the benchmark's official annotations or a documented, manually audited mapping.
-4. Split by conversation, not by question, wherever multiple questions refer to the same conversation.
-5. Fit all learned feature weights and thresholds on training/development conversations only.
-6. Keep the external test conversations untouched until the pipeline and scoring rules are frozen.
-7. Compare the same baseline and role-aware systems on identical questions and identical memory budgets.
+Compare the query-agnostic baseline, role-aware model trained on LongMemEval only, simple recency baseline, and a frequency/importance heuristic where inputs permit. All methods must use the same candidate-session pool and memory budget.
 
 ## Metrics
 
-Report:
-- budgeted evidence recall at 5%, 10% and 20% of the memory budget;
-- Recall@1, @3, @5 and @10;
-- MRR and mean/median gold rank;
-- end-to-end answer accuracy only if a separately validated answer-generation/evaluation pipeline is included;
-- runtime and retained-memory size.
+Primary: evidence recall at a fixed memory budget.
 
-Use the benchmark's recommended evaluation protocol where it differs from the internal LongMemEval-S protocol, and explain the difference.
+Secondary: Recall@1/@3/@5/@10, MRR, mean gold rank, budget utilization, retained word/token count, and end-to-end answer accuracy only if a fixed answer-generation and grading pipeline is implemented. Report word-count budget and tokenizer-based token budget separately.
 
-## Statistical analysis
+## Leakage and uncertainty controls
 
-Use paired question-level comparisons, but account for shared-conversation dependence with a conversation-cluster bootstrap. Report the number of conversations and questions, confidence intervals, and the exact permutation/bootstrap procedure. Correct for multiple comparisons when reporting several budgets or question categories.
+- Split by conversation wherever benchmark structure permits; all questions from one conversation belong to one split.
+- Fit preprocessing, feature selection, and hyperparameters on training/development data only.
+- Use paired bootstrap intervals clustered by conversation/session.
+- Report all benchmark subsets and exclusions.
+- Publish privacy-safe per-example identifiers/ranks, not raw conversation text or answers unless the license permits it.
 
-## Feature attribution
+## Acceptance criteria
 
-Ablate the six role-aware features individually and in prespecified groups. Treat these as diagnostic experiments; do not infer causal explanations from the bundle comparison alone.
+A cross-benchmark generalization claim requires the frozen LongMemEval-trained model to beat the predeclared baseline on the primary LoCoMo metric under the same budget, with uncertainty intervals and exclusions documented. If it fails, report the failure rather than tuning against the test set.
 
-## Data governance and reproducibility
+## Current status
 
-- Follow the dataset's license and access conditions.
-- Do not commit raw private or restricted conversation text.
-- Record source URL, dataset release/version, split, preprocessing code commit and checksums.
-- Publish aggregate results and privacy-preserving per-question identifiers only where permitted.
-- Preserve the exact notebook/script, package lock, random seeds and run manifest.
-
-## Reporting rule
-
-A positive external result should be described as replication only if the task, data split, baseline, scoring rule and budget are independently implemented and the test set was not used for feature or threshold selection. If the benchmark adapter changes the task definition, describe it as an external evaluation rather than a direct replication.
+No LoCoMo experiment has been run in this repository. The LongMemEval headline remains benchmark-specific until this protocol is completed.
