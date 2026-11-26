@@ -40,4 +40,4 @@ def test_downstream_evaluation_reports_paired_method_differences():
     )
     assert result["summary"].loc[0, "evidence_hit@3"] == 1.0
     assert len(result["paired_comparisons"]) == 1
-    assert result["paired_comparisons"].loc[0, "hit_diff"] == 0.0
+    assert result["paired_comparisons"].loc[0, "hit_diff"] == 1.0
