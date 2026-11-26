@@ -1,3 +1,5 @@
+import sqlite3
+
 import pytest
 
 from memweave.registry import RunRegistry
@@ -50,7 +52,7 @@ def test_registry_rejects_duplicate_ids_and_invalid_limits(tmp_path):
         "summary": {},
     }
     registry.record(**kwargs)
-    with pytest.raises(Exception):
+    with pytest.raises(sqlite3.IntegrityError):
         registry.record(**kwargs)
     with pytest.raises(ValueError):
         registry.list_runs(limit=0)
