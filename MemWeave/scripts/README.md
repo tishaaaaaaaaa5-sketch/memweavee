@@ -22,3 +22,21 @@ The validator should emit warnings because the current snapshot does not contain
 ## Next full rerun
 
 Follow [the reproducibility audit](../docs/REPRODUCIBILITY_AUDIT.md) and [data provenance note](../results/final_locked_test/data_provenance.md). Record the dataset revision and SHA-256 before preprocessing, capture the environment and Git commit, preserve split IDs, and export privacy-safe per-question results with checksums. Do not commit raw conversation text or answers.
+
+
+## Assemble partial MFAR traces from the Stage B/C retention export
+
+Notebook 06 exports `stage_bc_candidate_trace.csv` with candidate-session hashes, query-content hashes, gold/irrelevant labels, word-count proxy costs, and per-variant retention decisions. It contains no raw question or session text.
+
+After running the updated notebook export cell, assemble one partial trace per test question and variant:
+
+```bash
+python MemWeave/scripts/assemble_mfar_retention_traces.py \
+  --candidates /path/to/stage_bc_candidate_trace.csv \
+  --manifest /path/to/stage_bc_reconciliation_manifest.json \
+  --output /path/to/mfar_retention_traces.jsonl
+```
+
+The adapter validates the candidate-pool consistency across variants, checks the manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/MFAR_RETENTION_TRACE_ADAPTER.md).
+
+This export is an offline benchmark reconstruction, not an instrumented online memory system. SHA-256 hashes are potentially linkable metadata, not anonymization.
