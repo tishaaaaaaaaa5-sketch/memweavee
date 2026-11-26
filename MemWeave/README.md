@@ -37,6 +37,12 @@ The supplied executed Kaggle notebook regenerated a new result set under pinned 
 
 Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The [Stage C Kaggle follow-up notebook](notebooks/05_MemWeave_Kaggle_Followup.ipynb) is now committed. Its six generated CSV/JSON result exports remain separate release artifacts and are not included in this notebook-only commit.
 
+## Proposed next research direction: MFAR
+
+The next proposed contribution is **Memory Failure-Aware Retrieval (MFAR)**. It treats construction, compression, retrieval, and answering failures as distinct but potentially co-occurring failure modes, and proposes trace-aware diagnostics with targeted interventions under explicit resource budgets.
+
+MFAR is a design proposal, not an implemented or validated method. Its algorithm specification, hypotheses, observability requirements, evaluation plan, ablations, and decision gates are in [MFAR_ALGORITHM_DESIGN.md](docs/MFAR_ALGORITHM_DESIGN.md). The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
+
 ## Canonical notebook sequence
 
 See [the notebook index](notebooks/README.md). The Stage C Kaggle notebook is published at [05_MemWeave_Kaggle_Followup.ipynb](notebooks/05_MemWeave_Kaggle_Followup.ipynb). The obsolete false-positive audit cell and automatic terms-confirmation cell were removed; the corrected audit remains. The six generated CSV/JSON exports are still pending separate publication and privacy review.
