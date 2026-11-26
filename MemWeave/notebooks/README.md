@@ -62,3 +62,15 @@ Run the final notebook cell titled **“Constrained novelty tie-breaker (DEV-onl
 Notebook 05 now adds an end-to-end reader evaluation after the existing LoCoMo selector-transfer cell. Run the notebook through its final three cells to install the reader dependencies and execute the fixed FLAN-T5-small evaluation. It compares frozen role-aware, baseline, and recency selectors under an exact 10% reader-tokenizer storage budget, with a question-only control. The deterministic sample is up to 20 answerable, evidence-annotated questions per each of the ten LoCoMo conversations. It reports exact match, token F1, and paired conversation-cluster bootstrap intervals. Outputs are saved under memweave_followup_outputs/locomo_reader_qa/.
 
 This is exploratory: LoCoMo has already been used for selector-transfer analysis, and ten clusters provide limited inferential power. Do not describe it as independent replication or as validation of the proposed MFAR controller. See the [protocol](../results/followup_2026/END_TO_END_READER_QA_PROTOCOL.md).
+
+## Consolidated Kaggle execution snapshot — archive only
+
+An additional executed notebook was uploaded as `notebookfef7168ab3 (3).ipynb` at the repository root in upload commit `a8d27a625d7d11d56883225ccf99fa7df866fbfa`. It contains 88 cells (78 executed; 74 cells with outputs) and combines the Stage B/C workflow with later trace assembly, reader QA, Long-MT-Bench+, and ablation/debug work.
+
+It is **not** a replacement for canonical Notebook 06. Preserve it as an execution snapshot under `notebooks/archive/` after reviewing outputs and privacy. In that snapshot, cell 85 is the corrected LongMemEval role-feature ablation; cells 83–84 are superseded intermediate ablation code/results, cell 79's Long-MT-Bench+ feature ablation errored, and cell 86 is a diagnostic only. Do not treat every saved cell output as a valid experiment.
+
+The upload commit is not part of the reviewed `research/memweave-followup-release` branch tree. See the [artifact organization audit](../docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md) for the recommended placement and release blockers.
+
+## Status correction for downstream QA
+
+The “End-to-end reader QA (new; pending execution)” section above is historical. The corrected LoCoMo reader-QA experiments have since completed with evidence-aware span packing for both FLAN-T5-small and FLAN-T5-base, and the corrected Long-MT-Bench+ span-budget evaluation has completed. Use the dated reports in `../results/` for their metrics and limitations; do not rerun these completed experiments merely to update this index.
