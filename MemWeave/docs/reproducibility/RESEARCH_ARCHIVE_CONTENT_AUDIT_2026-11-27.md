@@ -6,7 +6,7 @@
 
 ## 1. Independent integrity verification
 
-The ZIP was retrieved from the committed repository using a GitHub Actions audit job and independently extracted for inspection.
+The original ZIP was retrieved from the committed repository using a GitHub Actions audit job and independently extracted for inspection before it was withdrawn from the current `main` tree.
 
 | Check | Result |
 |---|---|
@@ -72,10 +72,10 @@ Source:
 - [x] Reconcile all 52 manifest hashes and sizes.
 - [x] Check paths, duplicate members, symlinks and executable bits.
 - [x] Identify cleartext dialogue-bearing exports.
-- [ ] Decide whether the public release should exclude `evidence_span_selections.csv` or include it with complete LoCoMo CC BY-NC attribution and an explicitly non-commercial release basis.
+- [x] Withdraw the unsanitized archive from the current `main` tree.
 - [ ] Resolve Long-MT-Bench+ redistribution terms for generated per-question outputs.
-- [ ] Rebuild the archive and regenerate `SHA256_MANIFEST.json` after any content change.
+- [ ] Build a sanitized replacement excluding `evidence_span_selections.csv` and other unapproved text-bearing outputs; regenerate `SHA256_MANIFEST.json`.
 - [ ] Re-run this audit against the final release candidate.
 - [ ] Update README/data guidance so it accurately discloses the archive's text-bearing contents.
 
-**Do not mark this archive privacy-cleared or merge the research release solely on the strength of the integrity pass.** Integrity is verified; privacy and licensing remain separate gates.
+**Do not redistribute the historical archive or describe it as privacy-cleared.** The current tree no longer publishes it, but prior public commits still contain the ZIP. A sanitized replacement and separate history-removal decision remain outstanding. Integrity verification is not privacy or licensing clearance.
