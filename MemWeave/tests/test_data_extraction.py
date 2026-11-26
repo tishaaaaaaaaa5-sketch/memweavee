@@ -10,13 +10,15 @@ def tiny_questions():
     return [{
         "answer_session_ids": ["gold-1"],
         "question_date": "2024/01/03 (Wed) 12:00",
-        "haystack_session_ids": ["gold-1", "sharegpt-2", "gen-3"],
-        "haystack_dates": ["2024/01/01", "2024/01/02", "2024/01/02"],
+        "haystack_session_ids": ["gold-1", "sharegpt-2", "gen-3", "sharegpt-4", "gen-5"],
+        "haystack_dates": ["2024/01/01", "2024/01/02", "2024/01/02", "2024/01/02", "2024/01/02"],
         "haystack_sessions": [
             [{"role": "user", "content": "I remember 42 apples"},
              {"role": "assistant", "content": "You mentioned apples"}],
             [{"role": "user", "content": "A conversation about music"}],
             [{"role": "user", "content": "A conversation about travel"}],
+            [{"role": "user", "content": "A conversation about cooking"}],
+            [{"role": "user", "content": "A conversation about hiking"}],
         ],
         "question_id": "q1", "question_type": "multi-session",
         "question": "How many apples?", "answer": "42",
@@ -31,19 +33,19 @@ def test_date_and_session_statistics():
         [("user", "I have 42 apples"), ("assistant", "Okay")]
     )
     assert full.startswith("user: I have 42 apples")
-    assert (words, user_words, turns) == (6, 4, 2)
+    assert (words, user_words, turns) == (5, 4, 2)
     assert fp == pytest.approx(.25)
     assert digit == pytest.approx(2 / len("I have 42 apples"))
 
 
 def test_record_builder_deduplicates_content_and_keeps_gold_labels():
     sessions, questions = build_longmemeval_records(tiny_questions())
-    assert len(sessions["text"]) == 3
+    assert len(sessions["text"]) == 5
     q = questions[0]
     assert q["qid"] == "q1" and q["qtype"] == "multi-session"
-    assert [row["kind"] for row in q["rows"]] == ["gold", "filler", "generated"]
-    assert [row["gold"] for row in q["rows"]] == [True, False, False]
-    assert len(q["all_hashes"]) == 3
+    assert [row["kind"] for row in q["rows"]] == ["gold", "filler", "generated", "filler", "generated"]
+    assert [row["gold"] for row in q["rows"]] == [True, False, False, False, False]
+    assert len(q["all_hashes"]) == 5
 
 
 def test_record_builder_deduplicates_identical_text_across_questions():
