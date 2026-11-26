@@ -60,3 +60,7 @@ Raw benchmark JSONs, feature caches and large per-question exports are not store
 ## Reporting guidance
 
 Distinguish evidence retention from answer accuracy, Stage A from Stages B/C, and a held-out split from independent replication. The research process was iterative rather than preregistered. The Stage C ablation suggests the message-similarity group accounts for much of the measured gain; do not attribute the full improvement to role-awareness without further controlled experiments.
+
+## Strategy C research programme
+
+The combined algorithm + evaluation-framework research specification is in [RESEARCH_MILESTONE_1.md](docs/RESEARCH_MILESTONE_1.md). It defines the central research question, candidate MW-ECS objective, falsifiable hypotheses, two-track evaluation protocol, mechanism-isolation ablations, and Milestone 1 acceptance criteria. It is a plan, not a claim that the proposed method has already been validated.
