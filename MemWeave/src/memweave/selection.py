@@ -75,3 +75,29 @@ def evidence_recall(relevant, selected_indices) -> float:
         raise ValueError("selected indices are out of range")
     denominator = int(relevant.sum())
     return float(relevant[selected_indices].sum() / denominator) if denominator else 0.0
+
+
+def recall_of(question_data: dict, chosen) -> float:
+    """Evidence recall for one question's selected candidate indices."""
+    gold = np.asarray(question_data["gold"], dtype=bool)
+    chosen = np.asarray(chosen, dtype=int)
+    return float(gold[chosen].sum() / gold.sum()) if gold.sum() else 0.0
+
+
+def selections(pools, question_ids, scores, *, budget=0.10, mode="rank", lam=0.0):
+    """Apply a selection policy independently to each question in a pool mapping."""
+    return {
+        question_id: select_indices(
+            scores[question_id], pools[question_id]["cost"], pools[question_id]["S"],
+            budget, mode=mode, redundancy_penalty=lam,
+        )
+        for question_id in question_ids
+    }
+
+
+def recalls(pools, question_ids, selected) -> np.ndarray:
+    """Return one evidence-recall value per question, preserving question order."""
+    return np.asarray([
+        recall_of(pools[question_id], selected[question_id])
+        for question_id in question_ids
+    ], dtype=float)
