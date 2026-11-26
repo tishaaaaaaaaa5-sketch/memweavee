@@ -88,3 +88,5 @@ Do not convert coverage gaps into failure labels. Keep the Stage B/C 2,115-trace
 ## 6. Current execution status
 
 The event writer is wired into Notebook 01 behind `MFAR_TRACE_ENABLED=1`. The notebook automatically rebuilds its feature cache for a traced run, uses hashed source/question identifiers, and writes a run-specific event file. The QA evidence and answer hooks execute only when the optional QA proxy is enabled. No Kaggle runtime output has yet been supplied for this instrumented version, so coverage and observational equivalence remain unverified.
+
+The current retention hook deliberately records only the primary query-agnostic Setting B policy at the notebook's fixed primary budget, on the first configured seed. This keeps the trace aligned with the retained sessions used by the optional QA proxy and avoids exporting every ablation/fold/budget combination. Other methods remain in the notebook's normal evaluation tables, not in this MFAR runtime event ledger.
