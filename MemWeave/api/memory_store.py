@@ -4,20 +4,29 @@ This is a transparent lexical retrieval baseline, not the learned research selec
 """
 from __future__ import annotations
 import hashlib, re, secrets, sqlite3, uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 DEFAULT_DB = Path(__file__).resolve().parents[1] / "data" / "memweave_app.sqlite3"
 
+@contextmanager
 def connect(db_path=DEFAULT_DB):
     path = Path(db_path).expanduser()
     path.parent.mkdir(parents=True, exist_ok=True)
     db = sqlite3.connect(path, timeout=15)
     db.row_factory = sqlite3.Row
-    db.execute("PRAGMA journal_mode=WAL")
-    db.execute("PRAGMA foreign_keys=ON")
-    return db
+    try:
+        db.execute("PRAGMA journal_mode=WAL")
+        db.execute("PRAGMA foreign_keys=ON")
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 def initialize(db_path=DEFAULT_DB):
     with connect(db_path) as db:
