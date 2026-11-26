@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .features import FEATURE_INDEX\nfrom .inference import paired_bootstrap
+from .features import FEATURE_INDEX
+from .inference import paired_bootstrap
 from .modeling import fit_scores, make_folds
 from .selection import recalls, selections
 from .tuning import simple_scores, tune_pool
