@@ -11,6 +11,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import re
 import sys
 from collections import defaultdict
@@ -64,15 +65,11 @@ def read_candidate_rows(path: Path) -> dict[tuple[str, str], list[dict[str, Any]
             reader = csv.DictReader(handle)
             columns = set(reader.fieldnames or [])
             missing = REQUIRED_COLUMNS - columns
+            extra = columns - REQUIRED_COLUMNS
             if missing:
                 fail(f"{path} is missing columns: {sorted(missing)}")
-            forbidden = {
-                "question", "question_text", "answer", "answer_text",
-                "session_text", "conversation_text", "content", "message",
-            }
-            present_forbidden = columns & forbidden
-            if present_forbidden:
-                fail(f"raw-text columns are forbidden: {sorted(present_forbidden)}")
+            if extra:
+                fail(f"unexpected columns are rejected to prevent accidental text leakage: {sorted(extra)}")
             for line_no, row in enumerate(reader, start=2):
                 qid = row["question_id_sha256_20"].strip().lower()
                 query_hash = row["query_content_sha256"].strip().lower()
@@ -92,8 +89,8 @@ def read_candidate_rows(path: Path) -> dict[tuple[str, str], list[dict[str, Any]
                     word_cost = float(row["word_cost"])
                 except ValueError:
                     fail(f"line {line_no}: candidate_index/word_cost is not numeric")
-                if candidate_index < 0 or word_cost < 0:
-                    fail(f"line {line_no}: negative candidate_index/word_cost")
+                if candidate_index < 0 or not math.isfinite(word_cost) or word_cost < 0:
+                    fail(f"line {line_no}: invalid candidate_index/word_cost")
                 grade = row["relevance_grade"].strip()
                 if grade not in {"gold", "irrelevant"}:
                     fail(f"line {line_no}: relevance_grade must be gold or irrelevant")
@@ -122,6 +119,10 @@ def validate_groups(groups: dict[tuple[str, str], list[dict[str, Any]]]) -> None
         indices = [row["candidate_index"] for row in rows]
         if len(indices) != len(set(indices)):
             fail(f"duplicate candidate_index for question {qid}, variant {variant}")
+        if sorted(indices) != list(range(len(indices))):
+            fail(f"candidate_index values must be contiguous from zero for question {qid}, variant {variant}")
+        if not any(row["grade"] == "gold" for row in rows):
+            fail(f"no gold candidate in question {qid}, variant {variant}")
         if len({row["query_hash"] for row in rows}) != 1:
             fail(f"inconsistent query content hash for question {qid}, variant {variant}")
         source_hashes: dict[str, str] = {}
@@ -131,9 +132,21 @@ def validate_groups(groups: dict[tuple[str, str], list[dict[str, Any]]]) -> None
                 fail(f"source_id maps to multiple content hashes: {row['source_id']}")
         if len(source_hashes) != len(rows):
             fail(f"duplicate source_id within question {qid}, variant {variant}")
+    reference_variants = None
     for qid, variants in by_question.items():
+        variant_names = {variant for variant, _ in variants}
+        if reference_variants is None:
+            reference_variants = variant_names
+        elif variant_names != reference_variants:
+            fail(f"variant set differs for question {qid}")
         reference = None
+        reference_query_hash = None
         for variant, rows in variants:
+            query_hash = rows[0]["query_hash"]
+            if reference_query_hash is None:
+                reference_query_hash = query_hash
+            elif query_hash != reference_query_hash:
+                fail(f"query content hash differs across variants for question {qid}")
             signature = sorted(
                 (r["candidate_index"], r["source_id"], r["content_hash"], r["grade"])
                 for r in rows
@@ -319,6 +332,18 @@ def main() -> int:
         fail("this adapter currently supports only the same_pipeline pool")
     groups = read_candidate_rows(args.candidates)
     validate_groups(groups)
+    expected_variants = int(manifest.get("variant_count", 0)) + 1  # plus baseline
+    if expected_variants < 2:
+        fail("manifest must record a positive variant_count")
+    variants_per_question: dict[str, set[str]] = defaultdict(set)
+    for qid, variant in groups:
+        variants_per_question[qid].add(variant)
+    for qid, variants in variants_per_question.items():
+        if len(variants) != expected_variants:
+            fail(
+                f"question {qid} has {len(variants)} variants; "
+                f"manifest expects {expected_variants} including baseline"
+            )
 
     try:
         from jsonschema import Draft202012Validator, FormatChecker
