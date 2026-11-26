@@ -91,7 +91,7 @@ The supplied notebook reports that it generated:
 - `locomo_per_conversation_speaker_b_user.csv`
 - `locomo_frozen_validation_summary.csv`
 
-These CSV/JSON outputs were not included as separate uploaded files in this handoff. They should be exported from the Kaggle working directory and attached to the release before the report is labelled fully artifact-complete. The notebook itself should be committed as an executed, privacy-reviewed notebook after removing obsolete/debug audit outputs.
+The supplied ZIP export is preserved at `../artifacts/2026-11-26/MemWeave_Research_Artifacts.zip`. Its notebook export cell reports 52 archived files and a passing ZIP integrity check; independently verify every manifest entry and complete privacy review before treating the bundle as release-certified. The notebook itself should be committed as an executed, privacy-reviewed notebook after removing obsolete/debug audit outputs.
 
 
 ## End-to-end reader QA — implemented, awaiting execution
