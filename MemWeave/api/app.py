@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from memory_store import (
+from .memory_store import (
     DEFAULT_DB, add_memory, authenticate, create_workspace,
     delete_memory, initialize, list_memories, retrieve,
 )
