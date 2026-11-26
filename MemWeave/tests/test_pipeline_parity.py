@@ -79,3 +79,95 @@ def test_paired_bootstrap_is_deterministic_and_classifies():
 def test_invalid_selection_mode_is_rejected():
     with pytest.raises(ValueError, match="unknown selection mode"):
         select_indices([1], [1], [[0]], .5, mode="mystery")
+
+
+def test_feature_builder_matches_inline_final_notebook_formula():
+    vectors = np.array([[1., 0.], [0., 1.], [.6, .8], [.8, .6]])
+    vectors /= np.linalg.norm(vectors, axis=1, keepdims=True)
+    words = np.array([12., 24., 18., 30.])
+    user = np.array([7., 12., 9., 20.])
+    turns = np.array([2., 4., 3., 5.])
+    fp = np.array([.1, .2, .15, .25])
+    digit = np.array([.01, .02, .03, .04])
+    days = np.array([1., 4., 2., 3.])
+    qday = 8.
+
+    similarity = (vectors @ vectors.T).astype(np.float32)
+    np.fill_diagonal(similarity, 0.0)
+    maximum = similarity.max(1)
+    sorted_similarity = np.sort(similarity, 1)
+    top3 = sorted_similarity[:, -min(3, len(days) - 1):].mean(1)
+    order = np.argsort(np.argsort(days, kind="stable"), kind="stable")
+    raw = np.column_stack([
+        np.log1p(words), turns, order / max(len(days) - 1, 1),
+        np.log1p(np.clip(qday - days, 0, None)), user / np.maximum(words, 1),
+        fp, digit, 1.0 - maximum,
+        similarity.sum(1) / max(len(days) - 1, 1), top3,
+    ])
+    expected = ((raw - raw.mean(0, keepdims=True)) /
+                (raw.std(0, keepdims=True) + 1e-6)).astype(np.float32)
+    actual, actual_similarity = build_features(
+        vectors, words, user, turns, fp, digit, days, qday
+    )
+    assert np.allclose(actual, expected, atol=1e-7)
+    assert np.allclose(actual_similarity, similarity, atol=1e-7)
+
+
+@pytest.mark.parametrize("mode", ["rank", "density", "mmr"])
+def test_selector_matches_inline_final_notebook_loop(mode):
+    score = np.array([.9, .8, .7, .6])
+    cost = np.array([2., 1., 1., 2.])
+    similarity = np.array([
+        [0., .9, .1, .2], [.9, 0., .2, .1],
+        [.1, .2, 0., .8], [.2, .1, .8, 0.],
+    ])
+    budget, penalty = .5, .25
+    limit = budget * cost.sum()
+    chosen, used = [], 0.
+    if mode == "mmr":
+        available, max_similarity = set(range(len(score))), np.zeros(len(score))
+        while available:
+            best, best_value = None, -1e18
+            for index in available:
+                if used + cost[index] > limit:
+                    continue
+                value = score[index] - penalty * max_similarity[index]
+                if value > best_value:
+                    best_value, best = value, index
+            if best is None:
+                break
+            chosen.append(best)
+            used += cost[best]
+            available.remove(best)
+            max_similarity = np.maximum(max_similarity, similarity[best])
+    else:
+        key = score if mode == "rank" else score / np.maximum(cost, 1.0)
+        for index in np.argsort(-key, kind="stable"):
+            if used + cost[index] <= limit:
+                chosen.append(int(index))
+                used += cost[index]
+    actual = select_indices(
+        score, cost, similarity, budget, mode=mode, redundancy_penalty=penalty
+    )
+    assert actual.tolist() == chosen
+
+
+def test_paired_bootstrap_matches_inline_notebook_rng_and_interval():
+    treatment = np.array([.8, .4, .9, .6, .7])
+    control = np.array([.3, .5, .6, .2, .4])
+    resamples, seed = 700, 19
+    difference = treatment - control
+    rng = np.random.default_rng(seed)
+    sampled = difference[rng.integers(0, len(difference), (resamples, len(difference)))].mean(1)
+    p_value = min(
+        1.0,
+        max(2 * min((sampled <= 0).mean(), (sampled >= 0).mean()), 1.0 / resamples),
+    )
+    expected = {
+        "diff": float(difference.mean()),
+        "ci_low": float(np.percentile(sampled, 2.5)),
+        "ci_high": float(np.percentile(sampled, 97.5)),
+        "p": float(p_value),
+    }
+    actual = paired_bootstrap(treatment, control, resamples=resamples, seed=seed)
+    assert actual == expected
