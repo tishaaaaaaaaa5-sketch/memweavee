@@ -48,9 +48,9 @@ The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.sch
 The Stage B/C notebook now includes an additional candidate-level trace export. The original controlled run produced seven exports; rerun the updated final export cell to generate the eighth `stage_bc_candidate_trace.csv` required by the offline MFAR adapter. Do not interpret its session-retention decisions as a separate retrieval stage or answer evaluation.
 
 
-### MFAR synthetic instrumentation fixture
+### MFAR implementation scope
 
-A backend-independent reference pipeline now emits schema-v0.2.0 traces for a clean path and four controlled synthetic failure scenarios. It is an instrumentation test fixture only; it does not validate MFAR on real conversations or assign oracle labels. See [the reference pipeline guide](docs/MFAR_REFERENCE_PIPELINE.md), [implementation](scripts/mfar_reference_pipeline.py), and [tests](tests/test_mfar_reference_pipeline.py).
+MFAR development proceeds only from original benchmark artifacts and observable events from the real memory pipeline. Synthetic failure fixtures are excluded from the research workflow. The existing Stage B/C adapter records retention selection only; retrieval and answer stages remain unobserved until real pipeline instrumentation is available. No failure labels or probabilities may be inferred for those missing stages.
 
 ## Canonical notebook sequence
 
