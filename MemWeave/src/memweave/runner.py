@@ -20,6 +20,7 @@ from .downstream import evaluate_downstream_proxy
 from .evaluation import run_locked_evaluation
 from .experiment import build_question_pools, locked_split, POOLS
 from .modeling import make_folds
+from .tuning import tune_pool
 from .robustness import evaluate_split_robustness
 from .transfer import build_locomo_conversations, evaluate_locomo_transfer
 
@@ -130,7 +131,7 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
     tuned, best_simple = {}, {}
     tuning_rows = []
     for pool in POOLS:
-        result = __import__("memweave.tuning", fromlist=["tune_pool"]).tune_pool(
+        result = tune_pool(
             pools, prepared["questions"], pool, dev_ids, folds,
             C_grid=tuple(pipeline.get("C_grid", [0.03, 0.3, 3.0])),
             budget=float(evaluation.get("budget", 0.10)),
