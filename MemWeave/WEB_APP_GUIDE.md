@@ -28,3 +28,13 @@ Set MEMWEAVE_DB_PATH to a persistent writable path before launch. The default is
 The workspace key is a bearer secret: anyone who obtains it can access that workspace. The browser stores it in local storage; clearing browser storage loses the key. Do not store secrets or sensitive personal data in this early preview. Use HTTPS, configure persistent storage for SQLite, back up the database, and set request-size limits at the hosting layer. Before a wider public launch, add account-based authentication, key rotation, workspace export/deletion, abuse controls and managed PostgreSQL.
 
 The public retrieval baseline is intentionally transparent and must not be described as the learned research model. Research results shown on the website are scoped to their source evaluations and limitations.
+
+## Launch on Replit
+
+1. Import this GitHub repository into a Replit workspace.
+2. Replit reads the root .replit run command, installs the API extra, and starts Uvicorn on port 3000.
+3. Open the web preview; the research site and workspace API are served from the same origin.
+4. Before publishing, configure a persistent writable database path with the Replit Secrets/environment setting MEMWEAVE_DB_PATH. Confirm the selected deployment supports persistent storage and back up the SQLite database.
+5. Deploy only after running the test suite and reviewing the deployment's HTTPS and storage configuration.
+
+The .replit file is a run configuration, not proof that a Replit deployment has been created. Deployment still requires the repository to be imported and the hosting configuration to be completed in Replit.
