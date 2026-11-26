@@ -92,3 +92,10 @@ The supplied notebook reports that it generated:
 - `locomo_frozen_validation_summary.csv`
 
 These CSV/JSON outputs were not included as separate uploaded files in this handoff. They should be exported from the Kaggle working directory and attached to the release before the report is labelled fully artifact-complete. The notebook itself should be committed as an executed, privacy-reviewed notebook after removing obsolete/debug audit outputs.
+
+
+## End-to-end reader QA — implemented, awaiting execution
+
+Notebook 05 now contains a predeclared reader evaluation that tests whether the frozen role-aware selector improves generated answer quality, rather than only evidence retention. It uses the pinned LoCoMo dataset, a fixed google/flan-t5-small reader, up to 20 answerable evidence-annotated questions per conversation, and exact tokenizer-counted 10% storage budgets. The primary comparison is role-aware versus baseline; recency and question-only are controls. Exact match and token F1 are scored, with paired bootstrap resampling over conversation clusters.
+
+This is a new answer-quality endpoint, but **not untouched independent confirmation**: LoCoMo was already used for selector-transfer analysis and has only ten conversation clusters. The protocol and limitations are in [END_TO_END_READER_QA_PROTOCOL.md](END_TO_END_READER_QA_PROTOCOL.md). Results remain pending until the Kaggle cell is executed.
