@@ -19,6 +19,10 @@ Expected behavior for the current snapshot:
 
 The validator should emit warnings because the current snapshot does not contain the source dataset SHA-256 or privacy-safe per-question export. A PASS means only that the committed aggregate artifacts are internally consistent. It is **not** a fresh experiment, data-integrity proof, or independent replication.
 
+## MFAR trace and runtime instrumentation utilities
+
+The research follow-up adds `assemble_mfar_retention_traces.py`, `audit_mfar_retention_traces.py`, `mfar_runtime_event_writer.py`, and trace/runtime validators. The adapter currently covers retention traces from exported Stage B/C artifacts; it does not observe retrieval, compression or answer stages in those historical exports. Runtime hooks remain instrumentation work until a real traced run, event-lineage audit, coverage report and traced-vs-untraced equivalence check are completed. See [MFAR instrumentation docs](../docs/instrumentation/README.md).
+
 ## Next full rerun
 
 Follow [the reproducibility audit](../docs/reproducibility/REPRODUCIBILITY_AUDIT.md) and [data provenance note](../results/final_locked_test/data_provenance.md). Record the dataset revision and SHA-256 before preprocessing, capture the environment and Git commit, preserve split IDs, and export privacy-safe per-question results with checksums. Do not commit raw conversation text or answers.
