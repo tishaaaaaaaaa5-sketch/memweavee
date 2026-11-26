@@ -71,3 +71,80 @@ def test_configuration_differences_requires_two_known_runs():
     records = [_record("old", 0.40)]
 
     assert configuration_differences(records, ["old", "missing"]) == []
+
+
+
+def _provenance(**overrides):
+    values = {
+        "dataset_sha256": "a" * 64,
+        "dev_split_sha256": "b" * 64,
+        "test_split_sha256": "c" * 64,
+        "metric_protocol": "memweave.session_evidence_recall.v1",
+        "budget_fraction": 0.10,
+        "budget_unit": "word_count_proxy",
+        "primary_pool": "same_pipeline",
+    }
+    values.update(overrides)
+    return values
+
+
+def test_assess_run_comparability_accepts_matching_provenance():
+    from memweave.comparison import assess_run_comparability
+
+    records = [
+        {**_record("old", 0.40), "summary": {
+            **_record("old", 0.40)["summary"], "provenance": _provenance()
+        }},
+        {**_record("new", 0.45), "summary": {
+            **_record("new", 0.45)["summary"], "provenance": _provenance()
+        }},
+    ]
+
+    result = assess_run_comparability(records, ["old", "new"])
+
+    assert result["status"] == "directly_comparable"
+    assert result["differences"] == {}
+    assert result["missing"] == {}
+    assert "test_split_sha256" in result["matched_fields"]
+
+
+def test_assess_run_comparability_rejects_different_dataset_or_split():
+    from memweave.comparison import assess_run_comparability
+
+    records = [
+        {**_record("old", 0.40), "summary": {
+            **_record("old", 0.40)["summary"], "provenance": _provenance()
+        }},
+        {**_record("new", 0.45), "summary": {
+            **_record("new", 0.45)["summary"],
+            "provenance": _provenance(test_split_sha256="d" * 64),
+        }},
+    ]
+
+    result = assess_run_comparability(records, ["old", "new"])
+
+    assert result["status"] == "not_comparable"
+    assert result["differences"]["test_split_sha256"] == {
+        "old": "c" * 64, "new": "d" * 64
+    }
+
+
+def test_assess_run_comparability_marks_legacy_runs_insufficient():
+    from memweave.comparison import assess_run_comparability
+
+    result = assess_run_comparability(
+        [_record("old", 0.40), _record("new", 0.45)],
+        ["old", "new"],
+    )
+
+    assert result["status"] == "insufficient_provenance"
+    assert "old" in result["missing"]
+    assert "dataset_sha256" in result["missing"]["old"]
+
+
+def test_assess_run_comparability_requires_two_registered_runs():
+    from memweave.comparison import assess_run_comparability
+
+    result = assess_run_comparability([_record("old", 0.40)], ["old", "missing"])
+
+    assert result["status"] == "insufficient_runs"
