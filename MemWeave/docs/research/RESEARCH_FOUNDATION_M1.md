@@ -228,7 +228,7 @@ A preliminary source-code comparison found differences between the Stage B corre
 
 A dedicated notebook has now been added:
 
-[`notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb`](../notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb)
+[`notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb`](../../notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb)
 
 It implements a predeclared (2^3) factorial reconstruction across:
 - role-feature scaling: raw vs within-question z-score;

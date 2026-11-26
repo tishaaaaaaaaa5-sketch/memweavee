@@ -21,7 +21,7 @@ The validator should emit warnings because the current snapshot does not contain
 
 ## Next full rerun
 
-Follow [the reproducibility audit](../docs/REPRODUCIBILITY_AUDIT.md) and [data provenance note](../results/final_locked_test/data_provenance.md). Record the dataset revision and SHA-256 before preprocessing, capture the environment and Git commit, preserve split IDs, and export privacy-safe per-question results with checksums. Do not commit raw conversation text or answers.
+Follow [the reproducibility audit](../docs/reproducibility/REPRODUCIBILITY_AUDIT.md) and [data provenance note](../results/final_locked_test/data_provenance.md). Record the dataset revision and SHA-256 before preprocessing, capture the environment and Git commit, preserve split IDs, and export privacy-safe per-question results with checksums. Do not commit raw conversation text or answers.
 
 
 ## Assemble partial MFAR traces from the Stage B/C retention export
@@ -37,7 +37,7 @@ python MemWeave/scripts/assemble_mfar_retention_traces.py \
   --output /path/to/mfar_retention_traces.jsonl
 ```
 
-The adapter validates candidate-pool consistency across variants, checks manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). Repeated appearances of the same source session are preserved as separate candidate occurrences (keyed by candidate index); they are not deduplicated. A repeated source ID must map to the same content hash. It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/MFAR_RETENTION_TRACE_ADAPTER.md).
+The adapter validates candidate-pool consistency across variants, checks manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). Repeated appearances of the same source session are preserved as separate candidate occurrences (keyed by candidate index); they are not deduplicated. A repeated source ID must map to the same content hash. It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/instrumentation/MFAR_RETENTION_TRACE_ADAPTER.md).
 
 This export is an offline benchmark reconstruction, not an instrumented online memory system. SHA-256 hashes are potentially linkable metadata, not anonymization.
 
@@ -64,7 +64,7 @@ python MemWeave/scripts/audit_mfar_retention_traces.py \
   --summary-output /path/to/mfar_retention_audit_summary.json
 ```
 
-This reports candidate/retained gold counts, retention recall and precision, and word-count-proxy budget utilization by question and variant. It also checks candidate-to-stored provenance and cross-variant candidate-pool consistency. It uses only the original trace JSONL and the Python standard library. It does not create synthetic data or infer construction, compression, retrieval, or answering labels. See [the audit note](../docs/MFAR_RETENTION_AUDIT.md).
+This reports candidate/retained gold counts, retention recall and precision, and word-count-proxy budget utilization by question and variant. It also checks candidate-to-stored provenance and cross-variant candidate-pool consistency. It uses only the original trace JSONL and the Python standard library. It does not create synthetic data or infer construction, compression, retrieval, or answering labels. See [the audit note](../docs/instrumentation/MFAR_RETENTION_AUDIT.md).
 
 ## Validate cross-stage trace references
 

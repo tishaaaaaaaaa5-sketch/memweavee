@@ -5,7 +5,7 @@ MemWeave studies a practical question for conversational assistants: **when the 
 
 This repository contains a multi-stage research project: the original query-agnostic retention study and benchmark audit (v2.0–v2.3), followed by a role-aware feature experiment with a held-out locked-test evaluation. The stages answer related but distinct questions; their headline numbers should not be pooled or presented as one continuous model comparison.
 
-> **Latest regenerated follow-up (Stage C):** the supplied recovery/ablation notebook reports evidence recall of **40.42% baseline vs. 82.06% role-aware** (+41.65 pp) on a regenerated 235-question test split, with paired bootstrap 95% CI **[35.87, 47.42] pp**. This is a separate run from the earlier Stage B result below; the difference is not yet reconciled. See [the Stage C report](MemWeave/results/followup_2026/README.md). The notebook's final artifact audit passed with three warnings; its notebook and output files are not yet committed.
+> **Latest regenerated follow-up (Stage C):** the supplied recovery/ablation notebook reports evidence recall of **40.42% baseline vs. 82.06% role-aware** (+41.65 pp) on a regenerated 235-question test split, with paired bootstrap 95% CI **[35.87, 47.42] pp**. This is a separate run from the earlier Stage B result below; the difference is not yet reconciled. See [the Stage C report](MemWeave/results/followup_2026/README.md). The Stage C notebook and dated follow-up artifact bundle are now preserved in the repository; raw benchmark text is not committed.
 
 ---
 
@@ -43,13 +43,13 @@ The table and charts in this section describe the earlier Stage B run (70.94% ro
 The primary comparison below summarizes the held-out result at the notebook's **10% word-count budget**. The confidence interval shown is for the *paired gain*, not separate intervals for each model.
 
 <p align="center">
-  <img src="docs/images/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
+  <img src="MemWeave/docs/figures/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
 </p>
 
 The role-aware model also improves recall across all six reported question categories. The chart shows the category-level point estimates; subgroup uncertainty and corrected tests are reported in the audit table below.
 
 <p align="center">
-  <img src="docs/images/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
+  <img src="MemWeave/docs/figures/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
 </p>
 
 | Question type | n | Baseline | Role-aware | Gain | Holm-adjusted sign-test p |
@@ -125,7 +125,7 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 
 ## Reproducibility
 
-Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md).
+Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
 
 The notebooks are designed for Jupyter/Google Colab. Run them from a clean kernel, in order, and retain the generated outputs and manifests. Dataset JSONs, feature caches, and raw per-question exports are not committed here; obtain the datasets under their applicable terms and verify the checksums recorded by the relevant run.
 
@@ -155,6 +155,6 @@ A formal citation entry should be added when the manuscript's author list, title
 
 ## Research follow-up and reproducibility
 
-- [Independent benchmark validation plan](MemWeave/docs/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
-- [Reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
+- [Independent benchmark validation plan](MemWeave/docs/reproducibility/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
+- [Reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
 - [GitHub profile README draft](PROFILE_README_DRAFT.md) — copy this into a public repository named exactly `tishaaaaaaaaa5-sketch` to activate the profile README feature.

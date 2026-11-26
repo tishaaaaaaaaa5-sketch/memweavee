@@ -19,7 +19,7 @@ Recorded provenance:
 
 The Stage C notebook's final audit reported 54 PASS, 3 WARNING, and 0 FAIL. This validates the checks implemented in that notebook against its generated files. It is not an independent rerun of the experiment or proof that every evaluator mapping is correct.
 
-The reviewed Stage C notebook is committed at [notebooks/05_MemWeave_Kaggle_Followup.ipynb](../notebooks/05_MemWeave_Kaggle_Followup.ipynb). Its six generated CSV/JSON result exports are not yet committed as separate artifacts. The report at [results/followup_2026/README.md](../results/followup_2026/README.md) records the results and the outstanding artifact gap.
+The reviewed Stage C notebook is committed at [notebooks/05_MemWeave_Kaggle_Followup.ipynb](../../notebooks/05_MemWeave_Kaggle_Followup.ipynb). Its six generated CSV/JSON result exports are not yet committed as separate artifacts. The report at [results/followup_2026/README.md](../../results/followup_2026/README.md) records the results and the outstanding artifact gap.
 
 ## Committed artifact consistency check for the earlier release
 
