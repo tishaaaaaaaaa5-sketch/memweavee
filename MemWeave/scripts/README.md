@@ -51,3 +51,17 @@ python -m unittest discover -s MemWeave/tests -p "test_*.py"
 ```
 
 The schema-validation test uses `jsonschema` when installed and is skipped if the optional dependency is absent. The assembler CLI itself requires `jsonschema`.
+
+
+## Audit the assembled original retention traces
+
+After assembling the original Stage B/C JSONL, run the real-data audit:
+
+```bash
+python MemWeave/scripts/audit_mfar_retention_traces.py \
+  --input /path/to/mfar_retention_traces.jsonl \
+  --per-trace-output /path/to/mfar_retention_audit_per_trace.csv \
+  --summary-output /path/to/mfar_retention_audit_summary.json
+```
+
+This reports candidate/retained gold counts, retention recall and precision, and word-count-proxy budget utilization by question and variant. It also checks candidate-to-stored provenance and cross-variant candidate-pool consistency. It uses only the original trace JSONL and the Python standard library. It does not create synthetic data or infer construction, compression, retrieval, or answering labels. See [the audit note](../docs/MFAR_RETENTION_AUDIT.md).
