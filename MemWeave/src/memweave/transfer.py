@@ -26,7 +26,7 @@ def build_locomo_conversations(data, hashing_vectorizer, tfidf_transformer):
         speaker_a = conversation.get("speaker_a")
         numbers = sorted(
             int(key.split("_")[1]) for key in conversation
-            if re.fullmatch(r"session_\\d+", key)
+            if re.fullmatch(r"session_\d+", key)
         )
         texts, words, user_words, turns_count, first_person, digit_rate = [], [], [], [], [], []
         for number in numbers:
@@ -47,7 +47,7 @@ def build_locomo_conversations(data, hashing_vectorizer, tfidf_transformer):
                 continue
             evidence_numbers = {
                 int(match) for evidence in qa.get("evidence", [])
-                for match in re.findall(r"D(\\d+):", str(evidence))
+                for match in re.findall(r"D(\d+):", str(evidence))
             }
             evidence_indices = {numbers.index(number) for number in evidence_numbers if number in numbers}
             if evidence_indices:
