@@ -129,6 +129,8 @@ def validate_groups(groups: dict[tuple[str, str], list[dict[str, Any]]]) -> None
             previous = source_hashes.setdefault(row["source_id"], row["content_hash"])
             if previous != row["content_hash"]:
                 fail(f"source_id maps to multiple content hashes: {row['source_id']}")
+        if len(source_hashes) != len(rows):
+            fail(f"duplicate source_id within question {qid}, variant {variant}")
     for qid, variants in by_question.items():
         reference = None
         for variant, rows in variants:
@@ -155,7 +157,6 @@ def build_trace(
         fail(f"question {qid} has inconsistent query hashes")
     query_hash = next(iter(query_hashes))
 
-    evidence_by_source: dict[str, str] = {}
     source_evidence = []
     candidate_memory = []
     stored_memory = []
@@ -167,7 +168,6 @@ def build_trace(
         evidence_id = "ev_" + suffix
         candidate_memory_id = "mc_" + suffix
         stored_memory_id = "ms_" + suffix
-        evidence_by_source[source_id] = evidence_id
         source_evidence.append({
             "evidence_id": evidence_id,
             "source_id": source_id,
