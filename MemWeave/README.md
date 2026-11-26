@@ -63,4 +63,4 @@ Distinguish evidence retention from answer accuracy, Stage A from Stages B/C, an
 
 ## Strategy C research programme
 
-The combined algorithm + evaluation-framework research specification is in [RESEARCH_MILESTONE_1.md](docs/RESEARCH_MILESTONE_1.md). It defines the central research question, candidate MW-ECS objective, falsifiable hypotheses, two-track evaluation protocol, mechanism-isolation ablations, and Milestone 1 acceptance criteria. It is a plan, not a claim that the proposed method has already been validated.
+The combined algorithm + evaluation-framework research specification is in [RESEARCH_MILESTONE_1.md](docs/RESEARCH_MILESTONE_1.md). It defines the central research question, candidate MW-ECS objective, falsifiable hypotheses, two-track evaluation protocol, mechanism-isolation ablations, and Milestone 1 acceptance criteria. The [initial related-work matrix](docs/RELATED_WORK_MATRIX.md) maps 16 relevant papers/systems and flags which require full-text verification. These documents are plans and scoping artefacts, not claims that the proposed method has already been validated.
