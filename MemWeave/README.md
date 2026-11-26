@@ -110,3 +110,8 @@ The corrected LongMemEval leave-one-role-feature-out table is saved in the uploa
 The Stage B/C partial-retention adapter and retention audit are completed and documented in [the dated audit report](results/stage_bc_2026-11-26/MFAR_RETENTION_AUDIT_RESULTS.md). This does **not** validate MFAR end-to-end. The four failure modes remain unobserved in the partial adapter. The next MFAR gate is a real Kaggle execution of the opt-in Notebook 01 instrumentation, followed by event-coverage, lineage, privacy, and traced-versus-untraced output-equivalence checks.
 
 The uploaded ZIP is not yet a verified public release: its internal contents and per-file hashes still need to be extracted and checked, and the upload currently sits at repository root rather than in the dated results artifact directory. Do not treat the ZIP upload alone as proof that all expected exports are present.
+
+
+## Archived Kaggle bundle (2026-11-26)
+
+The consolidated 88-cell Kaggle execution snapshot is preserved under [notebooks/archive](notebooks/archive/06_MemWeave_Consolidated_Kaggle_Execution_2026-11-26.ipynb); it does not replace canonical Notebook 06. Its accompanying [research artifact ZIP](results/artifacts/2026-11-26/MemWeave_Research_Artifacts.zip) is retained in the dated artifact directory. The bundle's export cell reports 52 files and a successful ZIP integrity check; per-file manifest verification and privacy review remain release gates. See the [artifact intake audit](docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md).

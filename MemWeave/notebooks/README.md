@@ -65,11 +65,9 @@ This is exploratory: LoCoMo has already been used for selector-transfer analysis
 
 ## Consolidated Kaggle execution snapshot — archive only
 
-An additional executed notebook was uploaded as `notebookfef7168ab3 (3).ipynb` at the repository root in upload commit `a8d27a625d7d11d56883225ccf99fa7df866fbfa`. It contains 88 cells (78 executed; 74 cells with outputs) and combines the Stage B/C workflow with later trace assembly, reader QA, Long-MT-Bench+, and ablation/debug work.
+An executed consolidated Kaggle workbench is preserved at [`archive/06_MemWeave_Consolidated_Kaggle_Execution_2026-11-26.ipynb`](archive/06_MemWeave_Consolidated_Kaggle_Execution_2026-11-26.ipynb). It contains 88 cells (78 executed; 74 cells with outputs) and combines the Stage B/C workflow with later trace assembly, reader QA, Long-MT-Bench+, and ablation/debug work.
 
-It is **not** a replacement for canonical Notebook 06. Preserve it as an execution snapshot under `notebooks/archive/` after reviewing outputs and privacy. In that snapshot, cell 85 is the corrected LongMemEval role-feature ablation; cells 83–84 are superseded intermediate ablation code/results, cell 79's Long-MT-Bench+ feature ablation errored, and cell 86 is a diagnostic only. Do not treat every saved cell output as a valid experiment.
-
-The upload commit is not part of the reviewed `research/memweave-followup-release` branch tree. See the [artifact organization audit](../docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md) for the recommended placement and release blockers.
+This is an **archive-only execution snapshot**, not a replacement for canonical Notebook 06. Cell 85 contains the corrected LongMemEval role-feature ablation; cells 83–84 are superseded intermediate code/results, cell 79's Long-MT-Bench+ feature ablation errored, and cell 86 is diagnostic only. Do not treat every saved cell output as a valid experiment. The accompanying ZIP is stored in [`results/artifacts/2026-11-26/`](../results/artifacts/2026-11-26/); its release checks remain pending. See the [artifact organization audit](../docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md).
 
 ## Status correction for downstream QA
 
