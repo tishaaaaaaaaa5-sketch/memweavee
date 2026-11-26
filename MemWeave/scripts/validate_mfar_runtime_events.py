@@ -26,7 +26,7 @@ EVENT_TYPES = {
     "answer_generated",
 }
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-OPAQUE_ID = re.compile(r"^[a-z]{2,8}_[0-9a-f]{16,64}$")
+OPAQUE_ID = re.compile(r"^[a-z]{1,8}_[0-9a-f]{16,64}$")
 RUN_ID = re.compile(r"^run_[0-9a-f]{16,64}$")
 EVENT_ID = re.compile(r"^evt_[0-9a-f]{32}$")
 SAFE_ENUMS = {
