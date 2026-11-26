@@ -21,8 +21,11 @@ The validator should emit warnings because the current snapshot does not contain
 
 ## MFAR trace and runtime instrumentation utilities
 
-The research follow-up adds `assemble_mfar_retention_traces.py`, `audit_mfar_retention_traces.py`, `mfar_runtime_event_writer.py`, and trace/runtime validators. The adapter currently covers retention traces from exported Stage B/C artifacts; it does not observe retrieval, compression or answer stages in those historical exports. Runtime hooks remain instrumentation work until a real traced run, event-lineage audit, coverage report and traced-vs-untraced equivalence check are completed. See [MFAR instrumentation docs](../docs/instrumentation/README.md).
+The research follow-up adds `assemble_mfar_retention_traces.py`, `audit_mfar_retention_traces.py`, `mfar_runtime_event_writer.py`, and trace/runtime validators. The Stage B/C adapter covers offline retention traces only. The runtime writer and validator are standalone components; Notebook 01 does not currently import or call them. Unit tests cover the standalone privacy and lineage contract, but there is no end-to-end runtime ledger until explicit notebook hooks are integrated and a real run is executed. See [runtime instrumentation status](../docs/instrumentation/MFAR_REAL_BACKEND_INSTRUMENTATION.md).
 
 ## Next full rerun
 
 Follow [the reproducibility audit](../docs/reproducibility/REPRODUCIBILITY_AUDIT.md) and [data provenance note](../results/final_locked_test/data_provenance.md). Record the dataset revision and SHA-256 before preprocessing, capture the environment and Git commit, preserve split IDs, and export privacy-safe per-question results with checksums. Do not commit raw conversation text or answers.
+
+
+Run the focused runtime privacy tests from this directory with `python -m pytest tests/test_mfar_runtime_events.py -q`. A passing result is unit-level validation only, not proof of notebook instrumentation.
