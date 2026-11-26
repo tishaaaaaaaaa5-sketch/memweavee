@@ -1,5 +1,6 @@
 """Command-line entry point for MemWeave research runs and artifact checks."""
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -41,7 +42,37 @@ def _run(config_path: str) -> int:
     result = run_pipeline(config)
     print(f"Pipeline completed. Artifacts: {result['artifacts']['output_dir']}")
     print(f"Manifest entries: {len(result['artifacts']['manifest']['files'])}")
+    print(f"Run ID: {result['payload']['run_id']}")
+    print(f"Run registry: {result['registry']['path']}")
     return 0
+
+
+def _runs(args: argparse.Namespace) -> int:
+    from memweave.registry import RunRegistry
+
+    registry = RunRegistry(args.registry)
+    if args.runs_command == "list":
+        records = registry.list_runs(limit=args.limit)
+        if not records:
+            print("No completed runs found.")
+            return 0
+        for item in records:
+            print(
+                f"{item['run_id']}  {item['created_at']}  "
+                f"{item['summary'].get('primary_pool', 'unknown')}  "
+                f"test={item['summary'].get('n_test', '?')}  "
+                f"{item['output_dir']}"
+            )
+        return 0
+    if args.runs_command == "show":
+        try:
+            record = registry.get(args.run_id)
+        except KeyError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
+        print(json.dumps(record, indent=2, sort_keys=True))
+        return 0
+    return 2
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -54,6 +85,17 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--config", required=True, help="YAML pipeline configuration")
     commands.add_parser("validate", help="validate the default aggregate release")
     commands.add_parser("serve", help="launch the optional Streamlit dashboard")
+    runs = commands.add_parser("runs", help="inspect the local experiment run registry")
+    runs.add_argument(
+        "--registry",
+        default=str(_repo_root() / "results" / "run_registry.sqlite3"),
+        help="SQLite registry path (default: results/run_registry.sqlite3)",
+    )
+    run_commands = runs.add_subparsers(dest="runs_command", required=True)
+    runs_list = run_commands.add_parser("list", help="list recent completed runs")
+    runs_list.add_argument("--limit", type=int, default=20)
+    runs_show = run_commands.add_parser("show", help="show full provenance for one run")
+    runs_show.add_argument("run_id")
     args = parser.parse_args(argv)
     try:
         if args.command == "evaluate":
@@ -62,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run(args.config)
         if args.command == "validate":
             return _evaluate(str(_repo_root() / "MemWeave" / "configs" / "role_aware.yaml"))
+        if args.command == "runs":
+            return _runs(args)
         if args.command == "serve":
             dashboard = _repo_root() / "MemWeave" / "dashboard" / "app.py"
             return subprocess.run(

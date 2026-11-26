@@ -8,6 +8,7 @@ from __future__ import annotations
 import hashlib
 import json
 import platform
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -107,9 +108,11 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
             "Set pipeline.longmemeval_path to a local LongMemEval JSON file; "
             "benchmark data is never downloaded automatically."
         )
-    output_dir = Path(pipeline.get("output_dir", "results/pipeline_run")).expanduser()
-    if not output_dir.is_absolute():
-        output_dir = Path.cwd() / output_dir
+    output_root = Path(pipeline.get("output_dir", "results/pipeline_run")).expanduser()
+    if not output_root.is_absolute():
+        output_root = Path.cwd() / output_root
+    run_id = uuid.uuid4().hex
+    output_dir = output_root / run_id
 
     raw = load_json(data_path, max_questions=pipeline.get("max_questions"))
     prepared = prepare_longmemeval(raw, batch_size=int(pipeline.get("batch_size", 400)))
@@ -245,6 +248,7 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
         "locomo_transfer": transfer_comparisons,
     }
     payload = {
+        "run_id": run_id,
         "run": {
             "python": platform.python_version(), "numpy": np.__version__,
             "pandas": pd.__version__, "scikit_learn": sklearn.__version__,
@@ -278,4 +282,32 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
         ],
     }
     artifact_result = write_artifacts(output_dir, tables, payload)
-    return {"tables": tables, "payload": payload, "artifacts": artifact_result}
+    registry_path = Path(
+        pipeline.get("registry_path", str(output_root.parent / "run_registry.sqlite3"))
+    ).expanduser()
+    if not registry_path.is_absolute():
+        registry_path = Path.cwd() / registry_path
+    from .registry import RunRegistry
+
+    registry = RunRegistry(registry_path)
+    manifest_path = Path(artifact_result["output_dir"]) / "manifest.json"
+    registry_record = registry.record(
+        run_id=run_id,
+        output_dir=artifact_result["output_dir"],
+        manifest_sha256=_sha256(manifest_path),
+        input_sha256=payload["run"]["longmemeval_sha256"],
+        config=config,
+        summary={
+            "primary_pool": payload["settings"]["primary_pool"],
+            "n_valid": payload["split"]["n_valid"],
+            "n_dev": payload["split"]["n_dev"],
+            "n_test": payload["split"]["n_test"],
+            "main_results": locked["main_results"].to_dict(orient="records"),
+        },
+    )
+    return {
+        "tables": tables,
+        "payload": payload,
+        "artifacts": artifact_result,
+        "registry": {"path": str(registry_path.resolve()), "run": registry_record},
+    }
