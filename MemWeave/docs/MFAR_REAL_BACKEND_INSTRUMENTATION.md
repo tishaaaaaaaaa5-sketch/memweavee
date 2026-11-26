@@ -1,84 +1,58 @@
-# MFAR instrumentation plan for the existing MemWeave notebooks
+# MFAR instrumentation of the existing MemWeave notebooks
 
-**Status:** repository-level experimental pipeline identified; runtime instrumentation not yet executed.
-**Applies to:** the existing MemWeave v2.x notebook pipeline, MFAR trace schema v0.2.0, and real-data-only workflow.
-**Rule:** instrument the actual notebook operations and preserve their outputs. Do not create a second/mock backend, synthetic events, or inferred failure labels.
+**Status:** opt-in instrumentation is committed in Notebook 01; a real traced Kaggle execution and observational-equivalence check are still pending.
+**Applies to:** the MemWeave v2.1 LongMemEval-S notebook, MFAR trace schema v0.2.0, and real-data-only workflow.
+**Rule:** instrument existing operations only. Do not create a replacement/mock backend, synthetic events, or inferred failure labels.
 
-## 1. Corrected repository inspection
+## 1. Corrected implementation assessment
 
-The earlier statement that no memory implementation existed was too broad. The repository contains an experimental memory-selection and downstream QA pipeline, especially in:
+The repository contains an experimental benchmark pipeline, especially in:
 
 - `notebooks/00_MemWeave_2_0.ipynb`
 - `notebooks/01_MemWeave_2_1.ipynb`
 - `notebooks/04_MemWeave_Final.ipynb`
 
-Notebook 01 contains real implementations of:
+Notebook 01 implements session encoding, question-specific candidate-pool construction, budget-constrained retention, BM25 ranking over retained sessions, QA-context assembly, and optional Hugging Face answer generation. Notebook 04 contains the separate Stage C candidate-pool and controlled-selection experiment.
 
-- `session_turns()` and `encode_session()`: parse conversation sessions and construct session representations (`full`, user-only text, turn counts, token/word cost, entity features).
-- `build_bundle()`: build per-question session pools, relevance references, TF-IDF similarity, static/query-conditioned features, and BM25 scores.
-- `select()`: budget-constrained retention using utility, redundancy, and supersession penalties.
-- `metrics()`: retention recall and BM25 ranking metrics over retained sessions.
-- `qa_context()`: assemble selected session excerpts for downstream question answering.
-- The optional `run_qa_proxy` block: load a Hugging Face causal LM, generate answers from selected excerpts, and compute a containment-style correctness proxy.
+These are real experimental operations, not merely a proposal. They are not equivalent to a continuously running personal-memory service with a persistent memory index. In particular, selection is the current retention operation; it is not proof of a separately measured lossy compressor or durable storage write.
 
-Notebook 04 separately contains the Stage C candidate-pool and budgeted-selection analysis, including `select_idx()`, `recall_of()`, `selections()`, and a downstream evidence/answer-in-context proxy.
+## 2. Committed instrumentation
 
-**Important boundary:** these are benchmark-driven experimental notebook pipelines, not evidence of a continuously running personal-memory service with an independently persisted store. The current code does not expose a separate general-purpose compression service or persistent memory index. In Notebook 01, selection is the retention/budget operation; the BM25 ordering in `metrics()` and the QA context construction are downstream experimental retrieval paths. The QA block is optional and its existing CSV records correctness indicators, not a complete privacy-safe evidence-to-answer event trace.
+The opt-in event writer is `scripts/mfar_runtime_event_writer.py`. Its hooks are integrated into `notebooks/01_MemWeave_2_1.ipynb`:
 
-## 2. Existing operation-to-MFAR mapping
+| Existing operation | Recorded event | Semantics |
+|---|---|---|
+| `encode_session()` and source session handling in `build_bundle()` | `source_observed`, `candidate_constructed` | Real source session and encoded candidate, linked by opaque IDs and SHA-256 hashes |
+| Candidate bundle creation in `build_bundle()` | `candidate_pool_built` | Ordered candidate occurrence IDs for the question |
+| Test-fold method/budget evaluation in `record()` | `retention_selected` | Actual candidate pool, selected IDs, selection method, fold, seed, budget and cost unit |
+| `qa_context()` | `qa_evidence_assembled` | Retained IDs and exact top-k session IDs assembled into the QA context |
+| Optional generation loop | `answer_generated` | Evidence IDs passed to the model, model/config fingerprints, answer hash, measured generation latency/token counts, and the existing containment evaluation |
 
-| Existing code | What it genuinely observes | MFAR mapping | Remaining limitation |
-|---|---|---|---|
-| `session_turns()` / `encode_session()` | Original benchmark session and its encoded representation | source evidence / candidate construction | No independent source archive ingestion event; source-to-candidate provenance needs explicit IDs and hashes |
-| `build_bundle()` | Per-question candidate pool, session IDs, content-derived features, gold reference membership | candidate memory formation | Gold/reference membership is evaluation-only and must not enter online diagnostic features |
-| `select()` / `eval_method()` | Chosen candidate indices and used budget | retention / compression proxy | This is budgeted selection, not a separately measured lossy compressor or persistent write |
-| `metrics()` | BM25 order among selected candidates and recall at configured cut-offs | retrieval metric proxy | It computes evaluation metrics; it is not itself a captured external retrieval API result |
-| `qa_context()` | Exact selected session excerpts assembled for a QA prompt | evidence supplied to answering model | Must record the selected session IDs and prompt-evidence mapping, not the raw prompt text |
-| optional QA generation loop | Model/config, input context, generated answer in local variable, correctness proxy | answering | Existing export does not preserve answer IDs/hashes and per-answer evidence lineage |
+The notebook's BM25 ranking used for retention metrics is not exported as a separate live retrieval event. The QA context assembly is the observable retrieval-to-answer boundary. The optional QA generation block remains disabled by default; when disabled, answering is unobserved in that run.
 
-## 3. Instrumentation objective
+A traced run sets `MFAR_TRACE_ENABLED=1` before executing the notebook, rebuilds the feature cache so construction events are observed, and writes a run-specific JSONL event file plus a coverage/checksum manifest under `v2_1/`. The LoCoMo external-validation pass is deliberately excluded from this LongMemEval-S event ledger.
 
-Add an opt-in, privacy-minimised event ledger to the existing notebook execution. It should record only real events produced while processing the original approved benchmark inputs:
+## 3. Privacy and behavior safeguards
 
-1. **Construction:** source/session ID, source content hash, candidate occurrence ID, candidate representation hash, run/question identifiers.
-2. **Retention:** candidate IDs, selected candidate IDs, actual budget/cost value and unit, selection policy/config fingerprint.
-3. **Retrieval:** the exact ordered selected-session IDs used to assemble each QA context, rank, retrieval method, and configured top-k.
-4. **Answering:** the exact evidence/session IDs included in each prompt, model and generation configuration, generated answer hash, and answer-evaluation result. Do not export prompt, query, source text, or answer text.
+1. Instrumentation is disabled by default and writes separate event artifacts.
+2. It records opaque IDs and SHA-256 hashes, never raw conversation, query, prompt, retrieved text, or generated answer text.
+3. Session identifiers are hashed before export; hashes remain potentially linkable metadata, not anonymisation.
+4. The original selection scores, ranking, budgets, prompt, model settings, and answer-evaluation logic are unchanged by the hooks.
+5. Actual measured model token counts are recorded only in the QA generation path; retention costs carry the notebook's tokenizer/cost-unit label.
+6. Gold evidence and reference answers remain evaluation-only. The answer containment flag is an evaluation metric, not a human support adjudication.
+7. A missing event remains unobserved. It is not converted to a negative label.
 
-The ledger must distinguish a real event from a derived evaluation metric. In particular, a sorted list computed inside `metrics()` must be tagged as a metric-time ranking, not represented as an independently observed backend retrieval call.
+## 4. Execution and validation sequence
 
-## 4. Required identifiers and hashing
+1. Pull the research branch and confirm the updated Notebook 01 and event-writer module are present.
+2. Set `os.environ["MFAR_TRACE_ENABLED"] = "1"` before running the notebook from the first cell; restart the kernel and run all cells in order.
+3. Keep `MEMWEAVE_SMOKE` unset and use the approved original LongMemEval-S data. Tracing automatically rebuilds the real feature cache.
+4. Inspect the generated run-specific JSONL file and its `mfar_runtime_trace_manifest_<run_id>.json` coverage/checksum report.
+5. Compare traced and untraced outputs on the same original inputs: candidate ordering, selected IDs, budget usage, result CSVs, and (if enabled) QA answers/evaluation values. Any difference beyond trace files/timing overhead must be investigated.
+6. Validate event ID lineage and privacy before converting supported events into MFAR schema v0.2.0 traces or creating annotations.
 
-- Use stable source session IDs already supplied by the benchmark.
-- Derive occurrence IDs from the question ID plus candidate index so repeated appearances of one source session remain distinct occurrences.
-- Hash exact UTF-8 source/session text and exact encoded representation separately with SHA-256.
-- Use a run ID tied to the notebook execution and record the Git commit, dataset revision/checksum, split, configuration, and tokenizer/cost unit.
-- Do not use gold labels, answer references, or benchmark relevance grades to construct runtime IDs, ranking features, or event presence.
-- Hashes are linkable metadata, not anonymisation. Keep access to any raw data and mappings controlled.
+## 5. Current decision
 
-## 5. Instrumentation safeguards
+**Code instrumentation is committed; runtime evidence is pending.** The hooks cover actual construction, retention, and QA-context/answer operations where those optional paths execute. They do not create a persistent memory store or an independently instrumented retrieval service. If the QA proxy is disabled, retrieval-to-answer and answering events are absent by design.
 
-1. Instrument existing code boundaries; do not change selection scores, candidate order, model inputs, prompts, generation settings, or output metrics.
-2. Keep instrumentation opt-in and write a separate JSONL event file; do not overwrite benchmark result files.
-3. Record actual measured token counts only when the tokenizer is known. Label whitespace word counts as word-count proxies.
-4. Store no raw conversation, query, prompt, retrieved excerpt, or answer text in Git or the event ledger.
-5. Keep reference answers and gold evidence strictly evaluation-only.
-6. Missing events remain unobserved; never infer a failure from an absent trace.
-7. Compare instrumented and uninstrumented outputs on the same approved real inputs. This checks observational equivalence; it is not a synthetic benchmark.
-8. Validate event IDs and lineage before mapping events into schema v0.2.0.
-
-## 6. Execution sequence
-
-1. Use the exact code-cell mapping in [MFAR_NOTEBOOK_INSTRUMENTATION_MAP.md](MFAR_NOTEBOOK_INSTRUMENTATION_MAP.md).
-2. Add the opt-in recorder and call it from the existing functions/loops; keep it disabled by default.
-3. Run the original approved notebook on the original real dataset with tracing enabled.
-4. Produce a privacy-safe event coverage report: source/candidate/retained/retrieved/answered counts, plus explicit unobserved stages.
-5. Check referential integrity and output equivalence.
-6. Only then assemble runtime traces and adjudicate failure labels on a supported subset.
-7. Do not train a detector or claim MFAR effectiveness until the real trace coverage and annotation protocol support it.
-
-## 7. Current decision
-
-**The notebook implementation gate is partially passed:** actual construction, budgeted retention, retrieval-like ranking/context assembly, and optional QA generation code have been identified. **The runtime observability gate is not yet passed:** the current exports do not capture a complete event lineage across those operations, and there is no demonstrated persistent-memory write/read service.
-
-Permitted next work: instrument the existing notebook functions, preserve real outputs, validate event lineage, and report coverage. Blocked: treating selection metrics as actual storage/compression performance, treating metric-time BM25 ranking as an independently observed retrieval call, inferring missing-stage labels, detector training, and end-to-end MFAR effectiveness claims.
+Permitted next work: execute the traced original-data notebook, inspect coverage, check output equivalence, and validate event lineage. Blocked: treating retention as persistent storage/compression, calling metric-time ranking a live retrieval API, inferring missing-stage labels, detector training, and end-to-end MFAR effectiveness claims.
