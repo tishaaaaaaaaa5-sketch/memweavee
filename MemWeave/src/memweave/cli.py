@@ -88,8 +88,8 @@ def main(argv: list[str] | None = None) -> int:
     runs = commands.add_parser("runs", help="inspect the local experiment run registry")
     runs.add_argument(
         "--registry",
-        default=str(_repo_root() / "MemWeave" / "results" / "run_registry.sqlite3"),
-        help="SQLite registry path (default: MemWeave/results/run_registry.sqlite3)",
+        default=str(_repo_root() / "results" / "run_registry.sqlite3"),
+        help="SQLite registry path (default: results/run_registry.sqlite3)",
     )
     run_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_list = run_commands.add_parser("list", help="list recent completed runs")
