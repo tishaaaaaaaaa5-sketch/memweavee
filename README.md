@@ -146,3 +146,10 @@ The source notebook is `04_MemWeave_Final.ipynb`. A cleaned executed copy, [`04_
 ## Citation
 
 A formal citation entry should be added when the manuscript's author list, title, venue/status, and year are finalized. Until then, cite the repository and identify the work as an ongoing research project; do not invent a publication venue or DOI.
+
+
+## Research follow-up and reproducibility
+
+- [Independent benchmark validation plan](MemWeave/docs/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
+- [Reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
+- [GitHub profile README draft](PROFILE_README_DRAFT.md) — copy this into a public repository named exactly `tishaaaaaaaaa5-sketch` to activate the profile README feature.
