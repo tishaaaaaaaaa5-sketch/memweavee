@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -44,6 +46,15 @@ class RetentionTraceAdapterTests(unittest.TestCase):
                 "selected": False,
             },
         ]
+
+    def test_optional_candidate_checksum_is_verified(self):
+        with tempfile.NamedTemporaryFile(mode="wb") as handle:
+            handle.write(b"candidate-export")
+            handle.flush()
+            expected = hashlib.sha256(b"candidate-export").hexdigest()
+            adapter.verify_candidate_checksum(Path(handle.name), expected)
+            with self.assertRaises(SystemExit):
+                adapter.verify_candidate_checksum(Path(handle.name), "0" * 64)
 
     def test_trace_preserves_observability_boundary(self):
         trace = adapter.build_trace(
