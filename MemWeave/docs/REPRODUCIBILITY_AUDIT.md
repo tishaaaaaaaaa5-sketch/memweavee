@@ -79,3 +79,54 @@ Factorial contrasts: scaling +0.126809 (95% bootstrap CI 0.086596–0.169007); v
 The candidate trace and detailed CSV exports are not committed as raw repository files in this revision. The audited manifest, checksum inventory, and audit report are committed; retain the original ZIP and CSV as release artifacts under the dataset terms and attach them to a versioned release or approved artifact store. Do not commit source conversations, answers, or raw session text.
 
 The MFAR adapter has not yet been independently executed against this exact user-supplied CSV/manifest pair. Passing unit tests or static consistency checks must not be described as a successful end-to-end adapter run.
+
+
+
+## Follow-up release checkpoint — 2026-11-27
+
+This checkpoint supersedes older "pending execution" statements in follow-up notes where later results are listed below. It does not imply that the raw run artifacts have been published.
+
+### Repository inspection
+
+- The Stage C notebook exists at `MemWeave/notebooks/05_MemWeave_Kaggle_Followup.ipynb`.
+- The committed notebook contains 25 cells. Thirteen code cells have execution counts and saved outputs. The appended end-to-end reader QA, whole-session packing, and subsequent evidence-span/reader follow-ups are not represented as executed outputs in this committed notebook snapshot.
+- Therefore, the committed notebook is not yet a complete executed record of the later QA work. The QA result reports document the supplied results, but the raw QA outputs remain in the Kaggle runtime unless separately exported.
+- The six Stage C CSV/JSON exports listed in `results/followup_2026/README.md` are still not present as separate committed files in the release inventory. Do not describe the Stage C artifact package as complete.
+- The current follow-up results report documents LoCoMo span-packing results for FLAN-T5-small and FLAN-T5-base, plus corrected Long-MT-Bench+ span-budget results. Their raw per-question outputs, bootstrap JSONs, and budget-audit exports still need to be attached as privacy-reviewed artifacts.
+- The repository's older aggregate validator targets `results/final_locked_test/` (Stage B). It does not validate the Stage C follow-up or later reader QA artifacts.
+
+### Latest corrected individual role-feature ablation
+
+The corrected leave-one-feature-out table was reconstructed from the actual `F_aug[:, ROLE_IDX]` columns using the original DEV/TEST training and evaluation pipeline. The earlier attempt that used nonexistent/wrong feature matrices is discarded. The valid descriptive results are:
+
+| Variant | Retained role features | Mean budgeted recall | Recall delta vs full |
+|---|---:|---:|---:|
+| Full role-aware | 6 | 0.820638 | 0.000000 |
+| Leave out user max question similarity | 5 | 0.819574 | -0.001064 |
+| Leave out user top-3 mean question similarity | 5 | 0.827021 | +0.006383 |
+| Leave out assistant max question similarity | 5 | 0.822057 | +0.001418 |
+| Leave out assistant top-3 mean question similarity | 5 | 0.827021 | +0.006383 |
+| Leave out log user message count | 5 | 0.820638 | 0.000000 |
+| Leave out log assistant message count | 5 | 0.820638 | 0.000000 |
+| Baseline | 0 | 0.404184 | -0.416454 |
+
+All variants used 4,216 training candidates out of 5,523 and 235 held-out questions. These are descriptive leave-one-out comparisons, not causal feature-importance estimates; no per-question paired uncertainty is included in this aggregate table. Message-count feature removals had no observed effect in this run. The corrected aggregate CSV was saved in the Kaggle runtime, but its checksum and committed copy have not yet been verified.
+
+### Latest downstream QA status
+
+- LoCoMo evidence-span packing, FLAN-T5-small: 200 questions / 10 conversations; role-aware token F1 0.2417, exact match 0.120; paired cluster-bootstrap token-F1 gain +0.1401 vs baseline (95% CI [+0.0640, +0.2213]).
+- LoCoMo evidence-span packing, FLAN-T5-base: same 200 questions / 10 conversations; role-aware token F1 0.2376, exact match 0.100; paired cluster-bootstrap token-F1 gain +0.1458 vs baseline (95% CI [+0.0818, +0.2170]).
+- Long-MT-Bench+ corrected span-budget transfer, FLAN-T5-base: 288 questions / 11 conversations; role-aware token F1 0.1443 vs baseline 0.0823 and recency 0.0810; paired cluster-bootstrap gains +0.0627 and +0.0634 respectively. Exact match is 0.0035 for role-aware and recency, so no exact-match advantage over recency is established.
+
+These are exploratory results from 10 and 11 conversation clusters. Exact match/token F1 are lexical metrics; gold annotations are session-level and lexical span ranking is not semantic entailment. Do not present these as definitive independent confirmation.
+
+### Actions required to close the release
+
+1. Export the six Stage C CSV/JSON files and the corrected individual-ablation CSV from the Kaggle output directory. Record SHA-256 for each file and verify against the run manifest where a digest exists.
+2. Export the LoCoMo small/base span-packing and Long-MT-Bench+ per-question CSVs, paired cluster-bootstrap JSONs, and token-budget audits. Include dataset/revision, code commit, reader model revision, prompt, tokenizer, seed, and sample IDs in each manifest.
+3. Commit a privacy-reviewed executed notebook or a separate machine-readable run bundle for the later QA experiments. Do not leave reports implying that the current committed notebook contains those executed cells.
+4. Re-run validators against the exported artifacts from a clean environment. Keep the Stage B aggregate validator separate from Stage C/reader-QA validators.
+5. Complete the independent word-cost reconstruction, gold-evidence mapping audit, and LoCoMo speaker-role/annotation alignment checks already listed above.
+6. Update all summary documents to remove stale status statements and preserve the distinction between Stage B, Stage C, and downstream QA endpoints.
+
+**Release status:** documentation is substantially informative, but the Stage C and downstream QA artifact bundle remains incomplete until the raw privacy-safe exports, manifests, checksums, and clean-environment validation are committed.
