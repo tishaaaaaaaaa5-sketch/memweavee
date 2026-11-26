@@ -43,7 +43,9 @@ The next proposed contribution is **Memory Failure-Aware Retrieval (MFAR)**. It 
 
 MFAR is a design proposal, not an implemented or validated method. Its algorithm specification, hypotheses, observability requirements, evaluation plan, ablations, and decision gates are in [MFAR_ALGORITHM_DESIGN.md](docs/MFAR_ALGORITHM_DESIGN.md).
 
-The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.schema.json), with an [illustrative trace](schemas/examples/mfar_trace.example.json), [schema implementation notes](docs/MFAR_TRACE_SCHEMA.md), and [validator CLI](scripts/validate_mfar_trace.py). The schema is an initial instrumentation contract, not yet integrated into the existing memory pipeline. The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
+The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.schema.json), with an [illustrative trace](schemas/examples/mfar_trace.example.json), [schema implementation notes](docs/MFAR_TRACE_SCHEMA.md), and [validator CLI](scripts/validate_mfar_trace.py). The schema is an initial instrumentation contract, not yet integrated into the existing memory pipeline. Schema v0.2.0 supports explicitly unobserved stages. An offline adapter can convert the Stage B/C retention export into partial traces; this does not create retrieval or answer evidence. See [the adapter specification](docs/MFAR_RETENTION_TRACE_ADAPTER.md) and [assembler](scripts/assemble_mfar_retention_traces.py). The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
+
+The Stage B/C notebook now includes an additional candidate-level trace export. The original controlled run produced seven exports; rerun the updated final export cell to generate the eighth `stage_bc_candidate_trace.csv` required by the offline MFAR adapter. Do not interpret its session-retention decisions as a separate retrieval stage or answer evaluation.
 
 ## Canonical notebook sequence
 
