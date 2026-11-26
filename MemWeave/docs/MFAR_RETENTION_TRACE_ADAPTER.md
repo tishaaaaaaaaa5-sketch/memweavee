@@ -3,7 +3,7 @@
 **Adapter version:** 0.1.0  
 **Input:** the candidate-level export from notebook 06  
 **Output:** partial MFAR trace records using schema 0.2.0  
-**Status:** candidate export received and checksum-verified; end-to-end adapter execution and independent validation remain pending.
+**Status:** real candidate export received and checksum-verified; adapter execution completed in Kaggle. The run assembled 2,115 traces across 235 test questions, and all records passed Draft 2020-12 schema validation. The six adapter unit tests passed. A separate referential-integrity audit reported zero integrity errors. Retrieval and answer stages remain unobserved.
 
 ## Why this adapter is deliberately partial
 
@@ -95,4 +95,4 @@ Repeated source IDs occur in 18 question-condition groups affecting two question
 
 Independent artifact checks found that all seven derived-file hashes in the audited manifest match the bundle. Candidate-level recall agrees with all 2,115 per-question records; selected candidate sets and selected word costs agree with all 1,880 role-aware selection-trace groups.
 
-The assembler has **not yet been run end-to-end on the supplied files**. The next validation step is the exact CLI command below, followed by the unit suite and a referential-integrity/privacy review.
+The assembler was run end-to-end on the supplied original files in Kaggle. It produced 2,115 traces across 235 questions, with all traces passing Draft 2020-12 schema validation. The six adapter unit tests passed; a custom referential-integrity audit found zero errors. These checks validate the retention-trace export, not a full MFAR lifecycle or privacy clearance. The next step is to quantify the original retention-stage omissions and budget utilization using [the retention audit utility](MFAR_RETENTION_AUDIT.md).
