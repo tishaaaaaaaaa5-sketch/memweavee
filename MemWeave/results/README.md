@@ -43,10 +43,18 @@ The result is from one held-out split of one benchmark. The development process 
 
 Raw benchmark JSONs, feature caches and large per-question exports are intentionally excluded from ordinary Git history. Store large artifacts in Git LFS or an external artifact host and publish checksums and dataset terms. The uploaded executed notebook used for the latest audit is not silently represented as committed notebook output; the committed notebook remains the source workflow and the aggregate results are captured here.
 
+## Stage B/C controlled reconciliation
 
-## Stage B/C controlled reconciliation (interim)
+The controlled Notebook 06 factorial reconstruction and its direct endpoint comparison are documented in [the Stage B/C reconciliation report](stage_bc_reconciliation/README.md).
 
-The controlled 2×2×2 reconstruction and its current candidate-selection findings are documented in [the Stage B/C reconciliation report](stage_bc_reconciliation/README.md). The paired main effects show +7.482 pp for z-score vs raw scaling and +1.064 pp for a 20,000 vs unlimited vocabulary cap; filtering had identical recorded candidate selections in all 235 questions. These are candidate-level relevance results, not answer-quality metrics. The scale × cap interaction and the cause of filtering equivalence remain under investigation. The historical Stage B/Stage C discrepancy is not resolved by this reconstruction.
+Primary budgeted evidence-recall factorial results:
+- Z-score vs raw scaling: **+12.68 pp** (95% paired-bootstrap CI [+8.66, +16.90] pp).
+- 20,000-feature cap vs unlimited: **+1.56 pp** (95% CI [+0.67, +2.62] pp).
+- Scale × cap interaction is not established; message filtering retained all 65,288 audited messages and had zero observed effect.
 
+Direct paired endpoint comparison on the same 235 TEST questions:
+- Stage B-like mean recall: 0.709433; Stage C-like: 0.820638.
+- C-like paired improvement: **+11.121 pp** (95% paired bootstrap CI [+7.099, +15.411] pp).
+- C-like better on 39 questions, B-like better on 8, 188 ties; exact paired sign-test p=5.5396×10⁻⁶.
 
-The Stage B/C controlled reconstruction now has both primary factorial evidence-recall results and a supplementary candidate-selection audit in [the reconciliation report](stage_bc_reconciliation/README.md). The primary endpoint shows +12.68 pp for z-score vs raw scaling (95% CI [+8.66, +16.90] pp) and +1.56 pp for the 20,000 vocabulary cap vs unlimited (95% CI [+0.67, +2.62] pp). The scale × cap interaction is not established (95% CI crosses zero). Message filtering retained all 65,288 audited messages and had zero observed effect. These findings do not establish the cause of the historical Stage B/C discrepancy.
+This is a controlled reconstruction, not proof of which implementation generated historical Stage B or Stage C artifacts. Historical headline results remain unchanged. Candidate-selection gold fraction, budgeted evidence recall, and answer accuracy are distinct metrics.
