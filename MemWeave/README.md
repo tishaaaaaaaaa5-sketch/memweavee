@@ -49,6 +49,11 @@ Run tests and launch the dashboard:
 
 The current CLI evaluate mode validates the consistency of committed aggregate artifacts. It does not retrain the model, fetch benchmark data, or recreate missing per-question predictions. See the [platform guide](PLATFORM_GUIDE.md) for exact scope and API endpoints.
 
+
+### Public web application
+
+A dark research website and private memory-workspace MVP are available in [web/](web/) and [the web app guide](WEB_APP_GUIDE.md). The current workspace uses transparent lexical-overlap retrieval; it is not the learned research selector. See the guide for local and Replit setup, API routes, and deployment security limitations.
+
 ## Canonical notebook sequence
 
 See the [notebook index](notebooks/README.md).
