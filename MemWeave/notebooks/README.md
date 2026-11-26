@@ -43,3 +43,8 @@ See the [full reconciliation report](../results/stage_bc_reconciliation/README.m
 The role-aware audit used 50,000 paired bootstrap resamples and 200,000 sign-flip permutations. Inference resamples questions rather than conversation clusters. The research process was iterative, not preregistered; the held-out test split is not an independent benchmark. Evidence recall does not establish improved LLM answer accuracy.
 
 Benchmark JSONs, feature caches and raw per-question exports are not stored in this directory. Store large artifacts in Git LFS or an external artifact store after checking dataset terms.
+
+
+### Novelty-aware DEV follow-up
+
+The self-contained DEV experiment in Notebook 06 rebuilt its five grouped folds without relying on missing prior-kernel CV variables. Its result does not support the tested novelty blends: relevance-only recall was 0.4049; 90/10 relevance/novelty was 0.4060 with a paired interval crossing zero; stronger novelty weights reduced recall. See the [novelty experiment report](../results/stage_bc_reconciliation/NOVELTY_AWARE_DEV_EXPERIMENT.md). Do not treat this exploratory DEV result as independent confirmation.
