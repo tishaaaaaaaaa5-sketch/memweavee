@@ -19,7 +19,7 @@ Recorded provenance:
 
 The Stage C notebook's final audit reported 54 PASS, 3 WARNING, and 0 FAIL. This validates the checks implemented in that notebook against its generated files. It is not an independent rerun of the experiment or proof that every evaluator mapping is correct.
 
-The Stage C notebook and its separate generated CSV/JSON outputs have not yet been committed to this repository branch. The report at [results/followup_2026/README.md](../results/followup_2026/README.md) records the results and explicitly identifies this artifact gap.
+The reviewed Stage C notebook is committed at [notebooks/05_MemWeave_Kaggle_Followup.ipynb](../notebooks/05_MemWeave_Kaggle_Followup.ipynb). Its six generated CSV/JSON result exports are not yet committed as separate artifacts. The report at [results/followup_2026/README.md](../results/followup_2026/README.md) records the results and the outstanding artifact gap.
 
 ## Committed artifact consistency check for the earlier release
 
@@ -33,11 +33,10 @@ This standard-library validator checks internal agreement among the earlier run 
 
 ## Remaining work before Stage C is a complete release
 
-- [ ] Commit the reviewed Stage C notebook with obsolete/debug outputs removed.
-- [ ] Attach the six generated CSV/JSON artifacts from the Kaggle output directory.
+- [ ] Export and publish the six generated CSV/JSON artifacts from the Kaggle output directory, subject to privacy and licensing review.
 - [ ] Verify each artifact checksum against the run manifest; include the per-question CSV checksum already printed by the notebook.
-- [ ] Re-run the final audit from the committed artifacts in a clean environment.
-- [ ] Independently reconstruct the word-count budget from selected session IDs and word costs.
+- [ ] Re-run the final audit from the committed notebook and exported artifacts in a clean environment.
+- [ ] Independently reconstruct the word-count budget from selected session IDs and word costs; replace the proxy with exact tokenizer-based accounting in the next controlled study.
 - [ ] Audit gold-evidence-to-session mapping end to end.
 - [ ] Verify LoCoMo speaker-role mapping and annotation alignment.
 - [ ] Obtain an independent reproduction before claiming independent replication.
