@@ -2,7 +2,7 @@
 
 **Target notebook:** `notebooks/01_MemWeave_2_1.ipynb`
 **Purpose:** specify where to instrument the existing real-data pipeline without changing its algorithm.
-**Status:** code locations inspected; event-writer calls still need to be added and run in Kaggle.
+**Status:** opt-in event-writer hooks are committed in Notebook 01; execution on original Kaggle data is pending.
 
 ## 1. Exact operation boundaries
 
@@ -26,7 +26,7 @@
 
 ## 3. Event ledger contract
 
-The runtime recorder should write append-only JSONL events, one event per actual operation. Minimum envelope:
+The committed runtime recorder writes run-specific JSONL events, one event per actual operation. Minimum envelope:
 
 ```json
 {
@@ -53,7 +53,7 @@ Recommended event types:
 - `candidate_constructed`
 - `candidate_pool_built`
 - `retention_selected`
-- `ranking_metric_computed`
+- `ranking_metric_computed` (reserved; not emitted as a live retrieval event by the current Notebook 01 hooks)
 - `qa_evidence_assembled`
 - `answer_generated`
 
@@ -72,7 +72,7 @@ Do not use generated or synthetic conversations for this check. Use the approved
 
 ## 5. Stage coverage report
 
-After a real traced run, report counts from actual event records:
+After a real traced run, the final notebook cell writes a coverage/checksum manifest. Report counts from those actual event records:
 
 - distinct source sessions observed;
 - candidate occurrences constructed;
@@ -84,3 +84,7 @@ After a real traced run, report counts from actual event records:
 - missing-stage reasons.
 
 Do not convert coverage gaps into failure labels. Keep the Stage B/C 2,115-trace retention audit separate from any newly instrumented Notebook 01 run; they are different experiment artifacts and must not be pooled.
+
+## 6. Current execution status
+
+The event writer is wired into Notebook 01 behind `MFAR_TRACE_ENABLED=1`. The notebook automatically rebuilds its feature cache for a traced run, uses hashed source/question identifiers, and writes a run-specific event file. The QA evidence and answer hooks execute only when the optional QA proxy is enabled. No Kaggle runtime output has yet been supplied for this instrumented version, so coverage and observational equivalence remain unverified.
