@@ -90,3 +90,8 @@ Raw benchmark JSONs, feature caches and large per-question exports are not store
 ## Reporting guidance
 
 Distinguish evidence retention from answer accuracy, Stage A from Stages B/C, and a held-out split from independent replication. The research process was iterative rather than preregistered. The Stage C ablation suggests the message-similarity group accounts for much of the measured gain; do not attribute the full improvement to role-awareness without further controlled experiments.
+
+
+## Next empirical evaluation: end-to-end reader QA
+
+The current evidence-recall results do not establish that selected memories improve generated answers. Notebook 05 now includes an end-to-end reader QA experiment on the pinned LoCoMo data. It uses a fixed FLAN-T5-small reader, frozen LongMemEval-trained selectors, an exact tokenizer-counted storage budget, and conversation-cluster bootstrap inference. The protocol is implemented but awaits execution. Because LoCoMo was already used for selector-transfer analysis and has only ten conversation clusters, this is exploratory answer-quality evidence rather than untouched independent confirmation. See [the reader QA protocol](results/followup_2026/END_TO_END_READER_QA_PROTOCOL.md).
