@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
-from .inference import paired_bootstrap
+from .features import FEATURE_INDEX\nfrom .inference import paired_bootstrap
 from .modeling import fit_scores, make_folds
 from .selection import recalls, selections
 from .tuning import simple_scores, tune_pool
@@ -49,7 +49,7 @@ def evaluate_split_robustness(pools, question_records, valid_ids, *,
         )
         simple = simple_scores(
             pools[primary_pool], dev,
-            {"rec_rank": 2, "log_words": 0, "mean_sim": 8, "novelty": 7},
+            {name: FEATURE_INDEX[name] for name in ("rec_rank", "log_words", "mean_sim", "novelty")},
         )
         simple_means = {
             name: recalls(
