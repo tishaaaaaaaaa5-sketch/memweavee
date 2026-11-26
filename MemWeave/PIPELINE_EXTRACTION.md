@@ -10,7 +10,7 @@ reported outputs.
 |---|---|---|
 | `memweave.features` | Sections 2 / feature cell | Candidate-pool definitions, within-pool z-scoring, 10 feature columns, similarity summaries, feature-group indices |
 | `memweave.selection` | Section 3 selection helpers | Word-cost budget, stable rank and density selection, greedy MMR, evidence recall |
-| `memweave.inference` | Section 3 statistics helpers | Question-level bootstrap, paired bootstrap/sign p-value, Holm correction, verdict classification |
+| `memweave.inference` | Section 3 statistics helpers | Question-level bootstrap, paired bootstrap/sign p-value, Holm correction, verdict classification |\n| `memweave.modeling` | Section 5 | Leakage-aware LR/HGB fitting, deterministic folds, out-of-fold predictions, CV evidence recall |\n| `memweave.tuning` | Section 5 | Development-only C search, backward feature-group elimination, one-standard-error selector choice, simple-rule selection |\n| `memweave.evaluation` | Sections 6–7 | Frozen locked-test results, paired/Holm comparisons, group ablations, mechanism tests, budget sweep |
 
 The implementations retain the notebook's feature ordering, tie handling,
 budget definition, MMR update, bootstrap resampling unit, random seeds, and
@@ -38,3 +38,4 @@ pytest
 The optional `research` extra supplies NumPy, SciPy, pandas and scikit-learn
 used by the research pipeline. The lightweight package and CLI remain usable
 without installing that extra.
+\n\n## Locked-test API boundary\n\n`memweave.tuning.tune_pool` accepts development question IDs and development folds only. Its output is the frozen per-pool configuration. `memweave.evaluation.run_locked_evaluation` then accepts those frozen configurations plus disjoint development/test IDs; it does not search hyperparameters or choose the best simple rule. The synthetic test checks this call sequence and verifies that reported result arrays have the locked-test question count.\n
