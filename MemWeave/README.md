@@ -47,6 +47,11 @@ The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.sch
 
 The Stage B/C notebook now includes an additional candidate-level trace export. The original controlled run produced seven exports; rerun the updated final export cell to generate the eighth `stage_bc_candidate_trace.csv` required by the offline MFAR adapter. Do not interpret its session-retention decisions as a separate retrieval stage or answer evaluation.
 
+
+### MFAR synthetic instrumentation fixture
+
+A backend-independent reference pipeline now emits schema-v0.2.0 traces for a clean path and four controlled synthetic failure scenarios. It is an instrumentation test fixture only; it does not validate MFAR on real conversations or assign oracle labels. See [the reference pipeline guide](docs/MFAR_REFERENCE_PIPELINE.md), [implementation](scripts/mfar_reference_pipeline.py), and [tests](tests/test_mfar_reference_pipeline.py).
+
 ## Canonical notebook sequence
 
 See [the notebook index](notebooks/README.md). The Stage C Kaggle notebook is published at [05_MemWeave_Kaggle_Followup.ipynb](notebooks/05_MemWeave_Kaggle_Followup.ipynb). The obsolete false-positive audit cell and automatic terms-confirmation cell were removed; the corrected audit remains. The six generated CSV/JSON exports are still pending separate publication and privacy review.
