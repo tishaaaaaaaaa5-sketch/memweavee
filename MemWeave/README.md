@@ -95,3 +95,18 @@ Distinguish evidence retention from answer accuracy, Stage A from Stages B/C, an
 ## Next empirical evaluation: end-to-end reader QA
 
 The current evidence-recall results do not establish that selected memories improve generated answers. Notebook 05 now includes an end-to-end reader QA experiment on the pinned LoCoMo data. It uses a fixed FLAN-T5-small reader, frozen LongMemEval-trained selectors, an exact tokenizer-counted storage budget, and conversation-cluster bootstrap inference. The protocol is implemented but awaits execution. Because LoCoMo was already used for selector-transfer analysis and has only ten conversation clusters, this is exploratory answer-quality evidence rather than untouched independent confirmation. See [the reader QA protocol](results/followup_2026/END_TO_END_READER_QA_PROTOCOL.md).
+
+
+## Current artifact and MFAR status (2026-11-27)
+
+The latest dated intake review is [ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md](docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md). It records the uploaded Kaggle execution notebook and ZIP, the recommended archive locations, and the outstanding release checks.
+
+The corrected LoCoMo evidence-span results are now available for both FLAN-T5-small and FLAN-T5-base, and the corrected Long-MT-Bench+ span-budget evaluation is documented in the reader-QA results report. The older “pending execution” protocol paragraph above is historical; use the dated results report for completed outcomes. All are exploratory results with limited conversation clusters.
+
+The corrected LongMemEval leave-one-role-feature-out table is saved in the uploaded consolidated notebook's cell 85. It is descriptive and does not establish causal feature importance; cell 79's separate Long-MT-Bench+ ablation failed and must not be reported as completed.
+
+### MFAR gate
+
+The Stage B/C partial-retention adapter and retention audit are completed and documented in [the dated audit report](results/stage_bc_2026-11-26/MFAR_RETENTION_AUDIT_RESULTS.md). This does **not** validate MFAR end-to-end. The four failure modes remain unobserved in the partial adapter. The next MFAR gate is a real Kaggle execution of the opt-in Notebook 01 instrumentation, followed by event-coverage, lineage, privacy, and traced-versus-untraced output-equivalence checks.
+
+The uploaded ZIP is not yet a verified public release: its internal contents and per-file hashes still need to be extracted and checked, and the upload currently sits at repository root rather than in the dated results artifact directory. Do not treat the ZIP upload alone as proof that all expected exports are present.
