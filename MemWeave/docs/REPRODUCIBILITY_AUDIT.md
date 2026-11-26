@@ -48,3 +48,34 @@ Do not commit raw conversation histories, answers, or session text merely to mak
 ## Claims
 
 Stage B and Stage C are distinct runs with materially different role-aware recall estimates (0.709433 and 0.820638). Report them separately until the source of the difference is understood. Stage C's LoCoMo results are preliminary transfer evidence over ten conversation clusters, not definitive independent replication. Evidence recall is not end-to-end answer accuracy.
+
+
+## Stage B/C controlled reconstruction — artifact audit (2026-11-26)
+
+The user-supplied reconciliation bundle and separately supplied candidate trace were inspected together. The candidate CSV in the bundle is byte-identical to the separately supplied CSV and has SHA-256 `79610897e7401a297434b8a5b9703c9407658a4e4fc04fdd7b56981b6c860065`.
+
+- LongMemEval-S revision: `98d7416c24c778c2fee6e6f3006e7a073259d48f`; SHA-256: `d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442`.
+- LoCoMo revision: `cbfbc1dba6bc53d00625212a0f22d55ffee7c1fc`; SHA-256: `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4`.
+- Source notebook commit: `d642215226fa2a9204bb6d64c4ff0f6447920274`.
+- Split: 235 DEV / 235 TEST; candidate export: 49,140 rows, 2,115 question-condition groups (235 × 9).
+- The seven derived artifacts listed in the audited manifest match their recorded SHA-256 digests. The candidate CSV also matches its recorded digest.
+- Candidate source IDs repeat in 18 question-condition groups across two questions. Repeated rows have the same source ID/content hash; they are retained as distinct ranked occurrences by candidate index. They must not be deduplicated.
+- Cross-checks: candidate-level recall agrees with all 2,115 per-question records; the 1,880 role-aware selected-candidate sets and selected word costs agree with the selection-trace export. Candidate-index list order is not semantically meaningful; compare as sets.
+
+Controlled reconstruction results (evidence recall, not answer accuracy):
+
+| Condition | Mean recall |
+|---|---:|
+| Baseline | 0.404184 |
+| Raw role features, 20k vocabulary | 0.709433 |
+| Raw role features, uncapped vocabulary | 0.684610 |
+| Z-score role features, 20k vocabulary | 0.827021 |
+| Z-score role features, uncapped vocabulary | 0.820638 |
+
+Factorial contrasts: scaling +0.126809 (95% bootstrap CI 0.086596–0.169007); vocabulary-cap factor −0.015603 (CI −0.026241 to −0.006738); message-filter factor 0.000000 (CI 0–0). These are effects in this reconstruction and should not be generalized beyond the tested pipeline. Filtering's zero effect warrants a targeted check of whether the filter changes any candidate messages in this data.
+
+**Statistical reporting correction:** Holm-adjusted p-values in `stage_bc_factorial_summary.csv` apply to the eight variant-vs-baseline paired sign tests. They are not Holm-adjusted tests of the factorial main effects. Factorial effects are reported with paired-question bootstrap intervals. Any manuscript must preserve this distinction.
+
+The candidate trace and detailed CSV exports are not committed as raw repository files in this revision. The audited manifest, checksum inventory, and audit report are committed; retain the original ZIP and CSV as release artifacts under the dataset terms and attach them to a versioned release or approved artifact store. Do not commit source conversations, answers, or raw session text.
+
+The MFAR adapter has not yet been independently executed against this exact user-supplied CSV/manifest pair. Passing unit tests or static consistency checks must not be described as a successful end-to-end adapter run.
