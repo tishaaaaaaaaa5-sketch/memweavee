@@ -40,16 +40,41 @@ Evaluate the eight existing combinations on DEV using cross-validation:
 - TF-IDF vocabulary cap: 20,000 / unlimited;
 - message filter: all messages / valid non-empty user and assistant messages.
 
-### Required validation procedure
+### Validation feasibility audit: source-session grouping
 
-1. Create deterministic folds using the strongest available independent grouping unit (conversation or source-conversation cluster), not random candidate rows.
-2. For each fold, fit the classifier and all learned preprocessing on training folds only.
-3. Apply the same overlap-exclusion rule within each fold: no candidate content hash may cross from validation into training.
-4. Apply the identical 10% word-count proxy budget and stable ranking policy.
-5. Aggregate out-of-fold per-question budgeted evidence recall.
-6. Report mean, paired fold/question differences, uncertainty intervals, and cost/budget utilization for all eight configurations.
-7. If reliable conversation grouping is unavailable, document the limitation and use a conservative grouped proxy; do not describe question-level CV as independent conversation-level validation.
-8. Select one configuration using a predeclared rule, not the maximum of a single noisy point estimate.
+A deterministic 5-fold purge audit was run on the 235 DEV questions (seed 20261126). Each fold held out 47 questions; training initially contained 188. For each fold, every training question sharing at least one `haystack_session_id` with any validation question was removed.
+
+| Fold | Validation | Training before purge | Purged | Retained | Retention |
+|---|---:|---:|---:|---:|---:|
+| 1 | 47 | 188 | 171 | 17 | 9.04% |
+| 2 | 47 | 188 | 160 | 28 | 14.89% |
+| 3 | 47 | 188 | 164 | 24 | 12.77% |
+| 4 | 47 | 188 | 163 | 25 | 13.30% |
+| 5 | 47 | 188 | 166 | 22 | 11.70% |
+
+Across DEV, there are 10,140 unique source sessions: 9,125 occur in one question, 920 occur in two, 89 in three, and 6 in four. Despite most sessions being question-unique, shared-session links connect all 235 questions into one connected component. The five-fold purge retains only 9.04%–14.89% of training questions.
+
+**Decision:** do not use this purged 5-fold procedure for model selection. Its training sets are too small to support a stable comparison. Do not replace it with ordinary random question-level CV and call that independent validation.
+
+### Required next validation-design step
+
+Before fitting or selecting any new configuration, inspect the benchmark schema and provenance to distinguish:
+
+- the independent sampling unit (for example, the original conversation/person/task, if explicitly present);
+- the retrieved haystack sessions attached to a question;
+- candidate content hashes and other direct duplicate indicators.
+
+The `haystack_session_ids` overlap graph may describe shared retrieval context rather than the benchmark's independent sampling unit. Do not assume it is the correct fold-group key without verifying its semantics.
+
+Then choose and document a defensible design based on fields actually present:
+
+1. If a genuine independent source-group field exists and yields viable groups, use deterministic grouped folds on that field, with candidate-hash overlap exclusion and train-only preprocessing.
+2. If no viable independent grouping exists, keep DEV as a development set, avoid claims of independent cross-validation, and obtain a new independent conversation-level/external confirmation set before confirmatory claims.
+3. Report the number of groups, group-size distribution, fold sizes, and retained training counts before running any model.
+4. Apply the same 10% word-count proxy budget and stable ranking policy only after the validation design is approved.
+5. Keep the existing TEST set for historical comparability and diagnostics; do not use it to choose features, thresholds, or hyperparameters.
+
+No configuration is selected by this document. The next decision is about the correct independent sampling unit, not another model run.
 
 ### Predeclared selection rule
 
