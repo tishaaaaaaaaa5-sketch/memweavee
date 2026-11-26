@@ -46,14 +46,14 @@ def test_feature_builder_single_candidate_is_finite():
 
 
 @pytest.mark.parametrize("mode,expected", [
-    ("rank", [0]), ("density", [1]), ("mmr", [0, 2]),
+    ("rank", .5, [0]), ("density", .5, [1, 2]), ("mmr", .75, [0, 2]),
 ])
-def test_budget_selection_matches_greedy_rules(mode, expected):
+def test_budget_selection_matches_greedy_rules(mode, budget, expected):
     scores = np.array([0.9, 0.8, 0.7])
     costs = np.array([2., 1., 1.])
     similarity = np.array([[0., .9, .1], [.9, 0., .1], [.1, .1, 0.]])
     selected = select_indices(
-        scores, costs, similarity, .5, mode=mode, redundancy_penalty=.5
+        scores, costs, similarity, budget, mode=mode, redundancy_penalty=.5
     )
     assert selected.tolist() == expected
 
