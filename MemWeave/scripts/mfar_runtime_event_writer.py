@@ -46,6 +46,9 @@ METADATA_KEYS = {
     "evaluation_correct",
     "evaluation_metric",
     "evaluation_value",
+    "seed",
+    "fold",
+    "budget_fraction",
     "stage_note",
 }
 
