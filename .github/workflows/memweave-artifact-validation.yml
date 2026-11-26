@@ -5,12 +5,14 @@ on:
     paths:
       - "MemWeave/results/final_locked_test/**"
       - "MemWeave/scripts/**"
+      - "MemWeave/tests/**"
       - "MemWeave/docs/REPRODUCIBILITY_AUDIT.md"
       - ".github/workflows/memweave-artifact-validation.yml"
   pull_request:
     paths:
       - "MemWeave/results/final_locked_test/**"
       - "MemWeave/scripts/**"
+      - "MemWeave/tests/**"
       - "MemWeave/docs/REPRODUCIBILITY_AUDIT.md"
       - ".github/workflows/memweave-artifact-validation.yml"
   workflow_dispatch:
