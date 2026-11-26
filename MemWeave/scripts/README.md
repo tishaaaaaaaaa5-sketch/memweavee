@@ -37,7 +37,7 @@ python MemWeave/scripts/assemble_mfar_retention_traces.py \
   --output /path/to/mfar_retention_traces.jsonl
 ```
 
-The adapter validates the candidate-pool consistency across variants, checks the manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/MFAR_RETENTION_TRACE_ADAPTER.md).
+The adapter validates candidate-pool consistency across variants, checks manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). Repeated appearances of the same source session are preserved as separate candidate occurrences (keyed by candidate index); they are not deduplicated. A repeated source ID must map to the same content hash. It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/MFAR_RETENTION_TRACE_ADAPTER.md).
 
 This export is an offline benchmark reconstruction, not an instrumented online memory system. SHA-256 hashes are potentially linkable metadata, not anonymization.
 
