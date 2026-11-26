@@ -93,24 +93,26 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 ```text
 .
 ├── README.md
+├── .github/workflows/
 └── MemWeave/
-    ├── README.md                    # project guide and research lineage
-    ├── PROJECT_OVERVIEW.md           # concise project scope
+    ├── README.md
+    ├── PROJECT_OVERVIEW.md
+    ├── docs/
+    │   ├── README.md
+    │   ├── reproducibility/
+    │   └── figures/
     ├── notebooks/
-    │   ├── README.md                # canonical notebook index
-    │   ├── 00_MemWeave_2_0.ipynb
-    │   ├── 01_MemWeave_2_1.ipynb
-    │   ├── 02_MemWeave_2_2.ipynb
-    │   ├── 03_memweave_v2_3_addendum.ipynb
-    │   ├── 04_MemWeave_Final.ipynb
-    │   └── 04_MemWeave_Final_Executed.ipynb
-    └── results/
-        ├── README.md
-        ├── findings_v2_3.txt
-        ├── tables/                  # curated v2.3 tables
-        ├── v2_0/ ... v2_2/          # historical, versioned results
-        └── final_locked_test/       # role-aware held-out audit
+    │   ├── 00–04 canonical research sequence
+    │   └── archive/
+    ├── results/
+    │   ├── final_locked_test/
+    │   ├── v2_0/ … v2_2/
+    │   ├── tables/
+    │   └── artifacts/2026-11-26/
+    └── scripts/
 ```
+
+The Stage B/C, MFAR instrumentation, and extended follow-up materials are organized on the [research follow-up branch](https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/research/memweave-followup-release) and remain under review in [PR #2](https://github.com/tishaaaaaaaaa5-sketch/memweavee/pull/2).
 
 ### Recommended reading order
 
