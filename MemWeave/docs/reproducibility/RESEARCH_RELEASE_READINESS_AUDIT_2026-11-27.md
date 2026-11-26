@@ -9,7 +9,7 @@
 |---|---|---|
 | Research PR #2 integration | 45 changed files; branch comparison with main is diverged (183 commits ahead, 81 behind at audit time). | Rebase/selectively port; do not merge the divergent branch directly. |
 | PR #2 CI | The PR head has a completed successful MemWeave artifact-validation workflow. | Positive software check only; it does not verify missing binary artifacts or privacy. |
-| Research ZIP | Independently extracted from the committed public-repository path. ZIP SHA-256 matches `32bc3f886f569a8fe788ca62b37032fe51d44178184b432539a7b224b7575634`; all 52 manifest-listed files match hashes and sizes; CRC and path checks pass. | Integrity passes. Privacy/licensing remains blocked: one CSV contains 26,913 cleartext LoCoMo spans (~810k characters), and LoCoMo/Long-MT-Bench+ redistribution conditions need explicit treatment. See [archive content audit](RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md). |
+| Research ZIP | The ZIP was withdrawn from the current `main` tree on 2026-11-27 after confirming it contained 26,913 cleartext LoCoMo spans (~810k characters) and other text-bearing outputs with unresolved redistribution terms. | Current public path is removed; sanitized replacement is not yet built. Earlier public Git commits still contain the old ZIP, so this is not a history purge. Do not redistribute historical copies. See [archive content audit](RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md). |
 | Consolidated 88-cell Kaggle notebook | Branch audit reports 78 executed code cells and saved outputs in 74 cells. It is not the canonical source notebook and includes historical diagnostics. | Preserve only as an execution archive after reviewing the actual notebook and outputs; do not replace canonical notebooks. |
 | Stage C research results | Reports describe LongMemEval, LoCoMo and Long-MT-Bench+ results; several raw per-question and audit exports are not committed as standalone artifacts. | Results remain exploratory and partially unaudited. Do not label them independently reproduced. |
 | MFAR | Schema, adapter, retention audit and runtime event validators are proposed/implemented on the research branch. The current Stage B/C adapter covers retention only; real runtime event coverage is not demonstrated. | Treat as instrumentation/design work, not a validated MFAR method. |
@@ -57,7 +57,7 @@ A ZIP passing CRC integrity (`testzip()`) does not establish scientific correctn
 
 - [x] Independently extract and verify the ZIP and all per-file manifest digests.
 - [ ] Complete privacy/data-governance and dataset-license review; specifically decide whether to remove cleartext LoCoMo spans or distribute them with CC BY-NC attribution and non-commercial restrictions.
-- [ ] Publish only the privacy-approved derived CSV/JSON exports with provenance manifests.
+- [ ] Publish only the privacy-approved derived CSV/JSON exports with provenance manifests after resolving Long-MT-Bench+ derived-output terms.
 - [ ] Preserve the consolidated notebook as an archive, not as a canonical notebook replacement.
 - [ ] Publish the corrected role-feature ablation aggregate with an explicit note that it is descriptive and lacks per-question uncertainty in the supplied summary.
 - [ ] Reconcile all reader-QA per-question exports, cluster-bootstrap JSONs, tokenizer/budget audits, reader/model revisions, prompts and sample IDs.
@@ -70,7 +70,7 @@ A ZIP passing CRC integrity (`testzip()`) does not establish scientific correctn
 
 - PR #2: keep open as a research integration draft until the artifact and privacy gates are satisfied. Its successful CI is not a substitute for those gates.
 - PR #3: keep open as a dependent research-specification draft. First rebase it onto current main, then review its sources and novelty statement; do not merge it merely because it contains documentation rather than code.
-- Do not merge binary research artifacts or raw benchmark material until the privacy and license review is complete.
+- Do not merge binary research artifacts or raw benchmark material until the privacy and license review is complete. The previously committed unsanitized ZIP has been removed from the current tree, but no claim of historical Git-data erasure is made.
 
 ## Audit limitation
 
