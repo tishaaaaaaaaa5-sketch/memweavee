@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import stat
 import sys
@@ -60,6 +61,21 @@ def manifest_entries(value: object) -> dict[str, str]:
 
 def main() -> int:
     if not ARCHIVE.is_file():
+        if os.environ.get("MEMWEAVE_ARCHIVE_OPTIONAL") == "1":
+            report = {
+                "status": "withdrawn_pending_sanitized_rebuild",
+                "archive": str(ARCHIVE),
+                "exists": False,
+                "message": "No public research ZIP is currently published. The previous bundle was withdrawn because it contained cleartext benchmark dialogue and text-bearing outputs with unresolved redistribution terms.",
+                "scope": "The absence of the current archive is intentional; this does not erase copies in earlier Git history.",
+            }
+            REPORT_DIR.mkdir(exist_ok=True)
+            (REPORT_DIR / "archive_audit_report.json").write_text(
+                json.dumps(report, indent=2) + "\\n", encoding="utf-8"
+            )
+            print(json.dumps(report, indent=2))
+            print("PASS: archive is intentionally withdrawn pending a sanitized rebuild")
+            return 0
         print(f"FAIL: archive not found: {ARCHIVE}")
         return 1
 
