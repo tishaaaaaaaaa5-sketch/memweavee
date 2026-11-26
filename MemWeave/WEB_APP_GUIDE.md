@@ -1,24 +1,34 @@
 # MemWeave public website and application
 
-## GitHub Pages website
+## Live browser application
 
-The public research website is a static site in `MemWeave/web/`. A GitHub Actions workflow publishes this directory to GitHub Pages when changes reach the `main` branch.
+The GitHub Pages homepage is the MemWeave workspace:
 
-To enable it in the repository:
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, choose **GitHub Actions** as the source.
-3. Merge the website workflow to `main`.
-4. Open the Pages URL shown in the repository's Pages settings.
+https://tishaaaaaaaaa5-sketch.github.io/memweavee/
 
-The website uses relative asset paths so it works at the repository's GitHub Pages project URL.
+The research overview is available at:
 
-## What GitHub Pages can and cannot run
+https://tishaaaaaaaaa5-sketch.github.io/memweavee/research.html
 
-GitHub Pages hosts static HTML, CSS, JavaScript, and other static assets. It does not run Python, FastAPI, SQLite, or other server-side application processes.
+The browser-local workspace supports:
+- Paste a conversation transcript with `User:`, `Assistant:`, or similar speaker labels.
+- Set a word-count memory budget and run a transparent heuristic evidence-retention pass.
+- Inspect selected message units, roles, scoring reasons, and budget usage before saving.
+- Keep a persistent memory store in browser localStorage.
+- Search retained evidence by query terms and inspect matched source snippets.
+- Delete individual memories, export a JSON backup, and import a prior backup.
 
-Accordingly, the Pages site is the public research/portfolio website. It does not provide live private workspaces, memory persistence, or API retrieval. The interactive workspace UI is not exposed on the static site.
+## Data and research scope
 
-## Application backend source
+This is a usable application prototype, not just a landing page. It runs entirely in the browser and does not send conversation data to a backend. Browser storage is local to the current browser profile and device; clearing site data or switching devices can remove or hide the saved workspace. Users should export backups they want to preserve.
+
+The current retention logic is a deliberately transparent heuristic using speaker role, preference/goal language, questions, reasoning/decision cues, and message length. Retrieval is lexical query-term coverage with an exact-phrase bonus. These are application baselines, not the trained role-aware selector, not a model-generated answer system, and not a reproduction of the research evaluation. Scores are not calibrated confidence.
+
+## GitHub Pages limits
+
+GitHub Pages hosts static HTML, CSS, and JavaScript. It does not execute Python, FastAPI, SQLite, or other server-side processes. Therefore this public prototype provides local browser persistence, not shared cloud workspaces, server-side accounts, or cross-device synchronization.
+
+## Optional FastAPI backend (local development)
 
 The FastAPI workspace backend remains in `MemWeave/api/` for local development or future deployment to a Python-capable host.
 
@@ -40,8 +50,4 @@ Set `MEMWEAVE_DB_PATH` to a persistent writable path before launch. The default 
 - `POST /workspaces/{workspace_id}/retrieve` performs lexical-overlap retrieval.
 - `GET /health`, `/results/summary` and `/results/question-types` are research endpoints.
 
-## Security and research scope
-
-The workspace key is a bearer secret. Anyone who obtains it can access that workspace. Do not store sensitive personal information in this early preview. Before wider public launch, add account-based authentication, key rotation, workspace export/deletion, abuse controls, HTTPS, persistent managed storage and backups.
-
-The public workspace retrieval baseline is deterministic lexical overlap. It returns matching source memories and matched terms; it does not call an LLM or generate answers, and it must not be described as the learned research model. Research results shown on the website are scoped to their source evaluations and limitations.
+Before a public server deployment, add account-based authentication, key rotation, workspace export/deletion, abuse controls, HTTPS, managed persistent storage, backups, and operational monitoring.
