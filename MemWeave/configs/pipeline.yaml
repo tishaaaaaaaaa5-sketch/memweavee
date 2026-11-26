@@ -2,6 +2,8 @@
 pipeline:
   longmemeval_path: /path/to/longmemeval_s.json
   output_dir: results/pipeline_run
+  # Optional SQLite index of successful runs; defaults beside output_dir.
+  registry_path: results/run_registry.sqlite3
   max_questions: null
   batch_size: 400
   test_fraction: 0.5
