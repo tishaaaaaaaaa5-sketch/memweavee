@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import sys
 from collections import Counter, defaultdict
@@ -25,6 +26,86 @@ EVENT_TYPES = {
     "answer_generated",
 }
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
+OPAQUE_ID = re.compile(r"^[a-z]{2,8}_[0-9a-f]{16,64}$")
+RUN_ID = re.compile(r"^run_[0-9a-f]{16,64}$")
+EVENT_ID = re.compile(r"^evt_[0-9a-f]{32}$")
+SAFE_ENUMS = {
+    "cost_unit": {"tokens", "words", "word_count_proxy", "whitespace_tokens", "tokenizer_tokens"},
+    "tokenizer": {"whitespace-approx", "tiktoken/cl100k_base", "tiktoken/p50k_base"},
+    "selection_method": {"baseline", "bm25", "recency", "random", "setting_b", "setting_c"},
+    "evaluation_metric": {"accuracy", "containment", "exact_match", "f1", "precision", "recall"},
+}
+HASH_FIELDS = {"config_sha256", "generation_config_sha256", "model_id", "model_revision"}
+INTEGER_FIELDS = {
+    "candidate_count", "selected_count", "retrieved_count", "rank", "top_k",
+    "input_token_count", "output_token_count", "seed", "fold", "latency_ms",
+}
+NUMBER_FIELDS = {"budget", "used_cost", "evaluation_value", "budget_fraction"}
+BOOLEAN_FIELDS = {"evaluation_correct"}
+METADATA_KEYS = set(SAFE_ENUMS) | HASH_FIELDS | INTEGER_FIELDS | NUMBER_FIELDS | BOOLEAN_FIELDS
+
+
+def validate_privacy_contract(event: dict[str, Any], index: int) -> None:
+    require(isinstance(event["run_id"], str) and RUN_ID.fullmatch(event["run_id"]) is not None,
+            f"event {index}: run_id must be an opaque run token")
+    require(isinstance(event["event_id"], str) and EVENT_ID.fullmatch(event["event_id"]) is not None,
+            f"event {index}: event_id must be an opaque event token")
+    require(isinstance(event["question_id"], str) and OPAQUE_ID.fullmatch(event["question_id"]) is not None,
+            f"event {index}: question_id must be an opaque identifier")
+    for field in ("source_session_id", "candidate_occurrence_id"):
+        value = event[field]
+        require(value is None or (isinstance(value, str) and OPAQUE_ID.fullmatch(value) is not None),
+                f"event {index}: {field} must be null or an opaque identifier")
+    for field in ("input_ids", "output_ids"):
+        values = event[field]
+        require(isinstance(values, list) and all(
+            isinstance(value, str) and OPAQUE_ID.fullmatch(value) is not None for value in values
+        ), f"event {index}: {field} must contain only opaque identifiers")
+        require(len(values) == len(set(values)), f"event {index}: duplicate IDs in {field}")
+
+    metadata = event["metadata"]
+    require(isinstance(metadata, dict), f"event {index}: metadata must be an object")
+    unknown = set(metadata) - METADATA_KEYS
+    require(not unknown, f"event {index}: unsupported metadata keys: {sorted(unknown)}")
+    for key, value in metadata.items():
+        if value is None:
+            continue
+        if key in SAFE_ENUMS:
+            require(isinstance(value, str) and value in SAFE_ENUMS[key],
+                    f"event {index}: unsafe or unknown metadata enum for {key}")
+        elif key in HASH_FIELDS:
+            require(isinstance(value, str) and SHA256.fullmatch(value) is not None,
+                    f"event {index}: {key} must be a SHA-256 digest")
+        elif key in INTEGER_FIELDS:
+            require(isinstance(value, int) and not isinstance(value, bool) and value >= 0,
+                    f"event {index}: {key} must be a non-negative integer")
+        elif key in NUMBER_FIELDS:
+            require(isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value),
+                    f"event {index}: {key} must be a finite number")
+        elif key in BOOLEAN_FIELDS:
+            require(isinstance(value, bool), f"event {index}: {key} must be boolean")
+
+    run_meta = event["run_metadata"]
+    require(isinstance(run_meta, dict), f"event {index}: run_metadata must be an object")
+    allowed_run = {"repository_commit", "dataset_revision", "dataset_sha256", "split", "instrumentation_version"}
+    require(not (set(run_meta) - allowed_run), f"event {index}: unsupported run_metadata keys")
+    commit = run_meta.get("repository_commit")
+    require(commit is None or (isinstance(commit, str) and re.fullmatch(r"[0-9a-f]{40}", commit) is not None),
+            f"event {index}: invalid repository_commit")
+    revision = run_meta.get("dataset_revision")
+    require(revision is None or (isinstance(revision, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", revision) is not None),
+            f"event {index}: invalid dataset_revision token")
+    digest = run_meta.get("dataset_sha256")
+    require(digest is None or (isinstance(digest, str) and SHA256.fullmatch(digest) is not None),
+            f"event {index}: invalid dataset_sha256")
+    split = run_meta.get("split")
+    require(split is None or split in {"train", "validation", "dev", "test"},
+            f"event {index}: invalid split")
+    version = run_meta.get("instrumentation_version")
+    require(isinstance(version, str) and len(version.split(".")) == 3
+            and all(part.isdigit() for part in version.split(".")),
+            f"event {index}: invalid instrumentation_version")
+
 FORBIDDEN_TEXT_KEYS = {
     "text", "content", "query", "prompt", "answer", "source_text",
     "retrieved_text", "conversation", "messages",
@@ -76,16 +157,10 @@ def validate(events: list[dict[str, Any]]) -> dict[str, Any]:
         require(not missing, f"event {index}: missing fields {sorted(missing)}")
         require(event["event_schema_version"] == "0.1.0", f"event {index}: unsupported schema version")
         require(event["event_type"] in EVENT_TYPES, f"event {index}: unknown event type")
-        require(isinstance(event["run_id"], str) and event["run_id"], f"event {index}: empty run_id")
-        require(isinstance(event["event_id"], str) and event["event_id"], f"event {index}: empty event_id")
+        validate_privacy_contract(event, index)
         require(event["event_id"] not in event_ids, f"event {index}: duplicate event_id")
         event_ids.add(event["event_id"])
         run_ids.add(event["run_id"])
-        require(isinstance(event["question_id"], str) and event["question_id"], f"event {index}: missing opaque question_id")
-        require(isinstance(event["input_ids"], list) and all(isinstance(x, str) and x for x in event["input_ids"]),
-                f"event {index}: input_ids must be a list of non-empty strings")
-        require(isinstance(event["output_ids"], list) and all(isinstance(x, str) and x for x in event["output_ids"]),
-                f"event {index}: output_ids must be a list of non-empty strings")
         require(len(event["input_ids"]) == len(set(event["input_ids"])), f"event {index}: duplicate input IDs")
         require(len(event["output_ids"]) == len(set(event["output_ids"])), f"event {index}: duplicate output IDs")
         digest = event["content_sha256"]
@@ -95,8 +170,6 @@ def validate(events: list[dict[str, Any]]) -> dict[str, Any]:
             datetime.fromisoformat(event["occurred_at"].replace("Z", "+00:00"))
         except (TypeError, ValueError, AttributeError) as exc:
             raise ValidationError(f"event {index}: invalid occurred_at timestamp") from exc
-        require(isinstance(event["metadata"], dict), f"event {index}: metadata must be an object")
-        require(isinstance(event["run_metadata"], dict), f"event {index}: run_metadata must be an object")
         forbidden = FORBIDDEN_TEXT_KEYS.intersection(event)
         require(not forbidden, f"event {index}: raw-text fields are forbidden: {sorted(forbidden)}")
         forbidden_meta = FORBIDDEN_TEXT_KEYS.intersection(event["metadata"])
