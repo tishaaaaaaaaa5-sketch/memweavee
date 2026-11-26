@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.org/memweave/mfar-trace-v0.1.schema.json",
+  "$id": "urn:memweave:mfar:trace:0.1.0",
   "title": "MemWeave MFAR experiment trace",
   "description": "Privacy-minimizing, provenance-aware trace for one query through the MFAR memory pipeline. Raw conversation text and reference answers are intentionally excluded.",
   "type": "object",
