@@ -37,6 +37,20 @@ def fail(message: str) -> None:
     raise SystemExit(f"ERROR: {message}")
 
 
+def verify_candidate_checksum(path: Path, expected: str | None) -> None:
+    """Verify the optional post-run candidate-export checksum in the manifest."""
+    if expected is None:
+        return
+    if not HEX64.fullmatch(str(expected)):
+        fail("manifest candidate_trace_sha256 must be a full SHA-256 digest")
+    actual = hashlib.sha256(path.read_bytes()).hexdigest()
+    if actual != expected:
+        fail(
+            "candidate CSV SHA-256 does not match manifest: "
+            f"expected {expected}, got {actual}"
+        )
+
+
 def load_json(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -334,16 +348,7 @@ def main() -> int:
     manifest = load_json(args.manifest)
     # Optional post-run checksum binds the separately exported candidate CSV
     # to an audit-enriched copy of the notebook manifest.
-    expected_candidate_sha256 = manifest.get("candidate_trace_sha256")
-    if expected_candidate_sha256 is not None:
-        if not HEX64.fullmatch(str(expected_candidate_sha256)):
-            fail("manifest candidate_trace_sha256 must be a full SHA-256 digest")
-        actual_candidate_sha256 = hashlib.sha256(args.candidates.read_bytes()).hexdigest()
-        if actual_candidate_sha256 != expected_candidate_sha256:
-            fail(
-                "candidate CSV SHA-256 does not match manifest: "
-                f"expected {expected_candidate_sha256}, got {actual_candidate_sha256}"
-            )
+    verify_candidate_checksum(args.candidates, manifest.get("candidate_trace_sha256"))
     if not manifest.get("longmemeval_revision") or not HEX64.fullmatch(str(manifest.get("longmemeval_sha256", ""))):
         fail("manifest must contain LongMemEval revision and full SHA-256 checksum")
     if manifest.get("pool") != "same_pipeline":
