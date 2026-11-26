@@ -135,3 +135,50 @@ A paired bootstrap resampled the 10 conversation clusters (20,000 replicates) fo
 The token-F1 intervals for all three memory methods lie below zero. For exact match, the role-aware interval lies below zero, baseline reaches zero at its upper endpoint, and recency's interval crosses zero. These are paired cluster-bootstrap intervals over only 10 conversations and should remain exploratory.
 
 A second-reader validation was initiated with `google/flan-t5-base`; the pasted execution log confirms model loading but does not include generated predictions or QA metrics. No second-reader result is reported until those metrics are available.
+
+
+## Consolidated follow-up: second reader, lexical support proxy, budget audit, and dataset inventory
+
+The consolidated follow-up completed 800/800 generations with `google/flan-t5-base` on the same 200-question sample (four methods; 10 LoCoMo conversation clusters). The second-reader run used the whole-session prompt set.
+
+### Second-reader QA results: FLAN-T5-base
+
+| Method | n | Exact match | Token F1 |
+|---|---:|---:|---:|
+| Baseline | 200 | 0.010 | 0.0307 |
+| Question-only | 200 | 0.005 | 0.0057 |
+| Recency | 200 | 0.010 | 0.0331 |
+| Role-aware | 200 | 0.010 | 0.0272 |
+
+Unlike the FLAN-T5-small prefix-packed result, role-aware did not lead under this second-reader/whole-session condition: recency and baseline had higher mean token F1. This does not isolate a reader-model effect because the strongest FLAN-T5-small result used prefix packing while the FLAN-T5-base follow-up used whole-session packing. Reader and packing policy are confounded in this cross-run comparison. No paired cluster-bootstrap interval for these second-reader differences is reported here.
+
+### Lexical evidence-support proxy
+
+| Method | n | Mean lexical support | Median lexical support | Mean answer content tokens |
+|---|---:|---:|---:|---:|
+| Baseline | 200 | 0.6709 | 0.6667 | 2.820 |
+| Question-only | 200 | Not defined | Not defined | 2.970 |
+| Recency | 200 | 0.6765 | 0.6667 | 2.735 |
+| Role-aware | 200 | 0.6940 | 1.0000 | 2.965 |
+
+The question-only support statistic is undefined because it has no retrieved context. This proxy measures lexical overlap only; it is not semantic entailment, factual grounding, or a validated hallucination metric. The small differences should not be interpreted as proof that one method is more grounded.
+
+### Exact tokenizer-budget audit
+
+| Method | n | Mean selected memory tokens | Mean memory budget | Mean reader input tokens | Maximum reader input tokens | All within limit |
+|---|---:|---:|---:|---:|---:|---|
+| Baseline | 200 | 1851.90 | 1955.3 | 230.465 | 512 | Yes |
+| Recency | 200 | 1814.40 | 1955.3 | 196.565 | 512 | Yes |
+| Role-aware | 200 | 1783.93 | 1955.3 | 131.285 | 512 | Yes |
+
+The audit confirms that all measured reader inputs stayed within the 512-token cap. The prefix-versus-whole consistency check also confirmed equality of selected-memory token counts and budget caps across the two packing conditions. Note that selected-memory token budget and final reader-input token count are different quantities: whole-session packing can leave unused reader-window capacity when complete sessions do not fit.
+
+### Dataset inventory and independence
+
+The inventory identified 1,536 eligible QA questions in the available dataset. The existing reader sample contains 200, leaving 1,336 additional eligible questions. All belong to the same 10 conversation clusters. Expanding question coverage can improve within-dataset coverage, but it does not increase the number of independent conversation clusters.
+
+### Interpretation and next steps
+
+The small-reader prefix-packed run showed a strong role-aware point estimate, but the base-reader whole-session run did not reproduce that ranking. Because the packing policies differ, the cross-reader comparison is not a clean model-size replication. The evidence supports treating the current downstream result as reader-and-packer dependent and exploratory, rather than claiming a general role-aware answer-quality gain.
+
+Next validation should use a crossed design: evaluate both FLAN-T5-small and FLAN-T5-base under both prefix and whole-session packing on the same questions, with the same selectors, prompt template, input cap, and decoding settings. Then report paired conversation-cluster bootstrap intervals for each within-packing selector contrast and reader-by-packing interaction. A genuinely independent dataset with more conversation clusters remains necessary. Keep the lexical-support measure explicitly labeled as a proxy, not groundedness.
