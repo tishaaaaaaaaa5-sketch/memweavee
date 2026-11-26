@@ -65,3 +65,14 @@ python MemWeave/scripts/audit_mfar_retention_traces.py \
 ```
 
 This reports candidate/retained gold counts, retention recall and precision, and word-count-proxy budget utilization by question and variant. It also checks candidate-to-stored provenance and cross-variant candidate-pool consistency. It uses only the original trace JSONL and the Python standard library. It does not create synthetic data or infer construction, compression, retrieval, or answering labels. See [the audit note](../docs/MFAR_RETENTION_AUDIT.md).
+
+## Validate cross-stage trace references
+
+After assembling real traces, run the referential-integrity validator:
+
+```bash
+python MemWeave/scripts/validate_mfar_trace_integrity.py \
+  --input /path/to/mfar_retention_traces.jsonl
+```
+
+This complements JSON Schema validation by checking that memory-to-source lineage, transformation inputs/outputs, and answer-to-retrieved-evidence references resolve within each trace. It also rejects answer/retrieval records that contradict the corresponding unobserved-stage flags. It does not infer missing events or failure labels.
