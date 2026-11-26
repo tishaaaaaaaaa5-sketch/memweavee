@@ -52,29 +52,36 @@ A deterministic 5-fold purge audit was run on the 235 DEV questions (seed 202611
 | 4 | 47 | 188 | 163 | 25 | 13.30% |
 | 5 | 47 | 188 | 166 | 22 | 11.70% |
 
-Across DEV, there are 10,140 unique source sessions: 9,125 occur in one question, 920 occur in two, 89 in three, and 6 in four. Despite most sessions being question-unique, shared-session links connect all 235 questions into one connected component. The five-fold purge retains only 9.04%–14.89% of training questions.
+Across DEV, there are 10,140 unique haystack source sessions: 9,125 occur in one question, 920 occur in two, 89 in three, and 6 in four. Shared-session links connect all 235 questions into one connected component. The purge retains only 9.04%–14.89% of training questions.
 
-**Decision:** do not use this purged 5-fold procedure for model selection. Its training sets are too small to support a stable comparison. Do not replace it with ordinary random question-level CV and call that independent validation.
+**Decision:** do not use haystack-session purging for model selection. It removes too much training data and haystack overlap may represent shared retrieval context rather than shared sampling units. Do not replace it with ordinary random question-level CV and call that independent validation.
 
-### Required next validation-design step
+### Provisional independent-unit proxy: answer sessions
 
-Before fitting or selecting any new configuration, inspect the benchmark schema and provenance to distinguish:
+The DEV schema exposes `answer_session_ids`, but no explicit person, conversation, or task identifier at the record's top level. A read-only overlap audit found:
 
-- the independent sampling unit (for example, the original conversation/person/task, if explicitly present);
-- the retrieved haystack sessions attached to a question;
-- candidate content hashes and other direct duplicate indicators.
+- 434 unique answer-session IDs across DEV;
+- 3 IDs are shared by multiple questions;
+- each shared ID occurs in exactly 2 questions (maximum reuse = 2);
+- reuse distribution: 431 IDs occur once, 3 occur twice.
 
-The `haystack_session_ids` overlap graph may describe shared retrieval context rather than the benchmark's independent sampling unit. Do not assume it is the correct fold-group key without verifying its semantics.
+This is substantially less connected than the haystack-session graph. It is a more defensible *provisional grouping proxy* because it tracks answer provenance rather than every retrieved context session. It is not proof that questions are statistically independent: the dataset documentation and upstream sampling process would still be needed to establish the true independent unit.
 
-Then choose and document a defensible design based on fields actually present:
+### DEV-only grouped validation protocol
 
-1. If a genuine independent source-group field exists and yields viable groups, use deterministic grouped folds on that field, with candidate-hash overlap exclusion and train-only preprocessing.
-2. If no viable independent grouping exists, keep DEV as a development set, avoid claims of independent cross-validation, and obtain a new independent conversation-level/external confirmation set before confirmatory claims.
-3. Report the number of groups, group-size distribution, fold sizes, and retained training counts before running any model.
-4. Apply the same 10% word-count proxy budget and stable ranking policy only after the validation design is approved.
-5. Keep the existing TEST set for historical comparability and diagnostics; do not use it to choose features, thresholds, or hyperparameters.
+The accompanying final section in `notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb` implements the next experiment:
 
-No configuration is selected by this document. The next decision is about the correct independent sampling unit, not another model run.
+1. Build connected components of DEV questions linked by shared `answer_session_ids`; keep each component intact.
+2. Use deterministic five-fold `GroupKFold` over those components.
+3. For each fold, train on the other DEV questions and exclude training candidate hashes present in that fold's validation questions.
+4. Fit the existing `LogisticRegression(C=0.3, class_weight="balanced", max_iter=500)` reference model and score the baseline plus all eight factorial configurations.
+5. Evaluate the unchanged 10% word-count proxy budget and use mean out-of-fold budgeted evidence recall as the primary selection endpoint.
+6. Compute uncertainty by bootstrapping answer-session connected components, not individual questions.
+7. Save privacy-minimised per-question results, fold assignments, summary, and a run manifest.
+
+The cell uses DEV only for fitting, configuration comparison, and selection. It does not use TEST labels or outcomes. It explicitly reports group counts, fold sizes, candidate-hash exclusions, and group-bootstrap intervals. If fewer than five connected groups exist, or a fold loses a class after hash exclusion, it stops rather than silently changing the protocol.
+
+**Interpretation boundary:** call this answer-session-grouped DEV validation, not definitive conversation-independent validation. If upstream documentation identifies a stronger sampling unit, replace this proxy before making confirmatory claims. The existing TEST remains historical comparison only.
 
 ### Predeclared selection rule
 
