@@ -74,7 +74,7 @@ The accompanying final section in `notebooks/06_Stage_BC_Controlled_Reconciliati
 1. Build connected components of DEV questions linked by shared `answer_session_ids`; keep each component intact.
 2. Use deterministic five-fold `GroupKFold` over those components.
 3. For each fold, train on the other DEV questions and exclude training candidate hashes present in that fold's validation questions.
-4. Fit the existing `LogisticRegression(C=0.3, class_weight="balanced", max_iter=500)` reference model and score the baseline plus all eight factorial configurations.
+4. Refit the `HashingVectorizer`-based TF-IDF IDF transformer inside each fold using only post-overlap-exclusion training candidate sessions; validation sessions are transform-only. Rebuild the base similarity features from that fold-local representation. Then fit the existing `LogisticRegression(C=0.3, class_weight="balanced", max_iter=500)` reference model and score the baseline plus all eight factorial configurations.
 5. Evaluate the unchanged 10% word-count proxy budget and use mean out-of-fold budgeted evidence recall as the primary selection endpoint.
 6. Compute uncertainty by bootstrapping answer-session connected components, not individual questions.
 7. Save privacy-minimised per-question results, fold assignments, summary, and a run manifest.
