@@ -9,7 +9,7 @@
 |---|---|---|
 | Research PR #2 integration | 45 changed files; branch comparison with main is diverged (183 commits ahead, 81 behind at audit time). | Rebase/selectively port; do not merge the divergent branch directly. |
 | PR #2 CI | The PR head has a completed successful MemWeave artifact-validation workflow. | Positive software check only; it does not verify missing binary artifacts or privacy. |
-| Research ZIP | Audit note records 52 files, ZIP SHA-256 `32bc3f886f569a8fe788ca62b37032fe51d44178184b432539a7b224b7575634`, and a successful Kaggle `testzip()`. The binary is not present in the PR #2 tree inspected for this audit. | Not independently extracted; no per-file manifest reconciliation or privacy clearance. Not approved for publication. |
+| Research ZIP | Independently extracted from the committed public-repository path. ZIP SHA-256 matches `32bc3f886f569a8fe788ca62b37032fe51d44178184b432539a7b224b7575634`; all 52 manifest-listed files match hashes and sizes; CRC and path checks pass. | Integrity passes. Privacy/licensing remains blocked: one CSV contains 26,913 cleartext LoCoMo spans (~810k characters), and LoCoMo/Long-MT-Bench+ redistribution conditions need explicit treatment. See [archive content audit](RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md). |
 | Consolidated 88-cell Kaggle notebook | Branch audit reports 78 executed code cells and saved outputs in 74 cells. It is not the canonical source notebook and includes historical diagnostics. | Preserve only as an execution archive after reviewing the actual notebook and outputs; do not replace canonical notebooks. |
 | Stage C research results | Reports describe LongMemEval, LoCoMo and Long-MT-Bench+ results; several raw per-question and audit exports are not committed as standalone artifacts. | Results remain exploratory and partially unaudited. Do not label them independently reproduced. |
 | MFAR | Schema, adapter, retention audit and runtime event validators are proposed/implemented on the research branch. The current Stage B/C adapter covers retention only; real runtime event coverage is not demonstrated. | Treat as instrumentation/design work, not a validated MFAR method. |
@@ -45,25 +45,18 @@ The opt-in runtime hooks still require a real traced run on approved data, event
 
 ## Artifact and privacy release gates
 
-The ZIP is reported as containing 52 files, but the binary is absent from the PR #2 tree inspected for this audit. The claimed ZIP digest and archive test were reported by the Kaggle export cell; they were not independently recomputed here.
+The ZIP has now been independently extracted and its SHA-256, CRCs, paths, and all 52 manifest-listed file hashes and byte sizes have been verified. The full findings are recorded in [RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md](RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md).
 
-Before attaching or publishing the ZIP:
+The integrity result does **not** clear the archive for release. `locomo_reader_qa_evidence_span_flan_t5_base/evidence_span_selections.csv` contains 26,913 cleartext LoCoMo-derived spans (~810k characters) across 600 rows. The archive also contains text-bearing reader predictions and shortened question hashes. A narrow scan found no email/API-key/private-key patterns, but that is not a full privacy review.
 
-1. Obtain the exact uploaded ZIP and the corresponding `SHA256_MANIFEST.json`.
-2. Recompute the ZIP SHA-256 and compare it with the recorded value.
-3. Extract into an isolated temporary directory; enumerate every path, byte size and SHA-256.
-4. Reject path traversal, symlinks, unexpected executable files and unlisted archive entries.
-5. Reconcile every extracted file with the manifest and expected artifact inventory.
-6. Inspect file contents for raw conversations, session text, user identifiers, answers, prompts, credentials, access tokens, and linkable identifiers or hashes.
-7. Check dataset terms, redistribution permissions, attribution and access restrictions.
-8. Publish only the approved minimal derived artifacts; retain restricted raw material outside the public repository.
+The upstream LoCoMo dataset is CC BY-NC 4.0; the archive does not include the corresponding attribution/license notice or a modification notice. Long-MT-Bench+ result outputs are also present, while the inspected dataset card does not state a license. These issues must be resolved before the research ZIP is described as privacy-cleared or approved for public redistribution.
 
-A ZIP passing CRC integrity (`testzip()`) does not establish manifest integrity, scientific correctness, privacy safety, or redistribution permission.
+A ZIP passing CRC integrity (`testzip()`) does not establish scientific correctness, privacy safety, or redistribution permission.
 
 ## Required research-release work
 
-- [ ] Independently extract and verify the ZIP and all per-file manifest digests.
-- [ ] Complete privacy/data-governance and dataset-license review.
+- [x] Independently extract and verify the ZIP and all per-file manifest digests.
+- [ ] Complete privacy/data-governance and dataset-license review; specifically decide whether to remove cleartext LoCoMo spans or distribute them with CC BY-NC attribution and non-commercial restrictions.
 - [ ] Publish only the privacy-approved derived CSV/JSON exports with provenance manifests.
 - [ ] Preserve the consolidated notebook as an archive, not as a canonical notebook replacement.
 - [ ] Publish the corrected role-feature ablation aggregate with an explicit note that it is descriptive and lacks per-question uncertainty in the supplied summary.
@@ -81,4 +74,4 @@ A ZIP passing CRC integrity (`testzip()`) does not establish manifest integrity,
 
 ## Audit limitation
 
-This audit inspected GitHub branch/PR metadata and the text files available in the research branch. It did not have the binary ZIP, the Kaggle runtime, or the complete raw benchmark artifacts available for independent extraction or rerun. Accordingly, all archive contents, dataset digests and reported experiment outputs remain attributed to the supplied research audit records until independently verified.
+This audit inspected GitHub branch/PR metadata and text files, then independently extracted and checked the committed research ZIP through a repository CI artifact. It did not rerun the Kaggle notebook, retrain models, or independently recompute the benchmark source-dataset digests. Archive integrity is independently verified; experimental results and scientific reproducibility are not.
