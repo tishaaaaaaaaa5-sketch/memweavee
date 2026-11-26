@@ -12,7 +12,7 @@ from .inference import paired_bootstrap, holm_adjust, classify_difference
 from .modeling import fit_scores
 from .selection import recalls, selections, select_indices
 from .tuning import simple_scores
-from .features import feature_indices
+from .features import feature_indices, FEATURE_INDEX
 
 PRIMARY_FAMILY = (
     "LR vs best simple rule (chosen on dev)",
@@ -59,7 +59,7 @@ def _random_recalls(pool_data, question_ids, chosen):
 
 
 def _simple_scores(pool_data, question_ids):
-    indices = {"rec_rank": 2, "log_words": 0, "mean_sim": 8, "novelty": 7}
+    indices = {name: FEATURE_INDEX[name] for name in ("rec_rank", "log_words", "mean_sim", "novelty")}
     return simple_scores(pool_data, question_ids, indices)
 
 
