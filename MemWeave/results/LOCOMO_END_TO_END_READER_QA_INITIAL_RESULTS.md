@@ -252,3 +252,50 @@ The role-aware packed gold-session recall equals its retrieved gold-session reca
 **Next:** preserve these results, then move to independent-dataset validation with conversation-level cluster reporting. Follow with targeted ablations of role features and memory budget. Do not describe the current result as proof of semantic grounding or broad generalization.
 
 Artifacts were saved in the Kaggle runtime under `locomo_reader_qa_evidence_span_flan_t5_base`; raw CSV/JSON artifacts have not been added to the repository by this documentation update.
+
+
+## External conversational transfer: Long-MT-Bench+ with corrected span-level budget
+
+An initial Long-MT-Bench+ transfer attempt used a greedy whole-session admission rule. Its audit found that all three memory selectors selected identical session lists on all 288 questions; 264/288 questions received no packed session. Those results are retained as a failed packing diagnostic and are not interpreted as a test of selector quality.
+
+The corrected experiment moved the memory-budget decision to the span level. It evaluated 288 questions across 11 conversations with `google/flan-t5-base`, four methods, deterministic generation, an exact 10% tokenizer-based memory budget, and a 512-token reader-input cap. Session-level selector scores and lexical span similarity were combined for span ranking; selected spans were packed within the fixed memory budget. All 1,152 method/question rows completed. Every question received context for the three memory methods, all memory budgets were respected, and all reader inputs were within 512 tokens.
+
+### Results
+
+| Method | n | Exact match | Token F1 | Mean reader input tokens | Mean packed sessions | Mean packed spans |
+|---|---:|---:|---:|---:|---:|---:|
+| Baseline | 288 | 0.0000 | 0.082333 | 510.913 | 1.656 | 24.278 |
+| Question-only | 288 | 0.0000 | 0.006017 | 55.444 | 0.000 | 0.000 |
+| Recency | 288 | 0.0035 | 0.080957 | 510.420 | 2.205 | 21.365 |
+| Role-aware | 288 | 0.0035 | 0.144299 | 510.972 | 1.344 | 20.396 |
+
+### Paired conversation-cluster bootstrap
+
+The paired bootstrap resampled the 11 conversation clusters (20,000 replicates):
+
+| Contrast | Metric | Difference | 95% CI |
+|---|---|---:|---:|
+| Role-aware − baseline | Token F1 | +0.062667 | [+0.044136, +0.082037] |
+| Role-aware − recency | Token F1 | +0.063443 | [+0.045635, +0.081690] |
+| Role-aware − baseline | Exact match | +0.003497 | [0.000000, +0.010490] |
+| Role-aware − recency | Exact match | 0.000000 | [0.000000, 0.000000] |
+
+### Budget audit
+
+| Method | Mean memory used | Mean memory budget | Mean selected spans | Mean packed spans | Zero-packed questions |
+|---|---:|---:|---:|---:|---:|
+| Baseline | 2184.295 | 2185.201 | 93.042 | 24.278 | 0 |
+| Recency | 2184.295 | 2185.201 | 83.490 | 21.365 | 0 |
+| Role-aware | 2184.385 | 2185.201 | 89.903 | 20.396 | 0 |
+
+All three methods used essentially the full available memory budget, and none produced an empty packed context. Role-aware achieved the highest token F1 while packing fewer spans on average than baseline and recency. This is consistent with more useful evidence selection under the tested scoring and packing procedure, but it does not by itself establish why the answer metric improved.
+
+### Interpretation and limits
+
+This is encouraging external-transfer evidence: role-aware token F1 exceeded baseline and recency by about 0.063, with both 11-cluster paired bootstrap intervals above zero. Exact match remained extremely low and did not show a meaningful advantage over recency. The result therefore supports a claim about token-level lexical answer overlap in this setup, not a broad claim of exact answer correctness.
+
+The benchmark contains only 11 conversation clusters, so cluster-bootstrap uncertainty remains limited by the small number of independent conversations. Token F1 and exact match are lexical metrics, not semantic entailment or factual-grounding evaluations. The span-ranking procedure uses lexical similarity and the combined session/span score; it is not a semantic evidence verifier. This experiment should be described as exploratory external transfer, not definitive independent validation.
+
+The original whole-session attempt is not pooled with this corrected run: it had a different admission bottleneck and identical selected-session lists across selectors. Raw CSV outputs remain in the Kaggle runtime at `long_mt_bench_plus_span_budget_flan_t5_base`; they have not been committed as raw artifacts in this documentation update.
+
+**Decision:** retain this corrected Long-MT-Bench+ result as positive but limited external evidence. No further rerun of this configuration is required. Next research work should move to targeted ablations of role features and budget sensitivity, while preserving the current result and its limitations.
