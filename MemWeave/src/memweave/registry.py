@@ -68,7 +68,7 @@ class RunRegistry:
             "config_json": json.dumps(config, sort_keys=True, default=str),
             "summary_json": json.dumps(summary, sort_keys=True, default=str),
         }
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             connection.execute(
                 """INSERT INTO runs
                 (run_id, created_at, status, output_dir, input_sha256,
@@ -82,7 +82,7 @@ class RunRegistry:
     def list_runs(self, limit: int = 20) -> list[dict[str, Any]]:
         if not isinstance(limit, int) or limit < 1 or limit > 1000:
             raise ValueError("limit must be an integer between 1 and 1000")
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             rows = connection.execute(
                 "SELECT * FROM runs ORDER BY created_at DESC, run_id DESC LIMIT ?",
                 (limit,),
@@ -90,7 +90,7 @@ class RunRegistry:
         return [self._decode(row) for row in rows]
 
     def get(self, run_id: str) -> dict[str, Any]:
-        with self._connect() as connection:
+        with closing(self._connect()) as connection, connection:
             row = connection.execute(
                 "SELECT * FROM runs WHERE run_id = ?", (run_id,)
             ).fetchone()
