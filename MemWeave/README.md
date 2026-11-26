@@ -26,6 +26,12 @@ MemWeave investigates how to retain useful conversational sessions under a const
 
 The follow-up result is not a replacement for the v2.3 result: it is a separate feature experiment and evaluation. See [the final locked-test report](results/final_locked_test/README.md).
 
+
+## Research follow-up and Strategy C
+
+The supplemental [research follow-up notebooks](notebooks/README.md#research-follow-up-notebooks-separate-from-the-canonical-sequence), [Stage B/C reconciliation](results/stage_bc_2026-11-26/README.md), [reader-QA reports](results/followup_2026/README.md), and [MFAR instrumentation design](docs/instrumentation/README.md) are now included in the repository through a selective integration branch. The [Strategy C milestone](docs/RESEARCH_MILESTONE_1.md) is a falsifiable research plan, not a novelty claim or completed new experiment. See the [related-work matrix](docs/RELATED_WORK_MATRIX.md) before making novelty statements.
+
+
 ## Research software platform
 
 MemWeave now includes an installable Python package, command-line interface, YAML experiment configuration, unit tests, CI workflow, read-only results API, and Streamlit research dashboard.
@@ -61,14 +67,28 @@ Before attempting a full rerun, check the committed aggregate artifacts with:
 
     python MemWeave/scripts/validate_release.py
 
+
+This standard-library validator checks internal consistency across the run manifest, paired audit JSON, and question-type CSV. A pass is not a model rerun or independent replication; the current dataset checksum and per-question export are still missing. See the [reproducibility utilities](scripts/README.md) and [reproducibility audit](docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
+
+For a full rerun, use a clean kernel and preserve exact notebook version and outputs, dataset names and SHA-256 checksums, Python and package versions, split seed, model parameters, per-question result CSVs and statistical audit outputs.
+=======
+
+
 This standard-library validator checks internal consistency across the run manifest, paired audit JSON, and question-type CSV. A pass is not a model rerun or independent replication; the current dataset checksum and per-question export are still missing. See the [reproducibility utilities](scripts/README.md) and [reproducibility audit](docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
 
 For a full rerun, use a clean kernel and preserve exact notebook version and outputs, dataset names and SHA-256 checksums, Python and package versions, split seed, model parameters, per-question result CSVs and statistical audit outputs.
 
+
+## Data and reporting guidance
+=======
 The final role-aware audit uses 50,000 question-level paired bootstrap resamples and 200,000 sign-flip permutations. Its question-level inference is not conversation-clustered.
+
 
 ## Data and reporting guidance
 
-Raw benchmark JSONs, feature caches and large per-question exports are not stored in this source tree. Keep data outside Git unless licensing and size have been reviewed. For large reproducibility artifacts, use Git LFS or a stable artifact host and record checksums.
+
+
+The full raw benchmark JSONs are not stored as standalone files in this source tree. The previously committed `results/artifacts/2026-11-26/MemWeave_Research_Artifacts.zip` was withdrawn from the current `main` tree on 2026-11-27 because it contained cleartext LoCoMo-derived dialogue spans and other text-bearing outputs whose redistribution terms had not been cleared. A sanitized replacement has not yet been generated. The old ZIP remains present in earlier public Git history; deleting the current path does not erase historical commits or copies already downloaded. Do not redistribute that historical archive. See the [research archive content audit](docs/reproducibility/RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md). Keep raw or text-bearing benchmark material outside public Git unless dataset terms, attribution, privacy and size have been reviewed.
+
 
 Distinguish evidence retention from answer accuracy, the original v2.3 experiment from the role-aware follow-up, and a held-out split from independent replication. The research process was iterative rather than preregistered. Do not claim that the six role-aware features have individually established causal effects.

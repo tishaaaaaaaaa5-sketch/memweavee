@@ -3,38 +3,49 @@ on:
   push:
     paths:
       - "MemWeave/src/**"
+      - "MemWeave/PIPELINE_EXTRACTION.md"
       - "MemWeave/tests/**"
       - "MemWeave/pyproject.toml"
       - "MemWeave/configs/**"
       - "MemWeave/dashboard/**"
       - "MemWeave/api/**"
       - ".github/workflows/memweave-platform-ci.yml"
+
   pull_request:
     paths:
       - "MemWeave/src/**"
+      - "MemWeave/PIPELINE_EXTRACTION.md"
       - "MemWeave/tests/**"
       - "MemWeave/pyproject.toml"
       - "MemWeave/configs/**"
       - "MemWeave/dashboard/**"
       - "MemWeave/api/**"
       - ".github/workflows/memweave-platform-ci.yml"
+
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   tests:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: MemWeave
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
       - name: Install package and development dependencies
-        run: python -m pip install -e ".[dev,api]"
+        run: python -m pip install -e ".[dev,api,research]"
+
       - name: Run unit tests
         run: pytest
+
       - name: Check CLI entry point
         run: memweave --version

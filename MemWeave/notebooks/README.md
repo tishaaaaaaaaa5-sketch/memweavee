@@ -11,6 +11,13 @@ This directory contains the canonical notebook sequence for MemWeave. The projec
 | 04 | `04_MemWeave_Final.ipynb` | Leak-controlled evaluation workflow and role-aware locked-test follow-up | Source notebook |
 | 04e | `04_MemWeave_Final_Executed.ipynb` | Executed record of the final locked-test and paired statistical audit | 94 executed code cells; final audit outputs retained; debug conversation outputs removed |
 
+## Research follow-up notebooks (separate from the canonical sequence)
+
+- `05_MemWeave_Kaggle_Followup.ipynb` — role-aware follow-up analyses, LoCoMo transfer summaries, feature ablation tables and final artifact-consistency audit. Its saved outputs are historical records; rerun only with the exact datasets and environment recorded in its manifest.
+- `06_Stage_BC_Controlled_Reconciliation.ipynb` — controlled Stage B/C reconciliation workflow and provenance checks. It does not retroactively make Stage B and Stage C results interchangeable.
+
+These are supplemental research notebooks and do not replace notebooks 00–04 or claim independent replication.
+
 ## Current role-aware evaluation
 
 The final follow-up compares a baseline feature set with the same baseline plus six message-role-aware features. It uses `same_pipeline`, logistic regression (`C=0.3`), a 10% word-count budget proxy, 235 DEV questions and 235 held-out TEST questions. Exact OOF score reconstruction passed for both variants before test evaluation.
