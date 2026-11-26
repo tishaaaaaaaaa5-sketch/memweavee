@@ -30,3 +30,7 @@ jobs:
           python-version: "3.11"
       - name: Validate committed MemWeave artifacts
         run: python MemWeave/scripts/validate_release.py
+      - name: Install MFAR adapter test dependency
+        run: python -m pip install jsonschema
+      - name: Run MFAR retention trace adapter tests
+        run: python -m unittest discover -s MemWeave/tests -p "test_*.py"
