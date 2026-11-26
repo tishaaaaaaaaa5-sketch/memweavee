@@ -39,7 +39,7 @@ The package currently contains shared metric helpers, safe YAML configuration lo
 
 The extracted pipeline records each successful execution in a local SQLite registry. The registry stores a unique run ID, UTC creation time, output directory, input checksum, manifest checksum, configuration, and a compact result summary. It stores provenance pointers and summaries—not raw benchmark data or full per-question predictions.
 
-By default, the registry is written to `results/run_registry.sqlite3` beside the configured pipeline output directory. Override this with `pipeline.registry_path` in `configs/pipeline.yaml`.
+Each run receives its own subdirectory under the configured `pipeline.output_dir`, so later runs do not overwrite earlier artifacts. By default, the registry is written to `run_registry.sqlite3` next to that output root (for the default `results/pipeline_run`, this is `results/run_registry.sqlite3`). Override this with `pipeline.registry_path` in `configs/pipeline.yaml`.
 
 After a pipeline run:
 
