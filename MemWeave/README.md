@@ -50,7 +50,7 @@ The Stage B/C notebook now includes an additional candidate-level trace export. 
 
 ### MFAR implementation scope
 
-MFAR development proceeds only from original benchmark artifacts and observable events from the real memory pipeline. Synthetic failure fixtures are excluded from the research workflow. The existing Stage B/C adapter records retention selection only; retrieval and answer stages remain unobserved until real pipeline instrumentation is available. No failure labels or probabilities may be inferred for those missing stages.
+MFAR development proceeds only from original benchmark artifacts and observable events from the real memory pipeline. Synthetic failure fixtures are excluded from the research workflow. The existing Stage B/C adapter records retention selection only; retrieval and answer stages remain unobserved until real pipeline instrumentation is available. No failure labels or probabilities may be inferred for those missing stages. The original retention traces can now be audited with [the real-data retention audit utility](scripts/audit_mfar_retention_traces.py) and [its usage note](docs/MFAR_RETENTION_AUDIT.md). It reports retained/missed gold candidates and budget-proxy utilization without assigning any MFAR failure labels.
 
 ## Canonical notebook sequence
 
