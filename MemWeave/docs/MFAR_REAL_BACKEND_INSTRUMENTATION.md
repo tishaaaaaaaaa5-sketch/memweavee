@@ -6,7 +6,7 @@
 
 ## 1. Repository inspection result
 
-The canonical MemWeave notebooks and the current repository guide document benchmark candidate ranking, budgeted retention, offline trace assembly, and retention auditing. They do not expose an implemented persistent-memory service with independently observable construction, compression, retrieval, and answer-generation operations.
+The canonical MemWeave notebooks inspected for this milestone (00, 04, 05, and 06), along with the current repository guide and MFAR scripts, document benchmark feature extraction/ranking, budgeted retention, offline trace assembly, and retention auditing. Notebook 06's apparent memory-related match is its privacy-minimised result-export cell, not a persistent-memory backend. No inspected file exposes an implemented memory service with independently observable construction, compression, retrieval, and answer-generation operations.
 
 The MFAR algorithm design and schema are specifications, not a running implementation. The Stage B/C adapter is a benchmark reconstruction of candidate-session retention. It must not be described as a live memory backend.
 
