@@ -52,7 +52,7 @@ The current CLI evaluate mode validates the consistency of committed aggregate a
 
 ### Public web application
 
-A dark research website and private memory-workspace MVP are available in [web/](web/) and [the web app guide](WEB_APP_GUIDE.md). The current workspace uses transparent lexical-overlap retrieval; it is not the learned research selector. See the guide for GitHub Pages publishing, local API setup, and deployment security limitations.
+The GitHub Pages homepage is an interactive, browser-local memory workspace in [web/](web/). It supports transcript ingestion, a configurable word-count retention budget, an inspectable heuristic retention audit, persistent local memory, lexical evidence retrieval, item deletion, and JSON backup/import. Conversation data stays in the visitor's browser; it is not uploaded to a server. The retention and retrieval logic is a transparent application baseline, not the trained research selector or a reproduction of the reported experiments. The research overview is available at [web/research.html](web/research.html). See [the web app guide](WEB_APP_GUIDE.md) for scope and limitations.
 
 ## Canonical notebook sequence
 
