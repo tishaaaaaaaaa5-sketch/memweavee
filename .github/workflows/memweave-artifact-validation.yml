@@ -1,0 +1,32 @@
+name: MemWeave artifact validation
+
+on:
+  push:
+    paths:
+      - "MemWeave/results/final_locked_test/**"
+      - "MemWeave/scripts/**"
+      - "MemWeave/docs/REPRODUCIBILITY_AUDIT.md"
+      - ".github/workflows/memweave-artifact-validation.yml"
+  pull_request:
+    paths:
+      - "MemWeave/results/final_locked_test/**"
+      - "MemWeave/scripts/**"
+      - "MemWeave/docs/REPRODUCIBILITY_AUDIT.md"
+      - ".github/workflows/memweave-artifact-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-aggregate-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate committed MemWeave artifacts
+        run: python MemWeave/scripts/validate_release.py
