@@ -103,3 +103,11 @@ The evidence-span experiment was repeated with FLAN-T5-base on the same 200 ques
 The corrected FLAN-T5-base evaluation covered 288 questions across 11 conversations. The first whole-session admission attempt was invalid as a selector comparison: all three selectors chose identical session lists and 264/288 questions received no context. The corrected span-level budget run completed 1,152 rows, with all memory budgets respected, no empty memory-method contexts, and every reader input within 512 tokens.
 
 Role-aware achieved token F1 **0.1443**, versus baseline **0.0823** and recency **0.0810**. Paired 11-conversation cluster-bootstrap improvements were +0.0627 over baseline (95% CI [+0.0441,+0.0820]) and +0.0634 over recency ([+0.0456,+0.0817]). Exact match was only 0.0035 for role-aware and recency, and 0 for baseline and question-only; do not claim an exact-answer advantage over recency. This is promising exploratory external-transfer evidence on token F1, not broad validation: there are only 11 conversation clusters and the metrics/span ranking are lexical, not semantic grounding. The full tables, budget audit, and caveats are in the [reader QA report](LOCOMO_END_TO_END_READER_QA_INITIAL_RESULTS.md).
+
+
+
+## Current consolidated research synthesis
+
+The current paper-oriented synthesis is maintained in [FINAL_RESEARCH_SYNTHESIS_DRAFT.md](FINAL_RESEARCH_SYNTHESIS_DRAFT.md). It keeps Stage B, Stage C, selector transfer, reader QA, and external Long-MT-Bench+ results separate, and states the claims and limitations supported by each endpoint.
+
+**Release caveat:** this synthesis is a draft based on the reported aggregate results. The privacy-reviewed raw Stage C and downstream QA exports, checksums, and clean-environment artifact validation remain outstanding. See the [reproducibility audit](../docs/REPRODUCIBILITY_AUDIT.md) for the exact release blockers.
