@@ -1,0 +1,738 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:memweave:mfar:trace:0.2.0",
+  "title": "MemWeave MFAR experiment trace",
+  "description": "Privacy-minimizing, provenance-aware trace for one query through the MFAR memory pipeline. Raw conversation text and reference answers are intentionally excluded.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "example_id",
+    "created_at",
+    "query",
+    "observability",
+    "pipeline",
+    "diagnosis",
+    "controller",
+    "outcome",
+    "cost"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.2.0"
+    },
+    "run_id": {
+      "$ref": "#/$defs/id"
+    },
+    "example_id": {
+      "$ref": "#/$defs/id"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dataset": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "revision",
+        "split"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checksum_sha256": {
+          "$ref": "#/$defs/sha256OrNull"
+        },
+        "split": {
+          "enum": [
+            "train",
+            "dev",
+            "test",
+            "transfer",
+            "unknown"
+          ]
+        },
+        "conversation_cluster_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "query_id",
+        "content_sha256"
+      ],
+      "properties": {
+        "query_id": {
+          "$ref": "#/$defs/id"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "question_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/queryRequirement"
+          },
+          "default": []
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_archive_available",
+        "precompression_trace_available",
+        "memory_provenance_available",
+        "retrieval_trace_available",
+        "answer_trace_available"
+      ],
+      "properties": {
+        "source_archive_available": {
+          "type": "boolean"
+        },
+        "precompression_trace_available": {
+          "type": "boolean"
+        },
+        "memory_provenance_available": {
+          "type": "boolean"
+        },
+        "retrieval_trace_available": {
+          "type": "boolean"
+        },
+        "answer_trace_available": {
+          "type": "boolean"
+        },
+        "unavailable_reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_evidence",
+        "candidate_memory",
+        "stored_memory",
+        "retrieved_evidence"
+      ],
+      "properties": {
+        "source_evidence": {
+          "$ref": "#/$defs/evidenceCollection"
+        },
+        "candidate_memory": {
+          "$ref": "#/$defs/memoryCollection"
+        },
+        "stored_memory": {
+          "$ref": "#/$defs/memoryCollection"
+        },
+        "retrieved_evidence": {
+          "$ref": "#/$defs/evidenceCollection"
+        },
+        "transformations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/transformation"
+          },
+          "default": []
+        }
+      }
+    },
+    "diagnosis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "probabilities",
+        "uncertainty",
+        "model_version"
+      ],
+      "properties": {
+        "mode": {
+          "const": "multi_label"
+        },
+        "probabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "construction",
+            "compression",
+            "retrieval",
+            "answering"
+          ],
+          "properties": {
+            "construction": {
+              "$ref": "#/$defs/probabilityOrNull"
+            },
+            "compression": {
+              "$ref": "#/$defs/probabilityOrNull"
+            },
+            "retrieval": {
+              "$ref": "#/$defs/probabilityOrNull"
+            },
+            "answering": {
+              "$ref": "#/$defs/probabilityOrNull"
+            }
+          }
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/probabilityOrNull"
+        },
+        "model_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feature_snapshot": {
+          "type": "object",
+          "description": "Numeric or categorical diagnostic features only; do not put raw text or direct identifiers here.",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "integer",
+              "boolean",
+              "string",
+              "null"
+            ]
+          },
+          "default": {}
+        }
+      }
+    },
+    "oracle_labels": {
+      "description": "Evaluation-only annotations. MUST NOT be supplied to online inference or controller selection.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "construction",
+        "compression",
+        "retrieval",
+        "answering",
+        "annotation_version"
+      ],
+      "properties": {
+        "construction": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "compression": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "retrieval": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "answering": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "annotation_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "annotator_agreement": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selected_action",
+        "policy_version",
+        "reason_codes"
+      ],
+      "properties": {
+        "selected_action": {
+          "enum": [
+            "baseline_retrieval",
+            "source_reingestion",
+            "recompression_recovery",
+            "query_expansion",
+            "reranking",
+            "diversification",
+            "budgeted_topk_increase",
+            "evidence_constrained_answering",
+            "claim_verification",
+            "clarify",
+            "abstain",
+            "diagnostic_only"
+          ]
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "estimated_quality_gain": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "estimated_incremental_cost": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "estimated_risk": {
+          "$ref": "#/$defs/probabilityOrNull"
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "answer_id",
+        "answer_content_sha256",
+        "evidence_ids",
+        "status"
+      ],
+      "properties": {
+        "answer_id": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "answer_content_sha256": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/sha256"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "status": {
+          "enum": [
+            "answered",
+            "qualified",
+            "clarification_requested",
+            "abstained",
+            "error",
+            "not_evaluated"
+          ]
+        },
+        "claim_support": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim_id",
+              "support_status",
+              "evidence_ids"
+            ],
+            "properties": {
+              "claim_id": {
+                "$ref": "#/$defs/id"
+              },
+              "support_status": {
+                "enum": [
+                  "supported",
+                  "partially_supported",
+                  "unsupported",
+                  "contradicted",
+                  "not_checked"
+                ]
+              },
+              "evidence_ids": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                }
+              }
+            }
+          },
+          "default": []
+        }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stored_tokens",
+        "retrieved_tokens",
+        "prompt_tokens",
+        "completion_tokens",
+        "latency_ms",
+        "model_calls"
+      ],
+      "properties": {
+        "stored_tokens": {
+          "$ref": "#/$defs/nonNegativeIntegerOrNull"
+        },
+        "retrieved_tokens": {
+          "$ref": "#/$defs/nonNegativeIntegerOrNull"
+        },
+        "prompt_tokens": {
+          "$ref": "#/$defs/nonNegativeIntegerOrNull"
+        },
+        "completion_tokens": {
+          "$ref": "#/$defs/nonNegativeIntegerOrNull"
+        },
+        "latency_ms": {
+          "$ref": "#/$defs/nonNegativeNumberOrNull"
+        },
+        "model_calls": {
+          "$ref": "#/$defs/nonNegativeIntegerOrNull"
+        },
+        "estimated_cost_usd": {
+          "$ref": "#/$defs/nonNegativeNumberOrNull"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "sha256OrNull": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "probability": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "probabilityOrNull": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/probability"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nonNegativeIntegerOrNull": {
+      "oneOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nonNegativeNumberOrNull": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "queryRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement_id",
+        "kind"
+      ],
+      "properties": {
+        "requirement_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "entity",
+            "event",
+            "attribute",
+            "relation",
+            "time",
+            "other"
+          ]
+        },
+        "target_hash": {
+          "$ref": "#/$defs/sha256OrNull"
+        }
+      }
+    },
+    "evidenceCollection": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidenceRef"
+      },
+      "default": []
+    },
+    "memoryCollection": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/memoryRef"
+      },
+      "default": []
+    },
+    "evidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "source_id",
+        "content_sha256"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/id"
+        },
+        "source_id": {
+          "$ref": "#/$defs/id"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_span": {
+          "$ref": "#/$defs/spanOrNull"
+        },
+        "relevance_grade": {
+          "enum": [
+            "gold",
+            "supporting",
+            "irrelevant",
+            "unknown",
+            null
+          ]
+        }
+      }
+    },
+    "memoryRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "memory_id",
+        "content_sha256",
+        "source_evidence_ids",
+        "created_at"
+      ],
+      "properties": {
+        "memory_id": {
+          "$ref": "#/$defs/id"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_evidence_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "Null when the creation time is not observable; do not substitute trace-generation time."
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "supersedes_memory_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "default": []
+        },
+        "confidence": {
+          "$ref": "#/$defs/probabilityOrNull"
+        }
+      }
+    },
+    "spanOrNull": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end",
+            "unit"
+          ],
+          "properties": {
+            "start": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "unit": {
+              "enum": [
+                "character",
+                "token",
+                "message"
+              ]
+            }
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transformation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transformation_id",
+        "kind",
+        "input_ids",
+        "output_ids",
+        "timestamp",
+        "implementation_version"
+      ],
+      "properties": {
+        "transformation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "extract",
+            "merge",
+            "summarize",
+            "compress",
+            "update",
+            "deduplicate",
+            "delete",
+            "other"
+          ]
+        },
+        "input_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "output_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "implementation_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Non-sensitive transformation metadata only.",
+          "additionalProperties": {
+            "type": [
+              "number",
+              "integer",
+              "boolean",
+              "string",
+              "null"
+            ]
+          },
+          "default": {}
+        }
+      }
+    }
+  }
+}

@@ -39,6 +39,12 @@ See `final_locked_test/question_type_breakdown.csv`. Five of six categories have
 
 The result is from one held-out split of one benchmark. The development process was iterative, not preregistered. The bootstrap resamples questions, not conversation clusters; cluster dependence remains a limitation. The role-aware bundle has not been fully ablated, so category gains do not identify causal feature contributions. Evidence recall is not answer correctness. The 10% budget is based on word count as a proxy, not exact tokenizer tokens.
 
+## 2026 research follow-up and Stage B/C reconciliation
+
+- [`followup_2026/`](followup_2026/README.md) contains the end-to-end reader-QA protocol, preliminary LoCoMo reader results and a research synthesis draft. Reader metrics are exploratory and should not be treated as semantic answer accuracy or independent replication.
+- [`stage_bc_2026-11-26/`](stage_bc_2026-11-26/README.md) contains the MFAR retention-trace audit and Stage B/C reconciliation manifest.
+- [`stage_bc_reconciliation/`](stage_bc_reconciliation/README.md) contains the constrained-novelty tiebreaker protocol/results and the novelty-aware DEV experiment. These are distinct from the locked-test headline result.
+
 ## Provenance and large artifacts
 
 Raw benchmark JSONs, feature caches and large per-question exports are intentionally excluded from ordinary Git history. Store large artifacts in Git LFS or an external artifact host and publish checksums and dataset terms. The uploaded executed notebook used for the latest audit is not silently represented as committed notebook output; the committed notebook remains the source workflow and the aggregate results are captured here.

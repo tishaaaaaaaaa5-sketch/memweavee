@@ -26,6 +26,10 @@ MemWeave investigates how to retain useful conversational sessions under a const
 
 The follow-up result is not a replacement for the v2.3 result: it is a separate feature experiment and evaluation. See [the final locked-test report](results/final_locked_test/README.md).
 
+## Research follow-up and Strategy C
+
+The supplemental [research follow-up notebooks](notebooks/README.md#research-follow-up-notebooks-separate-from-the-canonical-sequence), [Stage B/C reconciliation](results/stage_bc_2026-11-26/README.md), [reader-QA reports](results/followup_2026/README.md), and [MFAR instrumentation design](docs/instrumentation/README.md) are now included in the repository through a selective integration branch. The [Strategy C milestone](docs/RESEARCH_MILESTONE_1.md) is a falsifiable research plan, not a novelty claim or completed new experiment. See the [related-work matrix](docs/RELATED_WORK_MATRIX.md) before making novelty statements.
+
 ## Research software platform
 
 MemWeave now includes an installable Python package, command-line interface, YAML experiment configuration, unit tests, CI workflow, read-only results API, and Streamlit research dashboard.
