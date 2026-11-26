@@ -46,3 +46,17 @@ def test_runs_list_and_show_commands(tmp_path, capsys):
     shown = capsys.readouterr().out
     assert '"manifest_sha256"' in shown
     assert '"n_test": 5' in shown
+
+
+
+def test_default_registry_path_finds_memweave_working_directory_location(
+    monkeypatch, tmp_path
+):
+    from memweave import cli
+
+    registry = tmp_path / "MemWeave" / "results" / "run_registry.sqlite3"
+    registry.parent.mkdir(parents=True)
+    registry.touch()
+    monkeypatch.setattr(cli, "_repo_root", lambda: tmp_path)
+
+    assert cli._default_registry_path() == registry
