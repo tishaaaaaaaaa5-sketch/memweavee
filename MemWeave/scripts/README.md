@@ -94,3 +94,16 @@ Restart the kernel and run all cells in order. Keep `MEMWEAVE_SMOKE` unset. The 
 The event hooks cover source/candidate construction, candidate pools, test-fold retention selections, and (when `CFG["run_qa_proxy"]` is enabled) QA evidence assembly and answer generation. QA generation remains off by default. The retention selection is not a persistent storage write, and the metric-time BM25 ranking is not represented as a live retrieval service call.
 
 The manifest reports observed event counts and question coverage; it does not infer failure labels. Compare traced and untraced outputs on the same approved original data before treating instrumentation as behavior-preserving. Never commit raw benchmark data, event ledgers, prompts, or generated answers. Hashes are linkable metadata, not anonymisation.
+
+
+## Validate the instrumented Notebook 01 runtime event ledger
+
+After a traced original-data Kaggle run, validate the run-specific JSONL event file:
+
+```bash
+python MemWeave/scripts/validate_mfar_runtime_events.py \
+  --input /path/to/mfar_runtime_events_<run_id>.jsonl \
+  --summary-output /path/to/mfar_runtime_event_validation.json
+```
+
+The standard-library validator checks event structure, unique event IDs, source-to-candidate lineage, candidate-pool consistency, retention references, QA-context evidence, answer-to-context linkage, timestamps, and absence of raw-text fields. A pass establishes internal event-ledger consistency only; it does not prove semantic correctness, observational equivalence, or MFAR effectiveness. It does not infer missing stages or failure labels.
