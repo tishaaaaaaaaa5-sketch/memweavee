@@ -19,6 +19,29 @@ extracted modules accept explicit inputs and return explicit outputs.
 | `memweave.robustness` | Section 7 | Repeated stratified split seeds with fresh dev-only tuning and paired per-split diagnostics |
 | `memweave.downstream` | Section 8 | Retrieval-based evidence hit@k and answer-in-context proxy with paired comparisons |
 | `memweave.transfer` | Section 9 | LoCoMo session/evidence parsing, transfer and role-free models, conversation-cluster bootstrap |
+| `memweave.runner` | Orchestration | Local data ingestion, frozen dev tuning, locked-test evaluation, optional robustness/LoCoMo, CSV/JSON outputs and SHA-256 manifest |
+
+## Run the extracted pipeline
+
+Install the research dependencies from `MemWeave/`:
+
+```bash
+pip install -e ".[dev,research]"
+pytest
+```
+
+Copy `configs/pipeline.yaml`, set `pipeline.longmemeval_path` to a local
+LongMemEval-S JSON file, and optionally set `pipeline.locomo_path` to a local
+LoCoMo JSON file. Then run:
+
+```bash
+memweave run --config configs/pipeline.yaml
+```
+
+The runner never downloads benchmark data. It writes CSV tables, a
+`run_config.json`, `findings.txt`, and a `manifest.json` containing SHA-256
+hashes for each output file. Optional robustness seeds rerun dev tuning for
+each split; their overlapping test halves are explicitly descriptive.
 
 ## Leakage and test-set boundary
 
@@ -31,40 +54,34 @@ The model-fitting helpers remove training rows whose deduplicated session
 content appears in any held-out question. The LoCoMo transfer helper trains on
 LongMemEval only and bootstraps at the conversation level, not the QA-row level.
 
-The split-seed robustness helper repeats dev tuning and test scoring for each
-seed. Test halves overlap across seeds, so those rows are diagnostics, not
-independent replications.
-
 The downstream module measures retrieval-based evidence hit@k and literal
-answer-in-context@k. The latter is restricted to short answers that occur in
-gold-session text. This is not end-to-end LLM answer accuracy.
+answer-in-context@k. This is not end-to-end LLM answer accuracy.
 
 ## Parity status and limitations
 
 Synthetic fixtures exercise feature ordering, candidate pools, selection
 semantics, bootstrap calculations, leakage filtering, out-of-fold coverage,
-tuning, locked-test orchestration, downstream retrieval and LoCoMo evidence
-parsing.
+tuning, locked-test orchestration, downstream retrieval, LoCoMo evidence
+parsing and artifact-manifest writing.
 
 **Full benchmark parity has not yet been established.** The canonical notebook
 does not contain executed outputs, and the checked-in executed notebook is a
 different role-aware evaluation pipeline, so its numbers are not valid
 reference outputs for this notebook. The LongMemEval and LoCoMo input datasets
-are also not checked into this repository. A full parity run requires the exact
+are also not checked into the repository. A full parity run requires the exact
 source datasets and a saved execution of the canonical final notebook. No
-benchmark metrics are recomputed or newly claimed by these extraction tests.
+benchmark metrics are claimed by synthetic tests or the extraction itself.
 
-The remaining notebook-bound pieces are findings/resume text generation and
-CSV/JSON artifact writing. A single command-line runner that orchestrates every
-extracted stage is also still pending.
+The downstream answer-in-context measure is a literal string-match proxy, not
+reader-model QA accuracy. Alternative split test halves overlap and are not
+independent replications.
 
-## Install and test
+## Existing aggregate audit
 
-From `MemWeave/`:
+The pre-existing artifact-audit workflow remains separate:
 
 ```bash
-pip install -e ".[dev,research]"
-pytest
+memweave evaluate --config configs/role_aware.yaml
 ```
 
-The optional `research` extra supplies NumPy, SciPy, pandas and scikit-learn.
+That command audits committed aggregate outputs; it does not rerun experiments.
