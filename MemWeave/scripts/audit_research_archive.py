@@ -20,7 +20,8 @@ ARCHIVE = (
     / "MemWeave_Research_Artifacts.zip"
 )
 EXPECTED_SHA256 = "32bc3f886f569a8fe788ca62b37032fe51d44178184b432539a7b224b7575634"
-EXPECTED_MEMBERS = 52
+EXPECTED_MEMBERS = 53
+EXPECTED_MANIFEST_FILES = 52
 REPORT_DIR = Path("archive-audit-output")
 
 
@@ -70,7 +71,8 @@ def main() -> int:
         "sha256": archive_sha,
         "expected_sha256": EXPECTED_SHA256,
         "sha256_matches_notebook_record": archive_sha == EXPECTED_SHA256,
-        "expected_member_count": EXPECTED_MEMBERS,
+        "expected_member_count_including_manifest": EXPECTED_MEMBERS,
+        "expected_manifest_file_count": EXPECTED_MANIFEST_FILES,
     }
     errors: list[str] = []
     warnings: list[str] = []
@@ -84,7 +86,7 @@ def main() -> int:
             report["member_count"] = len(infos)
             report["crc_error_member"] = archive.testzip()
             if len(infos) != EXPECTED_MEMBERS:
-                warnings.append(f"member count is {len(infos)}, notebook record says {EXPECTED_MEMBERS}")
+                errors.append(f"archive has {len(infos)} members; expected {EXPECTED_MEMBERS} including the manifest")
             if report["crc_error_member"] is not None:
                 errors.append(f"ZIP CRC failure in {report['crc_error_member']}")
             if len(names) != len(set(names)):
@@ -132,24 +134,36 @@ def main() -> int:
 
             declared = manifest_entries(manifest)
             report["manifest_declared_file_count"] = len(declared)
+            report["manifest_file_count_field"] = manifest.get("file_count") if isinstance(manifest, dict) else None
+            if len(declared) != EXPECTED_MANIFEST_FILES:
+                errors.append(f"manifest declares {len(declared)} files; expected {EXPECTED_MANIFEST_FILES}")
+            if isinstance(manifest, dict) and manifest.get("file_count") != len(declared):
+                errors.append("manifest file_count field disagrees with its files list")
             matched = []
             mismatched = []
             missing = []
+            size_mismatched = []
             for name, expected in declared.items():
                 if name not in names:
                     missing.append(name)
                     continue
                 actual = sha256_bytes(archive.read(name))
                 (matched if actual == expected else mismatched).append(name)
+                declared_item = next((item for item in manifest.get("files", []) if isinstance(item, dict) and item.get("path") == name), None) if isinstance(manifest, dict) else None
+                if declared_item and declared_item.get("size_bytes") is not None and len(archive.read(name)) != declared_item["size_bytes"]:
+                    size_mismatched.append(name)
             report["manifest_matched_files"] = matched
             report["manifest_mismatched_files"] = mismatched
             report["manifest_missing_files"] = missing
+            report["manifest_size_mismatched_files"] = size_mismatched
             if not declared:
                 errors.append("manifest was found but no supported file/hash entries could be parsed")
             if mismatched:
                 errors.append("one or more manifest SHA-256 values do not match archive contents")
             if missing:
                 errors.append("one or more manifest entries are absent from the archive")
+            if size_mismatched:
+                errors.append("one or more manifest file sizes do not match archive contents")
 
     except (zipfile.BadZipFile, OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         errors.append(f"archive could not be safely parsed: {type(exc).__name__}: {exc}")
