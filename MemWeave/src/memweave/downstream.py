@@ -36,7 +36,8 @@ def downstream_question(pool_item, selected, question_vector, session_matrix,
         raise ValueError("topk must be positive")
     indices = np.asarray(pool_item["h"], dtype=int)
     similarities = session_matrix[indices] @ question_vector.T
-    if hasattr(similarities, "toarray"):\n        similarities = similarities.toarray()
+    if hasattr(similarities, "toarray"):
+        similarities = similarities.toarray()
     similarities = np.asarray(similarities).ravel()
     repeats = _selected_repetitions(selected)
     answer = str(question.get("answer", "")).lower().strip()
