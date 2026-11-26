@@ -13,7 +13,6 @@ import hashlib
 import json
 import math
 import re
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -21,7 +20,6 @@ from typing import Any
 
 HEX20 = re.compile(r"^[0-9a-f]{20}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
-ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 REQUIRED_COLUMNS = {
     "question_id_sha256_20",
     "query_content_sha256",
@@ -278,6 +276,8 @@ def build_trace(
                 "candidate_count": len(rows),
                 "retained_session_count": len(stored_memory),
                 "gold_session_count": sum(row["grade"] == "gold" for row in rows),
+                "retained_word_cost_proxy": sum(row["word_cost"] for row in rows if row["selected"]),
+                "budget_word_cost_proxy": sum(row["word_cost"] for row in rows) * float(manifest.get("budget_fraction", 0.10)),
                 "variant": variant,
             },
         },
