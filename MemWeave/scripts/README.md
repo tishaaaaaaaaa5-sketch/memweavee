@@ -40,3 +40,14 @@ python MemWeave/scripts/assemble_mfar_retention_traces.py \
 The adapter validates the candidate-pool consistency across variants, checks the manifest provenance, creates privacy-minimised session-level traces, and validates every output record against the MFAR 0.2.0 JSON Schema (requires `jsonschema`). It records the budgeted retention selection as such; it does **not** fabricate retrieval evidence, generated answers, failure probabilities, or oracle labels. See [the adapter specification](../docs/MFAR_RETENTION_TRACE_ADAPTER.md).
 
 This export is an offline benchmark reconstruction, not an instrumented online memory system. SHA-256 hashes are potentially linkable metadata, not anonymization.
+
+
+## Run the adapter unit tests
+
+From the repository root:
+
+```bash
+python -m unittest discover -s MemWeave/tests -p "test_*.py"
+```
+
+The schema-validation test uses `jsonschema` when installed and is skipped if the optional dependency is absent. The assembler CLI itself requires `jsonschema`.
