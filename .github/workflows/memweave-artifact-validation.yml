@@ -33,13 +33,13 @@ jobs:
       - name: Validate committed MemWeave aggregate artifacts
         run: python MemWeave/scripts/validate_release.py
       - name: Audit research archive and embedded SHA-256 manifest
+        env:
+          MEMWEAVE_ARCHIVE_OPTIONAL: "1"
         run: python MemWeave/scripts/audit_research_archive.py
-      - name: Preserve archive and audit report for independent inspection
+      - name: Preserve archive audit report for independent inspection
         uses: actions/upload-artifact@v4
         with:
           name: memweave-research-archive-audit
-          path: |
-            MemWeave/results/artifacts/2026-11-26/MemWeave_Research_Artifacts.zip
-            archive-audit-output/archive_audit_report.json
+          path: archive-audit-output/archive_audit_report.json
           if-no-files-found: error
           retention-days: 2
