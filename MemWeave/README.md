@@ -37,13 +37,19 @@ The supplied executed Kaggle notebook regenerated a new result set under pinned 
 
 Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The [Stage C Kaggle follow-up notebook](notebooks/05_MemWeave_Kaggle_Followup.ipynb) is now committed. Its seven generated CSV/JSON result exports remain separate release artifacts and are not included in this notebook-only commit.
 
-## Stage B/C controlled reconciliation (interim)
+## Stage B/C controlled reconciliation
 
-A separate controlled reconstruction isolates feature scaling, vocabulary capping, and message filtering. Its current paired candidate-selection analysis is recorded in the [Stage B/C reconciliation report](results/stage_bc_reconciliation/README.md). Z-score scaling has a +7.482 pp main effect and the 20,000-term cap a +1.064 pp main effect on selected-candidate gold fraction; filtering produced identical recorded selections for all 235 questions. These are not answer-accuracy results and do not yet explain the historical Stage B/Stage C difference. The scale × cap interaction and filtering implementation audit remain pending.
+A separate controlled reconstruction isolates feature scaling, vocabulary capping, and message filtering. Its results are recorded in the [Stage B/C reconciliation report](results/stage_bc_reconciliation/README.md).
 
-## Stage B/C controlled reconciliation — primary results updated
+The primary budgeted evidence-recall factorial analysis finds:
+- Z-score scaling vs raw: **+12.68 pp** (95% paired-bootstrap CI [+8.66, +16.90] pp).
+- 20,000-feature vocabulary cap vs unlimited: **+1.56 pp** (95% CI [+0.67, +2.62] pp).
+- Scale × cap interaction is not established.
+- Filtering had zero effect because all 65,288 audited messages already met the filter conditions.
 
-The controlled Notebook 06 factorial analysis now reports its primary budgeted evidence-recall effects: z-score scaling vs raw improves recall by 12.68 pp (paired bootstrap 95% CI [+8.66, +16.90] pp); a 20,000-feature cap vs unlimited improves recall by 1.56 pp (95% CI [+0.67, +2.62] pp). The scale × cap interaction is not established because its interval crosses zero. A population audit found that all 65,288 messages across 5,458 candidate sessions already met the filter's user/assistant and non-empty-content conditions, explaining the zero filtering effect in this dataset. Full details and the distinction from the supplementary candidate-gold fraction are in the [reconciliation report](results/stage_bc_reconciliation/README.md). These controlled findings do not prove the historical Stage B/C discrepancy's cause; historical metrics remain unchanged.
+The direct paired comparison of the Stage B-like endpoint (`raw`, 20,000 cap, unfiltered) and Stage C-like endpoint (z-score, unlimited vocabulary, filtered) on the same 235 TEST questions gives **70.94% vs 82.06%** budgeted evidence recall: **+11.12 pp** for C-like (95% paired-bootstrap CI [+7.10, +15.41] pp; sign-test p=5.54×10⁻⁶; 39 C-like wins, 8 B-like wins, 188 ties).
+
+This is a controlled reconstruction, not proof of which code generated the historical Stage B or Stage C artifacts. Historical headline metrics remain unchanged. Evidence recall is not answer accuracy.
 
 ## Proposed next research direction: MFAR
 
@@ -54,7 +60,6 @@ MFAR is a design proposal, not an implemented or validated method. Its algorithm
 The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.schema.json), with an [illustrative trace](schemas/examples/mfar_trace.example.json), [schema implementation notes](docs/MFAR_TRACE_SCHEMA.md), and [validator CLI](scripts/validate_mfar_trace.py). The schema is an initial instrumentation contract, not yet integrated into the existing memory pipeline. Schema v0.2.0 supports explicitly unobserved stages. An offline adapter can convert the Stage B/C retention export into partial traces; this does not create retrieval or answer evidence. See [the adapter specification](docs/MFAR_RETENTION_TRACE_ADAPTER.md) and [assembler](scripts/assemble_mfar_retention_traces.py). The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
 
 The Stage B/C notebook now includes an additional candidate-level trace export. The original controlled run produced seven exports; rerun the updated final export cell to generate the eighth `stage_bc_candidate_trace.csv` required by the offline MFAR adapter. Do not interpret its session-retention decisions as a separate retrieval stage or answer evaluation.
-
 
 ### MFAR implementation scope
 
