@@ -105,7 +105,7 @@ def _safe_run_metadata(metadata: dict[str, Any]) -> dict[str, Any]:
     if split is not None and split not in {"train", "validation", "dev", "test"}:
         raise ValueError("split must be train, validation, dev, or test")
     version = metadata.get("instrumentation_version")
-    if not isinstance(version, str) or not re.fullmatch(r"\\d+\\.\\d+\\.\\d+", version):
+    if not isinstance(version, str) or len(version.split(".")) != 3 or not all(part.isdigit() for part in version.split(".")):
         raise ValueError("instrumentation_version must be semantic version x.y.z")
     return metadata
 
