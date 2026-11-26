@@ -56,3 +56,20 @@ memweave runs --registry /path/to/run_registry.sqlite3 list
 ```
 
 The registry is append-only at the run-ID level: recording an existing ID fails rather than overwriting its provenance. It is a local convenience index, not a replacement for preserving the run output directory and its `manifest.json`. Back up both the registry and the referenced artifacts when archiving a study.
+
+
+## Comparing experiment runs in the dashboard
+
+The read-only Streamlit dashboard now includes a registry-backed run history and comparison view. It displays each completed run's ID, timestamp, primary pool, split sizes and output directory; selected runs can be compared by pool/method recall and by nested configuration values.
+
+By default, the dashboard looks for:
+
+    results/run_registry.sqlite3
+
+This is the default registry location when the pipeline writes to results/pipeline_run. To use a registry elsewhere, set the environment variable before starting the dashboard:
+
+    MEMWEAVE_REGISTRY_PATH=/path/to/run_registry.sqlite3 memweave serve
+
+The comparison is descriptive, not a paired significance test. Runs using different input datasets, split seeds, budgets or evaluation settings may not be directly comparable. The dashboard shows configuration differences to make those changes visible; it does not claim that a metric change was caused by a particular code or configuration change.
+
+The historical aggregate-results view remains available independently of the local run registry. The dashboard does not execute models or download benchmark data.
