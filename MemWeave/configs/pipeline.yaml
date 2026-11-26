@@ -1,0 +1,27 @@
+# Full extracted-pipeline run. Supply local benchmark paths; no data is downloaded.
+pipeline:
+  longmemeval_path: /path/to/longmemeval_s.json
+  output_dir: results/pipeline_run
+  max_questions: null
+  batch_size: 400
+  test_fraction: 0.5
+  split_seed: 2026
+  cv_seed: 2026
+  cv_folds: 5
+  C_grid: [0.03, 0.3, 3.0]
+  # Optional; omit to skip external transfer evaluation.
+  locomo_path: null
+  # Optional; empty list skips overlapping-split robustness diagnostics.
+  robustness_seeds: []
+evaluation:
+  mode: pipeline
+  primary_pool: same_pipeline
+  budget: 0.10
+  budget_sweep: [0.05, 0.10, 0.20, 0.30]
+  random_reps: 50
+  random_seed: 0
+  bootstrap_resamples: 4000
+  bootstrap_seed: 1
+  equivalence_margin: 0.03
+  alpha: 0.05
+  downstream_topk: 3
