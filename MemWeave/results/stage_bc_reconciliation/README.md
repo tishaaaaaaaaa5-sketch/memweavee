@@ -77,3 +77,47 @@ The canonical Notebook 06 factorial analysis (cell 13 in the committed notebook 
 The gold-fraction results in this report are a separate, supplementary audit derived from `stage_bc_candidate_trace.csv`. They measure the fraction of selected candidates labelled gold; they are not the notebook's primary evidence-recall endpoint. Do not substitute these candidate-level effects for the canonical `factorial_effects` output.
 
 The notebook's feature-construction code also clarifies the filtering switch: the filtered path lowercases roles and removes messages whose role is not user/assistant or whose content is empty after stripping whitespace. The unfiltered path keeps all messages and their raw role/content strings. The exact equality in candidate-level outcomes therefore warrants a direct audit of role casing, blank content, and non-user/assistant messages in the candidate-session population before attributing the equality to a no-op filter.
+
+
+## Primary factorial endpoint: budgeted evidence recall
+
+The canonical Notebook 06 factorial analysis uses per-question budgeted evidence recall as its primary endpoint. The reported effects use the notebook's conventional (2^3) factorial coding and 20,000 paired question-level bootstrap resamples.
+
+| Factorial term | Effect on evidence recall | Paired bootstrap 95% CI | Interpretation |
+|---|---:|---:|---|
+| Feature scaling (z-score vs raw) | **+0.126809** (+12.68 pp) | [+0.086596, +0.169007] | Positive main effect; interval excludes zero |
+| Vocabulary cap (unlimited vs 20,000) | **−0.015603** (−1.56 pp) | [−0.026241, −0.006738] | Unlimited vocabulary is worse; equivalently, the 20,000 cap improves recall |
+| Message filtering (filtered vs all) | 0.000000 | [0.000000, 0.000000] | No effect in this candidate population |
+| Scale × vocabulary cap | +0.009220 (+0.92 pp) | [−0.000355, +0.019504] | Interval crosses zero; interaction not established |
+| Scale × filtering | 0.000000 | [0.000000, 0.000000] | No observed interaction |
+| Vocabulary cap × filtering | 0.000000 | [0.000000, 0.000000] | No observed interaction |
+| Three-way interaction | 0.000000 | [0.000000, 0.000000] | No observed interaction |
+
+**Factor coding matters:** the notebook codes `vocab_cap=None` (unlimited) as +1 and `vocab_cap=20000` as −1. Thus the negative `vocab_cap` effect means unlimited vocabulary reduces recall; the equivalent 20,000-cap contrast is +1.56 pp.
+
+### Message-filtering population audit
+
+A read-only audit of the 5,458 candidate sessions across all 235 TEST questions examined 65,288 messages:
+
+- 65,288/65,288 already had a role of user or assistant.
+- 65,288/65,288 had non-empty content after stripping whitespace.
+- No role-case changes were counted.
+- 37 messages had leading or trailing whitespace.
+- All 65,288 messages entered the role-grouped population in both the raw and filtered paths.
+
+This explains the exact zero filtering effect on this population: the filter retained every message. The 37 whitespace-only boundary changes do not ordinarily affect TF-IDF tokenization. The result is dataset/population-specific and does not show that filtering is generally useless.
+
+## Integrated interpretation
+
+The primary endpoint and the supplementary candidate-level analysis agree on the direction of the main effects:
+
+1. Z-score scaling is the dominant improvement.
+2. A 20,000-feature vocabulary cap provides a smaller positive improvement.
+3. Message filtering is redundant for the audited candidate-session population.
+4. The scale × cap interaction is not established by the paired bootstrap interval.
+
+The primary evidence-recall effect for scaling (+12.68 pp) is distinct from the supplementary +7.482 pp effect on selected-candidate gold fraction. They are different metrics and must not be conflated.
+
+## Historical discrepancy: status
+
+These findings identify which switches alter outcomes in a controlled reconstruction. They make scaling and vocabulary capping plausible contributors to the historical Stage B/Stage C difference, but they do not prove that either switch caused the historical discrepancy. That would require the original execution states/artifacts or an independently reproducible reconstruction of both historical pipelines. Keep the Stage B and Stage C historical headline results unchanged.
