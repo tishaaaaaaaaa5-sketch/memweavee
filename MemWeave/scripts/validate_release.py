@@ -126,9 +126,11 @@ def main() -> int:
 
     provenance = audit.get("provenance", {})
     dataset_hash = provenance.get("dataset_file_sha256")
-    if not dataset_hash or str(dataset_hash).lower() in {
-        "none", "null", "not present", "missing",
-    }:
+    hash_status = str(dataset_hash or "").strip().lower()
+    if not hash_status or any(
+        marker in hash_status
+        for marker in ("none", "null", "not present", "not recorded", "missing", "unavailable")
+    ):
         warnings.append("dataset SHA-256 is absent; this is an artifact-consistency check, not a full data reproduction")
     if provenance.get("raw_per_question_export_available_in_uploaded_files") is False:
         warnings.append("privacy-safe per-question export is not included; aggregate checks cannot reproduce paired inference")
