@@ -1,0 +1,56 @@
+{
+  "experiment": "MemWeave Stage B/C controlled factorial reconstruction",
+  "status": "audited companion manifest for user-supplied output bundle; raw CSV exports retained as external release artifacts",
+  "source_notebook_commit": "d642215226fa2a9204bb6d64c4ff0f6447920274",
+  "longmemeval_revision": "98d7416c24c778c2fee6e6f3006e7a073259d48f",
+  "longmemeval_sha256": "d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442",
+  "locomo_commit": "cbfbc1dba6bc53d00625212a0f22d55ffee7c1fc",
+  "locomo_sha256": "79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4",
+  "pool": "same_pipeline",
+  "dev_questions": 235,
+  "test_questions": 235,
+  "classifier": "LogisticRegression(C=0.3, class_weight=balanced)",
+  "budget_fraction": 0.1,
+  "budget_cost_unit": "pool word-count proxy, not tokenizer tokens",
+  "variant_count": 8,
+  "bootstrap_unit": "question",
+  "outputs": [
+    "stage_bc_factorial_summary.csv",
+    "stage_bc_per_question_results.csv",
+    "stage_bc_paired_question_results.csv",
+    "stage_bc_selection_trace.csv",
+    "stage_bc_feature_diagnostics.csv",
+    "stage_bc_factorial_effects.csv",
+    "stage_bc_reconciliation_manifest.json",
+    "stage_bc_candidate_trace.csv"
+  ],
+  "python": "3.13.16",
+  "numpy": "2.1.3",
+  "pandas": "2.3.3",
+  "candidate_trace_sha256": "79610897e7401a297434b8a5b9703c9407658a4e4fc04fdd7b56981b6c860065",
+  "artifact_sha256": {
+    "stage_bc_factorial_summary.csv": "0ca76310ed8672d94ad03c07fd2841630c219a6ebf47d4a5f57c3005b4443d99",
+    "stage_bc_per_question_results.csv": "106584319c50f4e480c8f548cd9d8e2834d3df5b3981e60290b4e5d11d167567",
+    "stage_bc_paired_question_results.csv": "13f89eaf023bcea0331ae0906dce8b7083cd3f6a2047cc25ecd8d7ffec2a05cc",
+    "stage_bc_selection_trace.csv": "fc270352a5e161aeeff1865e6ead12e3d715562768481d02819ef44aee41150e",
+    "stage_bc_feature_diagnostics.csv": "f3bc50926b6441e007b2a7326b637f55629abc9eb1186bd1bb192d4d0704e146",
+    "stage_bc_factorial_effects.csv": "34f3981c5d1f6b12856e83e21785f2fb72e74c072cd52546fda37fb4150a6d51",
+    "stage_bc_candidate_trace.csv": "79610897e7401a297434b8a5b9703c9407658a4e4fc04fdd7b56981b6c860065"
+  },
+  "audit_enrichment": {
+    "note": "Companion manifest binds the separately supplied candidate trace to the original run manifest; the notebook-generated manifest is unchanged.",
+    "candidate_trace_rows": 49140,
+    "candidate_trace_exported_after_original_manifest": true,
+    "candidate_groups": 2115,
+    "conditions_including_baseline": 9,
+    "repeated_source_id_groups": 18,
+    "questions_with_repeated_source_ids": 2,
+    "integrity_checks": {
+      "all_listed_artifact_hashes_match": true,
+      "candidate_recall_matches_per_question_rows": 2115,
+      "role_aware_selection_groups_cross_checked": 1880,
+      "role_aware_selection_set_mismatches": 0,
+      "role_aware_selected_word_cost_mismatches": 0
+    }
+  }
+}
