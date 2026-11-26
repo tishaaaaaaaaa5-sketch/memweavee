@@ -76,3 +76,43 @@ python MemWeave/scripts/validate_mfar_trace_integrity.py \
 ```
 
 This complements JSON Schema validation by checking that memory-to-source lineage, transformation inputs/outputs, and answer-to-retrieved-evidence references resolve within each trace. It also rejects answer/retrieval records that contradict the corresponding unobserved-stage flags. It does not infer missing events or failure labels.
+
+
+## Record real MemWeave runtime events (Notebook 01 instrumentation)
+
+`mfar_runtime_event_writer.py` provides an append-only, privacy-minimised JSONL writer for actual notebook events. It does not create events automatically: call `emit()` only at an operation that really executed. It accepts hashes and opaque IDs, not raw text. Metadata is allow-listed to reduce accidental text leakage.
+
+A minimal setup cell in the existing Notebook 01 run:
+
+```python
+from MemWeave.scripts.mfar_runtime_event_writer import (
+    MFARRuntimeEventWriter,
+    sha256_text,
+)
+
+trace_writer = MFARRuntimeEventWriter(
+    "/kaggle/working/mfar_runtime_events.jsonl",
+    run_id=RUN_ID,  # set once for this real execution
+    repository_commit=GIT_COMMIT,
+    dataset_revision=DATASET_REVISION,
+    dataset_sha256=DATASET_SHA256,
+    split="test",
+)
+```
+
+At the existing code boundaries, emit records using the actual session/question IDs and selected indices. For example, after `encode_session(session)` has returned a real representation:
+
+```python
+trace_writer.emit(
+    "candidate_constructed",
+    question_id=question_id,
+    source_session_id=source_session_id,
+    candidate_occurrence_id=f"{question_id}:{candidate_index}",
+    content_sha256=sha256_text(encoded["full"]),
+    metadata={"cost_unit": TOKENIZER},
+)
+```
+
+This is a usage pattern, not a ready-to-run notebook cell: names such as `RUN_ID`, `GIT_COMMIT`, `DATASET_REVISION`, `question_id`, and `source_session_id` must be bound to the actual run variables in the notebook. Do not invent them or emit a record when the operation did not occur. The instrumentation map specifies each event boundary and semantic constraint.
+
+The writer is an intermediate ledger, not yet an MFAR schema v0.2.0 trace assembler. Do not report runtime coverage or failure labels until the existing notebook has been instrumented, run on the approved original data, and its event lineage has been validated. Never commit raw benchmark content or generated answers.
