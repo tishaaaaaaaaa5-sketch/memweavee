@@ -6,6 +6,10 @@ The role-aware locked-test report records LongMemEval-S cleaned and the expected
 
 The repository supports inspection of the notebook and aggregate findings, but is not yet a complete end-to-end reproduction package.
 
+## Committed artifact consistency check
+
+From the repository root, run `python MemWeave/scripts/validate_release.py`. This checks internal agreement among the committed run manifest, paired audit JSON, and question-type aggregate CSV using only the Python standard library. A successful check does not rerun training/evaluation, recover missing per-question rows, verify the source dataset, or establish independent generalization. The current release is expected to warn that the dataset SHA-256 and privacy-safe per-question export are absent.
+
 ## Required additions for the next rerun
 
 - [ ] Pin the LongMemEval dataset revision or immutable download URL.
