@@ -13,6 +13,16 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
+def _default_registry_path() -> Path:
+    """Find the common registry locations used from repo-root or MemWeave/ cwd."""
+    root = _repo_root()
+    candidates = [
+        root / "results" / "run_registry.sqlite3",
+        root / "MemWeave" / "results" / "run_registry.sqlite3",
+    ]
+    return next((path for path in candidates if path.is_file()), candidates[0])
+
+
 def _evaluate(config_path: str) -> int:
     config = load_config(config_path)
     root = _repo_root()
@@ -88,7 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     runs = commands.add_parser("runs", help="inspect the local experiment run registry")
     runs.add_argument(
         "--registry",
-        default=str(_repo_root() / "results" / "run_registry.sqlite3"),
+        default=str(_default_registry_path()),
         help="SQLite registry path (default: results/run_registry.sqlite3)",
     )
     run_commands = runs.add_subparsers(dest="runs_command", required=True)
