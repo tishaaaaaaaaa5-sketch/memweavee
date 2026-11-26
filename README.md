@@ -41,13 +41,13 @@ This repository contains a multi-stage research project: the original query-agno
 The primary comparison below summarizes the held-out result at the notebook's **10% word-count budget**. The confidence interval shown is for the *paired gain*, not separate intervals for each model.
 
 <p align="center">
-  <img src="docs/images/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
+  <img src="MemWeave/docs/figures/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
 </p>
 
 The role-aware model also improves recall across all six reported question categories. The chart shows the category-level point estimates; subgroup uncertainty and corrected tests are reported in the audit table below.
 
 <p align="center">
-  <img src="docs/images/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
+  <img src="MemWeave/docs/figures/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
 </p>
 
 | Question type | n | Baseline | Role-aware | Gain | Holm-adjusted sign-test p |
@@ -122,7 +122,7 @@ Holm-adjusted paired sign tests were significant for five of six groups. The pre
 
 ## Reproducibility
 
-Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md).
+Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
 
 The notebooks are designed for Jupyter/Google Colab. Run them from a clean kernel, in order, and retain the generated outputs and manifests. Dataset JSONs, feature caches, and raw per-question exports are not committed here; obtain the datasets under their applicable terms and verify the checksums recorded by the relevant run.
 
@@ -152,6 +152,6 @@ A formal citation entry should be added when the manuscript's author list, title
 
 ## Research follow-up and reproducibility
 
-- [Independent benchmark validation plan](MemWeave/docs/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
-- [Reproducibility audit](MemWeave/docs/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
+- [Independent benchmark validation plan](MemWeave/docs/reproducibility/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
+- [Reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
 - [GitHub profile README draft](PROFILE_README_DRAFT.md) — copy this into a public repository named exactly `tishaaaaaaaaa5-sketch` to activate the profile README feature.

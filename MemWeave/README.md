@@ -38,7 +38,7 @@ See [the notebook index](notebooks/README.md).
 
 ## Reproduction
 
-Before attempting a full rerun, check the committed aggregate artifacts from the repository root with `python MemWeave/scripts/validate_release.py`. This standard-library validator checks internal consistency across the run manifest, paired audit JSON, and question-type CSV. A pass is **not** a model rerun or independent replication; the current dataset checksum and per-question export are still missing. See [the reproducibility utilities](scripts/README.md) and [the reproducibility audit](docs/REPRODUCIBILITY_AUDIT.md).
+Before attempting a full rerun, check the committed aggregate artifacts from the repository root with `python MemWeave/scripts/validate_release.py`. This standard-library validator checks internal consistency across the run manifest, paired audit JSON, and question-type CSV. A pass is **not** a model rerun or independent replication; the current dataset checksum and per-question export are still missing. See [the reproducibility utilities](scripts/README.md) and [the reproducibility audit](docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
 
 Use Python in Jupyter or Google Colab. Run from a clean kernel and preserve:
 - exact notebook version and execution outputs;

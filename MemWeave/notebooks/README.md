@@ -32,3 +32,8 @@ The executed notebook is a record of the run, not a guarantee that its external 
 The role-aware audit used 50,000 paired bootstrap resamples and 200,000 sign-flip permutations. Inference resamples questions rather than conversation clusters. The research process was iterative, not preregistered; the held-out test split is not an independent benchmark. Evidence recall does not establish improved LLM answer accuracy.
 
 Benchmark JSONs, feature caches and raw per-question exports are not stored in this directory. Store large artifacts in Git LFS or an external artifact store after checking dataset terms.
+
+
+## Archive
+
+Executed snapshots and superseded runners are kept under [archive/](archive/). The consolidated Kaggle snapshot is archive-only and does not replace canonical Notebook 06. An uploaded notebook whose contents have not yet been reviewed is preserved as [unclassified_notebook529e9395ae_3.ipynb](archive/unclassified_notebook529e9395ae_3.ipynb); do not cite it as a canonical experiment until its provenance and contents are checked.
