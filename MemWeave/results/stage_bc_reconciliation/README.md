@@ -69,3 +69,11 @@ The confidence intervals for scaling and vocabulary capping are above zero under
 - Do not pool them with Stage A (v2.0–v2.3), Stage B historical locked-test, or Stage C regenerated follow-up headline metrics.
 - Do not claim the historical discrepancy is resolved.
 - The 2,115-record MFAR retention audit is a distinct artifact from the candidate-level factorial trace; neither provides retrieval or answer-stage observations here.
+
+## Primary endpoint versus candidate-level supplement
+
+The canonical Notebook 06 factorial analysis (cell 13 in the committed notebook source) operates on `RUNS[name]["metrics"][q]["recall"]`, i.e. per-question **budgeted evidence recall**. It computes all seven factorial terms: the three main effects, three two-way interactions, and the three-way interaction, with 20,000 paired question-level bootstrap resamples. That is the primary endpoint for the controlled reconciliation and must be interpreted before drawing conclusions about the historical Stage B/C gap.
+
+The gold-fraction results in this report are a separate, supplementary audit derived from `stage_bc_candidate_trace.csv`. They measure the fraction of selected candidates labelled gold; they are not the notebook's primary evidence-recall endpoint. Do not substitute these candidate-level effects for the canonical `factorial_effects` output.
+
+The notebook's feature-construction code also clarifies the filtering switch: the filtered path lowercases roles and removes messages whose role is not user/assistant or whose content is empty after stripping whitespace. The unfiltered path keeps all messages and their raw role/content strings. The exact equality in candidate-level outcomes therefore warrants a direct audit of role casing, blank content, and non-user/assistant messages in the candidate-session population before attributing the equality to a no-op filter.
