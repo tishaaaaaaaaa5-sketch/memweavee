@@ -25,6 +25,10 @@ The Stage C Kaggle notebook is a separate follow-up record; its regenerated resu
 
 Notebook 06 reconstructs both historical feature-construction endpoints inside one controlled run: raw vs within-question z-scored role features; 20,000-feature cap vs unlimited vocabulary; and all-message vs filtered user/assistant messages. It holds the pinned LongMemEval source, DEV/TEST split, base features, logistic regression settings, overlap exclusion, and 10% word-count proxy budget constant. It evaluates all eight factorial combinations, reports paired per-question effects and interactions, and exports feature diagnostics, per-question metrics, selection traces, a run manifest, and a privacy-minimised candidate-level retention trace. The updated export cell also records the candidate CSV SHA-256 in the manifest. The controlled reconstruction run supplied seven original exports; the separately generated candidate trace was uploaded later and is checked against an audit-enriched companion manifest. The existing run results are described separately in the reconciliation notes; no new result is inferred from the added export code.
 
+## Latest controlled reconciliation status
+
+The first paired factorial main-effect analysis is recorded in [the Stage B/C reconciliation report](../results/stage_bc_reconciliation/README.md). Z-score scaling and the 20,000-term cap have positive effects on candidate-selection gold fraction; message filtering is observationally identical across the 235-question test set. The scale × cap interaction and the cause of filtering equivalence are the next analyses. No answer-quality claim is supported by these candidate traces.
+
 ## Recommended execution
 
 1. Read the [project guide](../README.md) and the relevant result notes.
