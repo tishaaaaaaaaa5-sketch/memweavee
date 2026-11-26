@@ -1,6 +1,6 @@
 # MFAR trace schema: implementation notes
 
-**Schema version:** 0.1.0  
+**Schema version:** 0.2.0  
 **Status:** Initial instrumentation contract; not yet integrated into a running memory pipeline.
 
 ## Files
@@ -8,6 +8,7 @@
 - `schemas/mfar_trace.schema.json`: JSON Schema Draft 2020-12 contract.
 - `schemas/examples/mfar_trace.example.json`: synthetic example with hashes and placeholder identifiers only.
 - `scripts/validate_mfar_trace.py`: command-line schema validator.
+- `scripts/assemble_mfar_retention_traces.py`: offline adapter for the Stage B/C session-retention export; see [the adapter note](MFAR_RETENTION_TRACE_ADAPTER.md).
 
 ## Design choices
 
@@ -29,11 +30,11 @@ The `pipeline` object records source evidence, candidate memory, stored memory, 
 
 ### Online diagnosis versus oracle labels
 
-`diagnosis` is the system's online multi-label estimate. The four probabilities are independent probabilities and must not be normalized to sum to one.
+`diagnosis` is the system's online multi-label estimate. The four probabilities are independent probabilities and must not be normalized to sum to one. Version 0.2.0 permits `null` when a probability has not been estimated; `null` means unestimated, not zero.
 
 `oracle_labels` is evaluation-only annotation. It must never be passed to the online failure estimator or controller. Use `null` in production/inference traces. The validator's `--online` flag enforces this separation.
 
-An oracle label may be `null` when the mode is unobservable or cannot be adjudicated. Do not encode unknown as `false`.
+An oracle label may be `null` when the mode is unobservable or cannot be adjudicated. Do not encode unknown as `false`. Version 0.2.0 also permits a null answer ID/hash and `outcome.status="not_evaluated"` when no answer-generation stage exists in the source experiment.
 
 ### Answer evidence
 
@@ -65,7 +66,7 @@ python MemWeave/scripts/validate_mfar_trace.py path/to/trace.json --online
 
 The validator checks JSON Schema structure and date-time formats. It does not establish that provenance links are semantically correct, that spans point to real source records, or that labels are accurate. Those require referential-integrity checks and annotation audits in the next implementation stage.
 
-## Known limitations to address in version 0.2
+## Known limitations to address in version 0.3
 
 1. Add explicit cross-reference checks: every referenced evidence, memory, transformation, and answer ID should resolve.
 2. Enforce span ordering (`end > start`) and verify offsets against source metadata.
@@ -73,8 +74,8 @@ The validator checks JSON Schema structure and date-time formats. It does not es
 4. Define units and tokenizer identity for token and cost measurements.
 5. Add annotation provenance, adjudication protocol, and inter-rater agreement details.
 6. Decide whether multiple source conversations and multiple answer attempts need first-class representation.
-7. Replace the placeholder schema `$id` with a stable project-controlled URI if the project publishes one.
+7. Add explicit adapter provenance/version metadata for benchmark-specific partial traces.
 
-## Next implementation task
+## Current implementation boundary
 
-Build an offline trace assembler that converts existing benchmark records and retrieval outputs into this schema, then run referential-integrity and privacy checks. Only after trace coverage is measured should the failure-label generator be built.
+The Stage B/C adapter now exports session-level candidate and retention-selection observations. It deliberately leaves retrieval and answer stages unobserved. This is not integration with a production memory pipeline. See [MFAR_RETENTION_TRACE_ADAPTER.md](MFAR_RETENTION_TRACE_ADAPTER.md) for the exact mapping and run instructions. The next milestone is independent execution of the adapter, referential-integrity tests, and privacy review; only then should failure-label generation be considered.
