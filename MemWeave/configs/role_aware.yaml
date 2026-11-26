@@ -1,0 +1,7 @@
+# Audits committed role-aware aggregate results; does not rerun model training.
+experiment:
+  name: role-aware-locked-test
+  stage: B
+evaluation:
+  mode: artifact_audit
+  results_dir: MemWeave/results/final_locked_test
