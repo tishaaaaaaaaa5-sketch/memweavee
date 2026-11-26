@@ -123,13 +123,15 @@ def validate_groups(groups: dict[tuple[str, str], list[dict[str, Any]]]) -> None
             fail(f"no gold candidate in question {qid}, variant {variant}")
         if len({row["query_hash"] for row in rows}) != 1:
             fail(f"inconsistent query content hash for question {qid}, variant {variant}")
+        # A source session may occur more than once in the ranked candidate
+        # list. Preserve each candidate occurrence (candidate_index) rather
+        # than silently deduplicating or rejecting the experimental pool.
+        # Repeated source IDs must still resolve to the same content hash.
         source_hashes: dict[str, str] = {}
         for row in rows:
             previous = source_hashes.setdefault(row["source_id"], row["content_hash"])
             if previous != row["content_hash"]:
                 fail(f"source_id maps to multiple content hashes: {row['source_id']}")
-        if len(source_hashes) != len(rows):
-            fail(f"duplicate source_id within question {qid}, variant {variant}")
     reference_variants = None
     for qid, variants in by_question.items():
         variant_names = {variant for variant, _ in variants}
@@ -176,9 +178,13 @@ def build_trace(
     for row in rows:
         source_id = row["source_id"]
         suffix = source_id.removeprefix("src_")
-        evidence_id = "ev_" + suffix
-        candidate_memory_id = "mc_" + suffix
-        stored_memory_id = "ms_" + suffix
+        # IDs represent candidate *occurrences*, not only source sessions.
+        # This keeps repeated appearances of one session distinct while
+        # retaining the shared source_id and content hash as provenance.
+        occurrence = str(row["candidate_index"])
+        evidence_id = "ev_" + suffix + "_" + occurrence
+        candidate_memory_id = "mc_" + suffix + "_" + occurrence
+        stored_memory_id = "ms_" + suffix + "_" + occurrence
         source_evidence.append({
             "evidence_id": evidence_id,
             "source_id": source_id,
