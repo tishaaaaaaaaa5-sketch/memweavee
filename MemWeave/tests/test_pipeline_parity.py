@@ -45,7 +45,7 @@ def test_feature_builder_single_candidate_is_finite():
     assert np.all(np.isfinite(features))
 
 
-@pytest.mark.parametrize("mode,expected", [
+@pytest.mark.parametrize("mode,budget,expected", [
     ("rank", .5, [0]), ("density", .5, [1, 2]), ("mmr", .75, [0, 2]),
 ])
 def test_budget_selection_matches_greedy_rules(mode, budget, expected):
