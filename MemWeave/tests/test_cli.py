@@ -1,7 +1,6 @@
 from memweave.cli import main
 
 
-
 def test_cli_requires_subcommand():
     try:
         main([])
@@ -15,6 +14,7 @@ def test_cli_version(capsys):
     except SystemExit as exc:
         assert exc.code == 0
     assert "0.1.0" in capsys.readouterr().out
+
 
 def test_run_command_rejects_missing_local_dataset(tmp_path, capsys):
     config = tmp_path / "pipeline.yaml"
@@ -60,4 +60,3 @@ def test_default_registry_path_finds_memweave_working_directory_location(
     monkeypatch.setattr(cli, "_repo_root", lambda: tmp_path)
 
     assert cli._default_registry_path() == registry
-

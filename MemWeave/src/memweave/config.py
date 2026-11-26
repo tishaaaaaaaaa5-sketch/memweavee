@@ -5,10 +5,6 @@ from typing import Any
 import yaml
 
 
-
-import yaml
-
-
 def load_config(path: str | Path) -> dict[str, Any]:
     config_path = Path(path).expanduser().resolve()
     if not config_path.is_file():
@@ -21,10 +17,6 @@ def load_config(path: str | Path) -> dict[str, Any]:
     if not isinstance(evaluation, dict):
         raise ValueError("'evaluation' must be a mapping")
     mode = evaluation.get("mode", "artifact_audit")
-
-    if mode != "artifact_audit":
-        raise ValueError(f"Unsupported evaluation mode {mode!r}; current CLI supports artifact_audit only.")
-
     if mode not in {"artifact_audit", "pipeline"}:
         raise ValueError(
             f"Unsupported evaluation mode {mode!r}; expected 'artifact_audit' or 'pipeline'."
@@ -35,5 +27,4 @@ def load_config(path: str | Path) -> dict[str, Any]:
             raise ValueError("'pipeline' must be a mapping")
         if not pipeline.get("longmemeval_path"):
             raise ValueError("pipeline.longmemeval_path is required for pipeline mode")
-
     return config

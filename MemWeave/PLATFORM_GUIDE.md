@@ -34,6 +34,7 @@ Endpoints: GET /health, GET /results/summary, GET /results/question-types.
 
 The package currently contains shared metric helpers, safe YAML configuration loading, CLI orchestration, unit tests, CI, a dashboard and a read-only API. The research algorithms remain in canonical notebooks. The next substantive step is to extract the exact tested preprocessing, feature and retrieval pipeline into versioned modules, then add end-to-end tests against synthetic fixtures. Do not silently substitute a new implementation for the historical experimental pipeline.
 
+
 ## Experiment run registry
 
 The extracted pipeline records each successful execution in a local SQLite registry. The registry stores a unique run ID, UTC creation time, output directory, input checksum, manifest checksum, configuration, and a compact result summary. It stores provenance pointers and summaries—not raw benchmark data or full per-question predictions.
@@ -93,4 +94,3 @@ The dashboard now gates primary LongMemEval evidence-recall comparisons:
 Model and feature configuration differences remain visible in the separate configuration-difference table. They are not automatically treated as a comparability failure because changing the selector may be the intended experimental variable. The gate does not establish causality or independent replication.
 
 Legacy registry records are not retroactively upgraded. Re-run them with the updated pipeline if a structured provenance record is required. LoCoMo transfer comparability is a separate question: compare its dataset checksum, conversation set, reader and evaluation protocol before interpreting transfer metrics.
-
