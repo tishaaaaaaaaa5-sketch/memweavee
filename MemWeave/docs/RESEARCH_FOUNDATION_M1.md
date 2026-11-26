@@ -224,6 +224,21 @@ A preliminary source-code comparison found differences between the Stage B corre
 - Add explicit failure categories and traceability.
 - Add answer-level metrics only under a fixed answer-generation protocol.
 
+## 9A. Implemented reconciliation experiment
+
+A dedicated notebook has now been added:
+
+[`notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb`](../notebooks/06_Stage_BC_Controlled_Reconciliation.ipynb)
+
+It implements a predeclared (2^3) factorial reconstruction across:
+- role-feature scaling: raw vs within-question z-score;
+- TF-IDF vocabulary: capped at 20,000 vs uncapped;
+- message inclusion: all messages vs non-empty user/assistant messages.
+
+The notebook holds the pinned source notebook, canonical DEV/TEST split, baseline feature indices, logistic regression configuration, held-out hash exclusion, candidate ordering, and 10% word-count proxy budget constant. It fits a baseline and all eight role-feature conditions, computes paired question-level recall/rank/budget outcomes, factorial main and interaction contrasts with paired bootstrap intervals, and exports privacy-minimised per-question metrics, selected candidate-index traces, feature diagnostics, summary tables, and a run manifest.
+
+**Execution status:** implementation committed; notebook has not yet been run. No controlled reconstruction result is available. The word-count proxy remains; this does not resolve exact token-budget reconstruction or independently validate evidence mappings. The new run can identify effects of the three implementation switches under a common pipeline, but cannot by itself prove which historical execution state generated prior saved outputs.
+
 ## 10. M1 acceptance checklist
 
 - [ ] Literature matrix expanded with methods, assumptions, budgets, datasets, metrics, and reproducibility status.
