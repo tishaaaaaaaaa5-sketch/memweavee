@@ -70,6 +70,6 @@ Do not upload API keys, credentials, private user conversations, or restricted b
 
 **Gate not passed:** no real backend source or lifecycle event stream is currently available in this repository inspection.
 
-Permitted work before that dependency is resolved: schema review, adapter correctness, documentation, and privacy-safe processing of original benchmark exports.
+Permitted work before that dependency is resolved: schema review, adapter correctness, documentation, cross-stage referential-integrity validation via scripts/validate_mfar_trace_integrity.py, and privacy-safe processing of original benchmark exports.
 
 Blocked until real instrumentation exists: failure labels, detector training, probability calibration, diagnosis-driven interventions, and claims about MFAR end-to-end effectiveness.
