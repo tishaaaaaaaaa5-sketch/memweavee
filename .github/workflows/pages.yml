@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - "MemWeave/web/**"
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - ".nojekyll"
+      - "site/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -28,7 +33,7 @@ jobs:
       - name: Upload static website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: MemWeave/web
+          path: site
 
   deploy:
     environment:
