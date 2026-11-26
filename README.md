@@ -1,159 +1,487 @@
 # MemWeave
-### Role-aware, budget-constrained memory retention for long-horizon conversations
+### A Research Framework for Evidence-Centred Memory, Retrieval, and Long-Horizon Conversational Reasoning
 
-MemWeave studies a practical question for conversational assistants: **when the full conversation history cannot fit in memory, which sessions should be retained so that future questions remain answerable?**
+<p align="center">
+  <strong>From conversational history to structured, evidence-grounded memory.</strong>
+</p>
 
-This repository contains a multi-stage research project: the original query-agnostic retention study and benchmark audit (v2.0–v2.3), followed by a role-aware feature experiment with a held-out locked-test evaluation. The stages answer related but distinct questions; their headline numbers should not be pooled or presented as one continuous model comparison.
-
-> **Current headline (role-aware follow-up):** on 235 held-out test questions from the `same_pipeline` pool, role-aware session scoring increased 10%-budget evidence recall from **40.42% to 70.94%** (+30.52 percentage points). The paired question-level bootstrap 95% CI was **[25.30, 35.96] pp**. This is a promising result on one benchmark split, not proof of improved end-to-end answer accuracy or independent generalization.
+<p align="center">
+  <img src="https://img.shields.io/badge/Research-Experimental-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Evaluation-Quantitative-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Reproducibility-Audited-success?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Status-Active%20Research-orange?style=for-the-badge" />
+</p>
 
 ---
 
-## Research snapshot
+## 01. Research Overview
 
-| Item | Current role-aware follow-up |
-|---|---|
-| Benchmark | LongMemEval-S cleaned |
-| Evaluation pool | `same_pipeline` (primary pool in the final notebook) |
-| Split | 235 DEV / 235 locked TEST questions; abstention questions excluded |
-| Model | Logistic regression, `C = 0.3` |
-| Comparison | Baseline feature set vs. baseline + six message-role-aware features |
-| Selection budget | 10% of pool word count (word count is the notebook's budget proxy) |
-| Primary outcome | Question-level budgeted evidence recall |
-| Held-out sample | 235 questions |
-| OOF reconstruction | Exact for baseline and role-aware scores (maximum absolute error 0.0) |
+MemWeave investigates how conversational systems can retain, organize, retrieve, and use information across extended interactions.
 
-## Main held-out result
+The central research problem is not simply how to store more conversational information. It is how to preserve the information that matters, retrieve the appropriate evidence under constrained memory budgets, and support reliable downstream reasoning.
 
-| Metric | Baseline | Role-aware | Change |
-|---|---:|---:|---:|
-| Budgeted evidence recall | 0.4042 | **0.7094** | **+0.3052** |
-| Recall@1 | 0.4255 | **0.8000** | +0.3745 |
-| Recall@3 | 0.6128 | **0.8979** | +0.2851 |
-| Recall@5 | 0.7064 | **0.9447** | +0.2383 |
-| Recall@10 | 0.8000 | **0.9702** | +0.1702 |
-| MRR | 0.5486 | **0.8546** | +0.3060 |
-| Mean gold rank | 5.8553 | **1.9277** | -3.9277 |
+The project explores an evidence-centred memory pipeline involving:
 
+- Conversational trace processing
+- Memory representation and organization
+- Relevance-aware evidence retrieval
+- Memory-budget and retention strategies
+- Quantitative evaluation of evidence recall
+- Statistical analysis and reproducibility auditing
 
-## Visual results
+The research is structured around a central question:
 
-The primary comparison below summarizes the held-out result at the notebook's **10% word-count budget**. The confidence interval shown is for the *paired gain*, not separate intervals for each model.
+> Can a conversational memory system improve evidence retrieval while operating under explicit memory constraints, without sacrificing traceability or experimental reliability?
 
-<p align="center">
-  <img src="MemWeave/docs/figures/budgeted-evidence-recall.svg" alt="Budgeted evidence recall rises from 40.42 percent for the baseline to 70.94 percent for the role-aware model." width="900" />
-</p>
+## 02. Key Research Findings
 
-The role-aware model also improves recall across all six reported question categories. The chart shows the category-level point estimates; subgroup uncertainty and corrected tests are reported in the audit table below.
+### Evidence retrieval
 
-<p align="center">
-  <img src="MemWeave/docs/figures/question-type-recall.svg" alt="Baseline and role-aware evidence recall compared across six LongMemEval-S question types." width="1000" />
-</p>
+The original documented evaluation reported an increase in evidence recall from **40.42% to 70.94%** across 235 held-out questions.
 
-| Question type | n | Baseline | Role-aware | Gain | Holm-adjusted sign-test p |
-|---|---:|---:|---:|---:|---:|
-| Single-session user | 32 | 6.25% | 68.75% | **+62.50 pp** | 0.000010 |
-| Knowledge update | 36 | 44.44% | 83.33% | **+38.89 pp** | 0.000015 |
-| Temporal reasoning | 63 | 40.82% | 66.48% | +25.66 pp | 0.000001 |
-| Single-session assistant | 28 | 67.86% | 92.86% | +25.00 pp | 0.031250 |
-| Single-session preference | 15 | 0.00% | 20.00% | +20.00 pp | 0.250000 |
-| Multi-session | 61 | 52.90% | 71.86% | +18.96 pp | 0.000363 |
+<details>
+<summary><strong>Historical evaluation — evidence recall</strong></summary>
 
-**Interpretation.** Five of six category-level paired sign tests remain significant after Holm correction. The preference subgroup is small and inconclusive. These descriptive subgroup differences do not identify which individual feature caused the overall gain.
-
-Paired inference for budgeted recall:
-- Paired mean gain: **+0.305248**.
-- Question-level paired bootstrap 95% CI: **[0.252979, 0.359574]**.
-- Sign-flip permutation: Monte Carlo `p = 0.000005` at the resolution of 200,000 permutations (plus-one correction; report as `p ≤ 0.000005`).
-- Exact paired sign test: `p = 5.11 × 10⁻²⁵`; 96 positive differences, 3 negative, 136 ties.
-- Gold-rank direction: 127 improved, 3 worsened, 105 unchanged.
-
-The bootstrap resamples questions, not conversation clusters. Conversation-level dependence has not been ruled out.
-
-## Results by question type
-
-| Question type | n | Baseline | Role-aware | Gain |
-|---|---:|---:|---:|---:|
-| Single-session user | 32 | 0.0625 | 0.6875 | +0.6250 |
-| Knowledge update | 36 | 0.4444 | 0.8333 | +0.3889 |
-| Temporal reasoning | 63 | 0.4082 | 0.6648 | +0.2566 |
-| Single-session assistant | 28 | 0.6786 | 0.9286 | +0.2500 |
-| Single-session preference | 15 | 0.0000 | 0.2000 | +0.2000 |
-| Multi-session | 61 | 0.5290 | 0.7186 | +0.1896 |
-
-Holm-adjusted paired sign tests were significant for five of six groups. The preference group was inconclusive (`p_{Holm} = 0.25`) and has only 15 questions. Category-level estimates are exploratory subgroup results; they do not establish causal feature attribution.
-
-## Research lineage: do not conflate the stages
-
-- **v2.0–v2.3:** the original 500-question query-agnostic retention study, its benchmark-shortcut audit, corrected inference, and external/QA proxy analyses. The corrected v2.3 result found only a small and sensitivity-dependent advantage over the strongest simple heuristic; see `MemWeave/results/findings_v2_3.txt`.
-- **Role-aware follow-up:** the separate 235-question held-out evaluation documented in `MemWeave/results/final_locked_test/`. It compares a baseline feature set with an augmented set containing six message-role-aware features. It does not retroactively change the v2.3 result.
-
-## Repository map
-
-```text
-.
-├── README.md
-├── .github/workflows/
-└── MemWeave/
-    ├── README.md
-    ├── PROJECT_OVERVIEW.md
-    ├── docs/
-    │   ├── README.md
-    │   ├── reproducibility/
-    │   └── figures/
-    ├── notebooks/
-    │   ├── 00–04 canonical research sequence
-    │   └── archive/
-    ├── results/
-    │   ├── final_locked_test/
-    │   ├── v2_0/ … v2_2/
-    │   ├── tables/
-    │   └── artifacts/2026-11-26/
-    └── scripts/
+```mermaid
+xychart-beta
+    title "Historical evidence recall"
+    x-axis ["Baseline", "MemWeave"]
+    y-axis "Evidence recall (%)" 0 --> 100
+    bar [40.42, 70.94]
 ```
 
-The Stage B/C, MFAR instrumentation, and extended follow-up materials are organized on the [research follow-up branch](https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/research/memweave-followup-release) and remain under review in [PR #2](https://github.com/tishaaaaaaaaa5-sketch/memweavee/pull/2).
+The reported change corresponds to an absolute improvement of 30.52 percentage points.
 
-### Recommended reading order
+This is a historical evaluation result and should be interpreted within its original benchmark and configuration.
+</details>
 
-1. Read this page for the current headline and the distinction between research stages.
-2. Read [the project guide](MemWeave/README.md) and [notebook index](MemWeave/notebooks/README.md).
-3. Read [the final locked-test report](MemWeave/results/final_locked_test/README.md) before quoting the role-aware result.
-4. Read [the v2.3 corrected findings](MemWeave/results/findings_v2_3.txt) for the earlier study's more cautious result.
-5. Inspect the notebook source and run manifests before attempting reproduction.
+### Additional experimental results
 
-## Reproducibility
+A subsequent regenerated evaluation reported **82.06%** recall. This is a separate result and should not be treated as a direct replacement for the historical 70.94% result without matching the evaluation configuration.
 
-Run `python MemWeave/scripts/validate_release.py` from the repository root to check internal consistency of the committed role-aware aggregate artifacts. This is a release-artifact check, not a fresh model run or independent replication; the current dataset checksum and privacy-safe per-question export remain missing. See the [reproducibility utilities](MemWeave/scripts/README.md) and [reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md).
+A separate retention audit examined 2,115 traces and 235 questions across eight variants.
 
-The notebooks are designed for Jupyter/Google Colab. Run them from a clean kernel, in order, and retain the generated outputs and manifests. Dataset JSONs, feature caches, and raw per-question exports are not committed here; obtain the datasets under their applicable terms and verify the checksums recorded by the relevant run.
+| Retention audit measure | Result |
+|---|---:|
+| Baseline recall | 42.38% |
+| Baseline missed evidence | 261 |
+| Best evaluated configuration | Z-score, 20k cap |
+| Best evaluated recall | 75.06% |
+| Missed evidence at best configuration | 113 |
+| Memory-budget utilization | 89.85% |
 
-For the role-aware follow-up, the notebook reports:
-- `same_pipeline` pool; `C = 0.3`; 10% word-count budget.
-- 235 DEV and 235 locked TEST questions.
-- 4,216 / 5,523 retained training rows for both model variants after the held-out content-overlap filter.
-- Exact OOF score reconstruction before the TEST evaluation.
-- 50,000 paired bootstrap resamples and 200,000 sign-flip permutations for the primary audit.
+```mermaid
+xychart-beta
+    title "Retention audit: baseline vs best evaluated configuration"
+    x-axis ["Baseline", "Z-score cap-20k"]
+    y-axis "Evidence recall (%)" 0 --> 100
+    bar [42.38, 75.06]
+```
 
-The source notebook is `04_MemWeave_Final.ipynb`. A cleaned executed copy, [`04_MemWeave_Final_Executed.ipynb`](MemWeave/notebooks/04_MemWeave_Final_Executed.ipynb), is now committed with 94 execution counts and the final locked-test/statistical-audit outputs. Debug outputs containing full conversation text were removed. See the [paired audit JSON](MemWeave/results/final_locked_test/paired_test_audit.json) and [data provenance note](MemWeave/results/final_locked_test/data_provenance.md). The per-question CSV reported by the notebook was not present in the uploaded artifacts and is not fabricated here.
+The retention audit also found identical results for its filtered and unfiltered variants. This is an important observation: filtering did not produce a measurable difference under that particular experimental setup.
 
-## Limitations and responsible claims
+The audit identified four failure modes as `NOT_OBSERVABLE`. These should remain classified as unobservable rather than being interpreted as successful outcomes.
 
-- Evidence retention/retrieval metrics are not end-to-end answer correctness.
-- The result comes from one benchmark and one locked split; the split is not an independent external replication.
-- The project evolved iteratively. The final test was held out for the reported evaluation, but the overall research process was not preregistered.
-- The role-aware feature bundle has not been isolated by a complete feature ablation; subgroup gains do not prove which feature caused the improvement.
-- Question-level bootstrap inference may understate uncertainty if questions share conversations.
-- The single-session preference subgroup is small and inconclusive.
-- The 10% budget uses word count as a proxy in the final notebook; it should not be described as an exact tokenizer-based token budget.
+---
+
+## 03. System Architecture
+
+The conceptual architecture separates the memory lifecycle into distinct stages. This separation makes it possible to evaluate individual components instead of treating memory performance as a single opaque outcome.
+
+```mermaid
+flowchart TD
+    A["Conversational Data"] --> B["Trace Processing"]
+    B --> C["Memory Representation"]
+    C --> D["Memory Organization"]
+    D --> E["Retention and Budget Management"]
+    E --> F["Evidence Retrieval"]
+    F --> G["Evidence Selection"]
+    G --> H["Downstream Reasoning"]
+    H --> I["Evaluation and Audit"]
+
+    I --> J["Recall Metrics"]
+    I --> K["Missed Evidence Analysis"]
+    I --> L["Statistical Assessment"]
+    I --> M["Reproducibility Records"]
+
+    M -. "Experimental feedback" .-> C
+    M -. "Retention analysis" .-> E
+    M -. "Retrieval analysis" .-> F
+```
+
+### Architectural principles
+
+| Principle | Research objective |
+|---|---|
+| Evidence preservation | Retain information that supports future questions |
+| Retrieval relevance | Retrieve useful evidence rather than merely similar text |
+| Budget awareness | Examine performance under memory constraints |
+| Traceability | Preserve links between stored memories and source evidence |
+| Evaluation separation | Distinguish memory construction from retrieval performance |
+| Reproducibility | Record configurations, artifacts, and evaluation procedures |
+
+---
+
+## 04. Experimental Methodology
+
+MemWeave uses a staged experimental approach to separate system development, evaluation, and follow-up analysis.
+
+```mermaid
+flowchart TD
+    A["Research Question"] --> B["Dataset and Trace Preparation"]
+    B --> C["Baseline Evaluation"]
+    C --> D["Memory Strategy Experiments"]
+    D --> E["Retrieval Evaluation"]
+    E --> F["Quantitative Comparison"]
+    F --> G["Statistical Analysis"]
+    G --> H["Failure-Mode Investigation"]
+    H --> I["Reproducibility Audit"]
+    I --> J["Research Conclusions"]
+
+    J -. "Identify unresolved questions" .-> A
+```
+
+### Evaluation dimensions
+
+**1. Retrieval quality**
+
+Measures whether the system retrieves the evidence required to answer held-out questions.
+
+**2. Memory efficiency**
+
+Investigates how retention strategies and memory budgets influence the quantity and quality of retained evidence.
+
+**3. Error analysis**
+
+Examines missed evidence and failure modes to identify where the memory pipeline breaks down.
+
+**4. Statistical reliability**
+
+Uses paired comparisons and uncertainty analysis where supported by the experimental data.
+
+**5. Reproducibility**
+
+Documents configurations, artifacts, provenance, and evaluation procedures.
+
+---
+
+## 05. Research Evaluation and Quantitative Analysis
+
+### 5.1 Evidence recall
+
+Evidence recall is a central evaluation measure.
+
+\[
+\text{Evidence Recall} =
+\frac{\text{Relevant evidence retrieved}}
+{\text{Total relevant evidence}}
+\]
+
+Higher recall indicates that a greater proportion of the required evidence was retrieved.
+
+However, recall alone does not establish answer correctness, retrieval precision, reasoning quality, or generalization to other benchmarks. These dimensions require separate evaluation.
+
+### 5.2 Retention-budget investigation
+
+The retention audit compares multiple variants under a constrained memory budget.
+
+```mermaid
+flowchart LR
+    A["Original traces"] --> B["Retention strategies"]
+    B --> C["Budget constraint"]
+    C --> D["Retained memory"]
+    D --> E["Question-based retrieval"]
+    E --> F["Recall and missed-evidence analysis"]
+    F --> G["Configuration comparison"]
+```
+
+The strongest evaluated retention configuration in the documented audit was the Z-score strategy with a 20k cap.
+
+Its reported recall was 75.06%, compared with 42.38% for the baseline.
+
+The result is specific to the evaluated dataset, questions, and experimental configuration. It does not establish universal superiority of Z-score retention.
+
+### 5.3 Experimental result separation
+
+The project contains multiple evaluation stages. They should be interpreted independently.
+
+| Evaluation | Dataset / scope | Reported result |
+|---|---|---|
+| Historical evidence evaluation | 235 held-out questions | 40.42% → 70.94% |
+| Regenerated evaluation | Separate regenerated run | 82.06% |
+| Retention audit | 2,115 traces; 235 questions; eight variants | 42.38% baseline; 75.06% best evaluated configuration |
+
+These results are intentionally not combined into one performance curve because the experimental configurations are not established as directly comparable.
+
+---
+
+## 06. Statistical Analysis and Scientific Rigor
+
+A research result should not be evaluated solely by its point estimate.
+
+The project therefore includes statistical analysis and reproducibility documentation intended to support more careful interpretation.
+
+The documented evaluation materials include:
+
+- Paired statistical analysis
+- Confidence-interval reporting
+- Missed-evidence accounting
+- Retention-budget analysis
+- Configuration and artifact documentation
+- Explicit limitations and unresolved questions
+
+### Interpretation framework
+
+```mermaid
+flowchart TD
+    A["Observed performance difference"] --> B["Check evaluation consistency"]
+    B --> C["Examine paired observations"]
+    C --> D["Estimate uncertainty"]
+    D --> E["Inspect missed evidence"]
+    E --> F["Assess possible confounders"]
+    F --> G["Determine strength of evidence"]
+    G --> H["Report limitations"]
+```
+
+### Important scientific limitations
+
+The current evidence should be interpreted with the following limitations in mind:
+
+1. The original evidence-recall evaluation is based on one benchmark.
+2. Independent replication has not been established.
+3. Per-question exports are incomplete in the documented research history.
+4. A complete feature-ablation study has not been established.
+5. The external-validation protocol has been documented but has not been executed.
+6. Results from different evaluation configurations must not be compared as though they came from a single controlled experiment.
+
+These limitations define the next research steps rather than invalidating the existing experimental observations.
+
+---
+
+## 07. Research Development Timeline
+
+```mermaid
+flowchart TD
+    A["v2.0<br/>Initial research baseline"] --> B["v2.1<br/>Evaluation development"]
+    B --> C["v2.2<br/>Further memory and retrieval analysis"]
+    C --> D["v2.3<br/>Expanded experimental documentation"]
+    D --> E["Stage B / Stage C<br/>Follow-up research"]
+    E --> F["MFAR<br/>Memory Failure Analysis and Retention"]
+    F --> G["Retention audit<br/>2,115 traces / 235 questions"]
+    G --> H["External validation<br/>Protocol documented; execution pending"]
+```
+
+The research lineage is preserved so that later investigations can be distinguished from earlier baselines.
+
+---
+
+## 08. Repository Structure
+
+The repository separates implementation, research notebooks, results, reproducibility documentation, and supporting artifacts.
+
+```text
+memweavee/
+│
+├── MemWeave/
+│   ├── notebooks/
+│   │   └── Research and evaluation notebooks
+│   │
+│   ├── results/
+│   │   ├── v2_0/
+│   │   ├── v2_1/
+│   │   ├── v2_2/
+│   │   ├── final_locked_test/
+│   │   ├── followup_2026/
+│   │   └── stage_bc_2026-11-26/
+│   │
+│   └── README.md
+│
+├── docs/
+│   ├── research/
+│   ├── instrumentation/
+│   ├── reproducibility/
+│   └── figures/
+│
+├── notebooks/
+│   └── archive/
+│
+├── results/
+│   ├── followup_2026/
+│   └── artifacts/
+│
+├── schemas/
+├── scripts/
+├── tests/
+│
+├── REPRODUCIBILITY_AUDIT.md
+└── README.md
+```
+
+### Directory responsibilities
+
+| Directory | Purpose |
+|---|---|
+| `MemWeave/notebooks/` | Main research and evaluation notebooks |
+| `MemWeave/results/` | Versioned experimental outputs |
+| `docs/research/` | Research questions, methodology, and findings |
+| `docs/instrumentation/` | Instrumentation and measurement documentation |
+| `docs/reproducibility/` | Reproduction protocols and supporting records |
+| `docs/figures/` | Research figures and visual summaries |
+| `results/` | Follow-up results and exported artifacts |
+| `schemas/` | Structured data definitions |
+| `scripts/` | Supporting execution and analysis scripts |
+| `tests/` | Project checks and validation code |
+
+---
+
+## 09. Reproducibility and Research Integrity
+
+Reproducibility is treated as a research requirement rather than a supplementary feature.
+
+The project maintains documentation for:
+
+- Experimental configurations
+- Result provenance
+- Dataset and evaluation boundaries
+- Statistical analysis
+- Artifact organization
+- Reproduction procedures
+- Known limitations
+
+### Audit snapshot
+
+The documented reproducibility audit reported:
+
+| Audit status | Count |
+|---|---:|
+| PASS | 54 |
+| WARNING | 3 |
+| FAIL | 0 |
+
+These counts describe the documented audit snapshot; they should not be interpreted as proof that every experiment has been independently reproduced.
+
+### External validation
+
+An external-validation protocol has been documented, including:
+
+- Leakage controls
+- Conversation-level splitting
+- Independent uncertainty estimates
+
+The protocol has not yet been executed. No external-validation result is claimed.
+
+---
+
+## 10. Research Artifacts and Releases
+
+Research materials and follow-up documentation are maintained separately from the primary stable branch.
+
+The expanded research and instrumentation materials are associated with:
+
+- Branch: `research/memweave-followup-release`
+- Pull request: [PR #2](https://github.com/tishaaaaaaaaa5-sketch/memweavee/pull/2)
+
+The research branch contains follow-up documentation and additional analysis. These changes should not be described as merged into `main` unless the pull request has actually been merged.
+
+The documented artifact ZIP export contained:
+
+| Property | Value |
+|---|---|
+| Files | 52 |
+| Size | Approximately 1.51 MB |
+| SHA-256 | `32bc3f886f569a8fe788ca62b37032fe51d44178184b432539a7b224b7575634` |
+| ZIP integrity check | Passed |
+
+ZIP integrity is not equivalent to a complete independent extraction, manifest, privacy, or terms-of-use audit.
+
+---
+
+## 11. Current Research Gaps and Future Directions
+
+The next stage of work should focus on strengthening the evidence rather than simply increasing the number of experiments.
+
+```mermaid
+flowchart TD
+    A["Current research foundation"] --> B["Independent benchmark replication"]
+    A --> C["Complete per-question exports"]
+    A --> D["Feature ablation"]
+    A --> E["Execute external validation"]
+    A --> F["Broader retention-strategy comparisons"]
+
+    B --> G["Stronger generalization evidence"]
+    C --> H["Improved error attribution"]
+    D --> I["Component-level causal understanding"]
+    E --> J["Independent validation evidence"]
+    F --> K["Better memory-budget characterization"]
+
+    G --> L["More defensible research conclusions"]
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+```
+
+### Priority research directions
+
+| Priority | Research direction | Scientific objective |
+|---|---|---|
+| Critical | Independent validation | Test whether observed improvements generalize |
+| Critical | Feature ablation | Identify which components contribute to performance |
+| High | Complete per-question exports | Improve error analysis and traceability |
+| High | Retention-strategy comparisons | Characterize performance under different memory budgets |
+| High | Broader benchmark evaluation | Assess robustness beyond the current benchmark |
+
+---
+
+## 12. How to Navigate the Research
+
+A recommended reading sequence:
+
+1. Start with the main research notebook to understand the system and its evaluation.
+2. Review the versioned results to understand the experimental progression.
+3. Read the retention audit to examine memory-budget behaviour.
+4. Review the reproducibility audit for implementation and evidence checks.
+5. Examine the follow-up research materials for unresolved questions and next-stage experiments.
+
+---
+
+## 13. Research Scope and Responsible Interpretation
+
+MemWeave is an experimental research project. Its reported metrics describe particular datasets, configurations, and evaluation procedures.
+
+The project does not claim that:
+
+- Evidence recall is equivalent to answer accuracy.
+- A single benchmark establishes generalization.
+- A higher point estimate alone establishes statistical significance.
+- Different experimental configurations can be directly compared without qualification.
+- A documented validation protocol constitutes completed validation.
+
+The objective is to develop a transparent and experimentally defensible approach to conversational memory and evidence retrieval.
+
+---
+
+## 14. Project Status
+
+**Research status:** Active experimental development.
+
+**Current focus:** Evidence retrieval, retention analysis, statistical interpretation, and reproducibility.
+
+**Research branch:** `research/memweave-followup-release`
+
+**Open research pull request:** [PR #2](https://github.com/tishaaaaaaaaa5-sketch/memweavee/pull/2)
+
+---
 
 ## Citation
 
-A formal citation entry should be added when the manuscript's author list, title, venue/status, and year are finalized. Until then, cite the repository and identify the work as an ongoing research project; do not invent a publication venue or DOI.
+If you use, extend, or evaluate this research, please cite the repository and its associated research materials.
 
+**Repository:** [tishaaaaaaaaa5-sketch/memweavee](https://github.com/tishaaaaaaaaa5-sketch/memweavee)
 
-## Research follow-up and reproducibility
+---
 
-- [Independent benchmark validation plan](MemWeave/docs/reproducibility/INDEPENDENT_VALIDATION_PLAN.md) — proposed LoCoMo evaluation; not yet run.
-- [Reproducibility audit](MemWeave/docs/reproducibility/REPRODUCIBILITY_AUDIT.md) — missing dataset revision, checksums, and privacy-safe per-example exports.
-- [GitHub profile README draft](PROFILE_README_DRAFT.md) — copy this into a public repository named exactly `tishaaaaaaaaa5-sketch` to activate the profile README feature.
+<p align="center">
+  <strong>MemWeave — Building memory systems that preserve evidence, not just information.</strong>
+</p>
+
