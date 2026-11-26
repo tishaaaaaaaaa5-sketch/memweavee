@@ -42,3 +42,8 @@ The result is from one held-out split of one benchmark. The development process 
 ## Provenance and large artifacts
 
 Raw benchmark JSONs, feature caches and large per-question exports are intentionally excluded from ordinary Git history. Store large artifacts in Git LFS or an external artifact host and publish checksums and dataset terms. The uploaded executed notebook used for the latest audit is not silently represented as committed notebook output; the committed notebook remains the source workflow and the aggregate results are captured here.
+
+
+## Stage B/C controlled reconciliation (interim)
+
+The controlled 2×2×2 reconstruction and its current candidate-selection findings are documented in [the Stage B/C reconciliation report](stage_bc_reconciliation/README.md). The paired main effects show +7.482 pp for z-score vs raw scaling and +1.064 pp for a 20,000 vs unlimited vocabulary cap; filtering had identical recorded candidate selections in all 235 questions. These are candidate-level relevance results, not answer-quality metrics. The scale × cap interaction and the cause of filtering equivalence remain under investigation. The historical Stage B/Stage C discrepancy is not resolved by this reconstruction.
