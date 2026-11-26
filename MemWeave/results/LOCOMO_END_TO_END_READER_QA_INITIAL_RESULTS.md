@@ -182,3 +182,29 @@ The inventory identified 1,536 eligible QA questions in the available dataset. T
 The small-reader prefix-packed run showed a strong role-aware point estimate, but the base-reader whole-session run did not reproduce that ranking. Because the packing policies differ, the cross-reader comparison is not a clean model-size replication. The evidence supports treating the current downstream result as reader-and-packer dependent and exploratory, rather than claiming a general role-aware answer-quality gain.
 
 Next validation should use a crossed design: evaluate both FLAN-T5-small and FLAN-T5-base under both prefix and whole-session packing on the same questions, with the same selectors, prompt template, input cap, and decoding settings. Then report paired conversation-cluster bootstrap intervals for each within-packing selector contrast and reader-by-packing interaction. A genuinely independent dataset with more conversation clusters remains necessary. Keep the lexical-support measure explicitly labeled as a proxy, not groundedness.
+
+
+## Evidence-aware sentence-span packing follow-up
+
+The evidence-aware span-packing experiment completed 800/800 deterministic generations with FLAN-T5-small on the same 200-question sample and 10 LoCoMo conversation clusters. It reused the frozen baseline, role-aware, and recency selectors and question-only control. Candidate sentence spans were ranked by lexical query similarity from the top-three retrieved sessions; gold answers and evidence annotations were not used for span selection. Full prompts were checked against the exact 512-token reader input limit, and complete questions were preserved.
+
+| Method | n | Exact match | Token F1 | Mean reader input tokens | Mean packed sessions | Mean packed spans | Mean retrieved gold-session recall | Mean packed gold-session recall |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Baseline | 200 | 0.025 | 0.1016 | 508.245 | 2.700 | 23.805 | 0.1008 | 0.1008 |
+| Question-only | 200 | 0.010 | 0.0440 | 42.770 | 0.000 | 0.000 | 0.0000 | 0.0000 |
+| Recency | 200 | 0.015 | 0.0812 | 508.025 | 2.620 | 23.285 | 0.0738 | 0.0738 |
+| Role-aware | 200 | 0.120 | 0.2417 | 507.685 | 2.445 | 23.045 | 0.6727 | 0.6727 |
+
+Paired conversation-cluster bootstrap (10 clusters, 20,000 resamples):
+
+| Contrast | Mean difference | 95% CI |
+|---|---:|---:|
+| Role-aware minus baseline token F1 | +0.1401 | [+0.0640, +0.2213] |
+| Role-aware minus recency token F1 | +0.1606 | [+0.1016, +0.2240] |
+| Role-aware minus baseline exact match | +0.0950 | [+0.0300, +0.1750] |
+
+This is the strongest downstream role-aware result so far in the tested configurations. Unlike the earlier greedy whole-session packer, span packing retained the retrieved gold-session recall at the packed-context stage: role-aware 0.6727 versus 0.0192 with whole-session packing. For all methods, packed gold-session recall equals retrieved gold-session recall in this diagnostic because at least one selected span from each retrieved gold session was retained; this is session-level retention, not proof that the specific supporting utterance or semantic evidence survived. Lexical similarity is not semantic relevance, and the gold-session metric is not entailment or factual-grounding validation.
+
+Interpretation remains exploratory: there are only 10 conversation clusters, the gold annotation maps evidence to sessions rather than sentence spans, and this is one reader/model configuration. Next, rerun this exact span-packing pipeline with FLAN-T5-base using the same 200 questions, frozen selectors, candidate spans, deterministic decoding, and exact tokenizer-specific 512-token checks. Preserve the FLAN-T5-small artifacts separately. If the result holds, proceed to independent-dataset validation and complete the reproducibility package.
+
+Artifacts were saved in the Kaggle runtime under `locomo_reader_qa_evidence_span`; raw CSV/JSON files have not been added to the repository by this documentation update.
