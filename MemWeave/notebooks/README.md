@@ -48,3 +48,10 @@ Benchmark JSONs, feature caches and raw per-question exports are not stored in t
 ### Novelty-aware DEV follow-up
 
 The self-contained DEV experiment in Notebook 06 rebuilt its five grouped folds without relying on missing prior-kernel CV variables. Its result does not support the tested novelty blends: relevance-only recall was 0.4049; 90/10 relevance/novelty was 0.4060 with a paired interval crossing zero; stronger novelty weights reduced recall. See the [novelty experiment report](../results/stage_bc_reconciliation/NOVELTY_AWARE_DEV_EXPERIMENT.md). Do not treat this exploratory DEV result as independent confirmation.
+
+
+### Constrained novelty tie-breaker (DEV-only)
+
+The notebook now includes a predeclared follow-up that keeps relevance primary and uses novelty only to order candidates within fixed 5-percentile relevance bands. It reuses the self-contained five-fold answer-session grouped DEV protocol, fold-local feature construction, candidate-hash overlap exclusion, frozen logistic ranker, 10% word-count proxy budget, and paired group bootstrap. It does not read TEST.
+
+Run the final notebook cell titled **“Constrained novelty tie-breaker (DEV-only; relevance remains primary)”** after the preceding self-contained novelty DEV experiment cell. Outputs are written to `memweave_followup_outputs/constrained_novelty_tiebreaker_dev/`. The experiment is not yet run; do not interpret or report an outcome until the Kaggle output is reviewed.
