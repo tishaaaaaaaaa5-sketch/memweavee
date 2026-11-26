@@ -108,9 +108,11 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
             "Set pipeline.longmemeval_path to a local LongMemEval JSON file; "
             "benchmark data is never downloaded automatically."
         )
-    output_dir = Path(pipeline.get("output_dir", "results/pipeline_run")).expanduser()
-    if not output_dir.is_absolute():
-        output_dir = Path.cwd() / output_dir
+    output_root = Path(pipeline.get("output_dir", "results/pipeline_run")).expanduser()
+    if not output_root.is_absolute():
+        output_root = Path.cwd() / output_root
+    run_id = uuid.uuid4().hex
+    output_dir = output_root / run_id
 
     raw = load_json(data_path, max_questions=pipeline.get("max_questions"))
     prepared = prepare_longmemeval(raw, batch_size=int(pipeline.get("batch_size", 400)))
@@ -245,7 +247,6 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
         "robustness_overlapping_splits": robustness,
         "locomo_transfer": transfer_comparisons,
     }
-    run_id = uuid.uuid4().hex
     payload = {
         "run_id": run_id,
         "run": {
@@ -282,7 +283,7 @@ def run_pipeline(config: dict[str, Any]) -> dict[str, Any]:
     }
     artifact_result = write_artifacts(output_dir, tables, payload)
     registry_path = Path(
-        pipeline.get("registry_path", str(output_dir.parent / "run_registry.sqlite3"))
+        pipeline.get("registry_path", str(output_root.parent / "run_registry.sqlite3"))
     ).expanduser()
     if not registry_path.is_absolute():
         registry_path = Path.cwd() / registry_path
