@@ -37,6 +37,10 @@ The supplied executed Kaggle notebook regenerated a new result set under pinned 
 
 Read the [Stage C follow-up report](results/followup_2026/README.md) for ablation results, provenance, interpretation, and remaining limitations. The [Stage C Kaggle follow-up notebook](notebooks/05_MemWeave_Kaggle_Followup.ipynb) is now committed. Its seven generated CSV/JSON result exports remain separate release artifacts and are not included in this notebook-only commit.
 
+## Stage B/C controlled reconciliation (interim)
+
+A separate controlled reconstruction isolates feature scaling, vocabulary capping, and message filtering. Its current paired candidate-selection analysis is recorded in the [Stage B/C reconciliation report](results/stage_bc_reconciliation/README.md). Z-score scaling has a +7.482 pp main effect and the 20,000-term cap a +1.064 pp main effect on selected-candidate gold fraction; filtering produced identical recorded selections for all 235 questions. These are not answer-accuracy results and do not yet explain the historical Stage B/Stage C difference. The scale × cap interaction and filtering implementation audit remain pending.
+
 ## Proposed next research direction: MFAR
 
 The next proposed contribution is **Memory Failure-Aware Retrieval (MFAR)**. It treats construction, compression, retrieval, and answering failures as distinct but potentially co-occurring failure modes, and proposes trace-aware diagnostics with targeted interventions under explicit resource budgets.
