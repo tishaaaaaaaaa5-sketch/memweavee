@@ -41,7 +41,9 @@ Read the [Stage C follow-up report](results/followup_2026/README.md) for ablatio
 
 The next proposed contribution is **Memory Failure-Aware Retrieval (MFAR)**. It treats construction, compression, retrieval, and answering failures as distinct but potentially co-occurring failure modes, and proposes trace-aware diagnostics with targeted interventions under explicit resource budgets.
 
-MFAR is a design proposal, not an implemented or validated method. Its algorithm specification, hypotheses, observability requirements, evaluation plan, ablations, and decision gates are in [MFAR_ALGORITHM_DESIGN.md](docs/MFAR_ALGORITHM_DESIGN.md). The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
+MFAR is a design proposal, not an implemented or validated method. Its algorithm specification, hypotheses, observability requirements, evaluation plan, ablations, and decision gates are in [MFAR_ALGORITHM_DESIGN.md](docs/MFAR_ALGORITHM_DESIGN.md).
+
+The first engineering contract is the [MFAR trace schema](schemas/mfar_trace.schema.json), with an [illustrative trace](schemas/examples/mfar_trace.example.json), [schema implementation notes](docs/MFAR_TRACE_SCHEMA.md), and [validator CLI](scripts/validate_mfar_trace.py). The schema is an initial instrumentation contract, not yet integrated into the existing memory pipeline. The existing Stage A/B/C results are motivation and baselines; they are not evidence that MFAR works.
 
 ## Canonical notebook sequence
 
