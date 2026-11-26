@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1.0",
+  "schema_version": "0.2.0",
   "run_id": "run-demo-001",
   "example_id": "example-demo-001",
   "created_at": "2026-11-26T10:00:00Z",
@@ -48,7 +48,9 @@
       {
         "memory_id": "memory-candidate-001",
         "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
-        "source_evidence_ids": ["evidence-source-001"],
+        "source_evidence_ids": [
+          "evidence-source-001"
+        ],
         "created_at": "2026-11-26T09:59:00Z",
         "valid_from": null,
         "valid_until": null,
@@ -60,7 +62,9 @@
       {
         "memory_id": "memory-stored-001",
         "content_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
-        "source_evidence_ids": ["evidence-source-001"],
+        "source_evidence_ids": [
+          "evidence-source-001"
+        ],
         "created_at": "2026-11-26T09:59:30Z",
         "valid_from": null,
         "valid_until": null,
@@ -81,8 +85,12 @@
       {
         "transformation_id": "transform-demo-001",
         "kind": "compress",
-        "input_ids": ["memory-candidate-001"],
-        "output_ids": ["memory-stored-001"],
+        "input_ids": [
+          "memory-candidate-001"
+        ],
+        "output_ids": [
+          "memory-stored-001"
+        ],
         "timestamp": "2026-11-26T09:59:30Z",
         "implementation_version": "demo-0.1",
         "metadata": {
@@ -111,7 +119,9 @@
   "controller": {
     "selected_action": "baseline_retrieval",
     "policy_version": "fixed-baseline-0.1",
-    "reason_codes": ["no_high_confidence_failure_signal"],
+    "reason_codes": [
+      "no_high_confidence_failure_signal"
+    ],
     "estimated_quality_gain": null,
     "estimated_incremental_cost": 0,
     "estimated_risk": null
@@ -119,13 +129,17 @@
   "outcome": {
     "answer_id": "answer-demo-001",
     "answer_content_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
-    "evidence_ids": ["evidence-retrieved-001"],
+    "evidence_ids": [
+      "evidence-retrieved-001"
+    ],
     "status": "answered",
     "claim_support": [
       {
         "claim_id": "claim-demo-001",
         "support_status": "supported",
-        "evidence_ids": ["evidence-retrieved-001"]
+        "evidence_ids": [
+          "evidence-retrieved-001"
+        ]
       }
     ]
   },
