@@ -32,6 +32,10 @@ The best observed retention condition is z-score scaling with the 20,000-feature
 - **Vocabulary cap:** with z-score scaling, the capped condition is slightly higher in recall than the uncapped condition (0.750552 vs 0.746137), while uncapped mean budget utilization is slightly higher. Do not interpret this small descriptive difference as statistically significant without paired inference.
 - **Budget utilization:** values are based on the recorded word-count-proxy budget, not exact tokenizer tokens.
 
+## Cross-stage trace integrity validation
+
+After the retention audit, the committed `validate_mfar_trace_integrity.py` validator was run by the user against the assembled real-data JSONL export. The reported result was: **“Cross-stage referential integrity passed for 2115 traces.”** The user also confirmed: **“No missing stages or failure labels were inferred.”** This verifies referential consistency within the trace schema and its currently populated stages; it does not make retrieval or answer stages observable and does not establish end-to-end MFAR validity.
+
 ## Interpretation limits
 
 1. These metrics measure whether gold candidates were retained by the selection policy. They are not retrieval recall, answer accuracy, or end-to-end conversational-memory quality.
