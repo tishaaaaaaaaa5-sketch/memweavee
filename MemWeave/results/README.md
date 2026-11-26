@@ -111,3 +111,15 @@ Role-aware achieved token F1 **0.1443**, versus baseline **0.0823** and recency 
 The current paper-oriented synthesis is maintained in [FINAL_RESEARCH_SYNTHESIS_DRAFT.md](FINAL_RESEARCH_SYNTHESIS_DRAFT.md). It keeps Stage B, Stage C, selector transfer, reader QA, and external Long-MT-Bench+ results separate, and states the claims and limitations supported by each endpoint.
 
 **Release caveat:** this synthesis is a draft based on the reported aggregate results. The privacy-reviewed raw Stage C and downstream QA exports, checksums, and clean-environment artifact validation remain outstanding. See the [reproducibility audit](../docs/REPRODUCIBILITY_AUDIT.md) for the exact release blockers.
+
+
+## Dated status correction (2026-11-27)
+
+Some earlier paragraphs in this README describe the FLAN-T5-base reader and independent-dataset evaluation as pending. Those are historical snapshots. The later corrected experiments completed:
+- LoCoMo evidence-aware span packing with FLAN-T5-small and FLAN-T5-base on the same 200 questions / 10 conversations.
+- Long-MT-Bench+ corrected span-level budget evaluation with FLAN-T5-base on 288 questions / 11 conversations.
+- Corrected LongMemEval role-feature ablation (summary table only) in the consolidated Kaggle notebook's cell 85.
+
+Use the later sections and [the consolidated research synthesis](FINAL_RESEARCH_SYNTHESIS_DRAFT.md) for current aggregate results. These experiments remain exploratory at their stated cluster counts. The Long-MT-Bench+ exact-match result is effectively tied with recency; its positive exploratory transfer signal is on token F1.
+
+The 2026-11-26 MFAR retention audit is a separate retention-only audit. It does not observe retrieval or answer generation and does not validate an MFAR failure detector or intervention controller. See [MFAR_RETENTION_AUDIT_RESULTS.md](stage_bc_2026-11-26/MFAR_RETENTION_AUDIT_RESULTS.md) and [the artifact organization audit](../docs/ARTIFACT_ORGANIZATION_AUDIT_2026-11-27.md).
