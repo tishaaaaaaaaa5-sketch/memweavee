@@ -24,7 +24,7 @@ The opt-in event writer is `scripts/mfar_runtime_event_writer.py`. Its hooks are
 |---|---|---|
 | `encode_session()` and source session handling in `build_bundle()` | `source_observed`, `candidate_constructed` | Real source session and encoded candidate, linked by opaque IDs and SHA-256 hashes |
 | Candidate bundle creation in `build_bundle()` | `candidate_pool_built` | Ordered candidate occurrence IDs for the question |
-| Test-fold method/budget evaluation in `record()` | `retention_selected` | Actual candidate pool, selected IDs, selection method, fold, seed, budget and cost unit |
+| Test-fold method/budget evaluation in `record()` | `retention_selected` | Actual candidate pool and primary Setting B selected IDs at the fixed primary budget on the first configured seed; includes selection method, fold, seed, budget and cost unit |
 | `qa_context()` | `qa_evidence_assembled` | Retained IDs and exact top-k session IDs assembled into the QA context |
 | Optional generation loop | `answer_generated` | Evidence IDs passed to the model, model/config fingerprints, answer hash, measured generation latency/token counts, and the existing containment evaluation |
 
@@ -56,3 +56,5 @@ A traced run sets `MFAR_TRACE_ENABLED=1` before executing the notebook, rebuilds
 **Code instrumentation is committed; runtime evidence is pending.** The hooks cover actual construction, retention, and QA-context/answer operations where those optional paths execute. They do not create a persistent memory store or an independently instrumented retrieval service. If the QA proxy is disabled, retrieval-to-answer and answering events are absent by design.
 
 Permitted next work: execute the traced original-data notebook, inspect coverage, check output equivalence, and validate event lineage. Blocked: treating retention as persistent storage/compression, calling metric-time ranking a live retrieval API, inferring missing-stage labels, detector training, and end-to-end MFAR effectiveness claims.
+
+To keep the ledger bounded and aligned with the downstream QA proxy, the current retention hook captures only the primary Setting B policy at the fixed primary budget on the first configured seed. This is a trace-scope choice, not a change to the experiment; all other methods and budgets continue to run and be evaluated normally.
