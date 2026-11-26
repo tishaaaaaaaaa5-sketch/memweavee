@@ -25,7 +25,7 @@ The Kaggle working directory contained:
 
 The candidate trace and retention ledger are Kaggle artifacts. They are not copied into this repository by this report.
 
-## Paired factorial main effects
+## Paired factorial main effects — supplementary candidate-level metric
 
 The reported effects are paired across the same 235 questions. Effects are expressed in percentage points (pp) of the per-question fraction of selected candidates labelled gold, averaged over the other factorial dimensions.
 
@@ -35,9 +35,7 @@ The reported effects are paired across the same 235 questions. Effects are expre
 | Vocabulary cap | 20,000 minus unlimited | 235 | **+1.064** | [+0.496, +1.702] |
 | Message filtering | filtered minus all messages | 235 | **0.000** | [0.000, 0.000] |
 
-### Filtering equivalence
-
-For each of the four scale × vocabulary-cap combinations, filtered and unfiltered outputs were identical for all 235 questions (235/235). This is an observed equivalence in the recorded candidate-selection outputs. It does not establish that filtering is generally ineffective or that the implementation is correct; the message population and filter path still need inspection.
+For each of the four scale × vocabulary-cap combinations, filtered and unfiltered outputs were identical for all 235 questions (235/235). This is an observed equivalence in this dataset population, not a general claim about filtering.
 
 ## Descriptive candidate-selection reference
 
@@ -49,35 +47,6 @@ The baseline candidate trace selected 541 candidates (2.302 per question); 192 w
 - Z-score scaling, unlimited vocabulary: 338 gold among 541 selected (62.48%).
 
 These are candidate-selection gold fractions, not evidence recall, retrieval success, QA accuracy, or end-to-end answer correctness. The baseline is an additional reference configuration, not a ninth factorial cell.
-
-## Interpretation
-
-The strongest observed main effect is z-score scaling. The 20,000-term vocabulary cap has a smaller positive main effect. The message-filter switch produced no difference in the recorded outputs.
-
-The confidence intervals for scaling and vocabulary capping are above zero under the reported paired bootstrap. This supports positive effects on the measured candidate-selection gold fraction in this reconstruction. It does not establish that these switches explain the historical Stage B/Stage C discrepancy.
-
-## Remaining analysis
-
-1. Estimate the scale × vocabulary-cap interaction using paired per-question differences-in-differences.
-2. Inspect the notebook's message filtering implementation and count eligible/excluded messages to explain the exact filtered/unfiltered equivalence.
-3. Preserve the analysis code, configuration, and run-manifest linkage for reproducibility.
-4. Only after those checks, assess which implementation differences are plausible contributors to the historical discrepancy.
-
-## Claim boundaries
-
-- Do not describe these numbers as answer accuracy or QA recall.
-- Do not pool them with Stage A (v2.0–v2.3), Stage B historical locked-test, or Stage C regenerated follow-up headline metrics.
-- Do not claim the historical discrepancy is resolved.
-- The 2,115-record MFAR retention audit is a distinct artifact from the candidate-level factorial trace; neither provides retrieval or answer-stage observations here.
-
-## Primary endpoint versus candidate-level supplement
-
-The canonical Notebook 06 factorial analysis (cell 13 in the committed notebook source) operates on `RUNS[name]["metrics"][q]["recall"]`, i.e. per-question **budgeted evidence recall**. It computes all seven factorial terms: the three main effects, three two-way interactions, and the three-way interaction, with 20,000 paired question-level bootstrap resamples. That is the primary endpoint for the controlled reconciliation and must be interpreted before drawing conclusions about the historical Stage B/C gap.
-
-The gold-fraction results in this report are a separate, supplementary audit derived from `stage_bc_candidate_trace.csv`. They measure the fraction of selected candidates labelled gold; they are not the notebook's primary evidence-recall endpoint. Do not substitute these candidate-level effects for the canonical `factorial_effects` output.
-
-The notebook's feature-construction code also clarifies the filtering switch: the filtered path lowercases roles and removes messages whose role is not user/assistant or whose content is empty after stripping whitespace. The unfiltered path keeps all messages and their raw role/content strings. The exact equality in candidate-level outcomes therefore warrants a direct audit of role casing, blank content, and non-user/assistant messages in the candidate-session population before attributing the equality to a no-op filter.
-
 
 ## Primary factorial endpoint: budgeted evidence recall
 
@@ -95,7 +64,7 @@ The canonical Notebook 06 factorial analysis uses per-question budgeted evidence
 
 **Factor coding matters:** the notebook codes `vocab_cap=None` (unlimited) as +1 and `vocab_cap=20000` as −1. Thus the negative `vocab_cap` effect means unlimited vocabulary reduces recall; the equivalent 20,000-cap contrast is +1.56 pp.
 
-### Message-filtering population audit
+## Message-filtering population audit
 
 A read-only audit of the 5,458 candidate sessions across all 235 TEST questions examined 65,288 messages:
 
@@ -105,19 +74,38 @@ A read-only audit of the 5,458 candidate sessions across all 235 TEST questions 
 - 37 messages had leading or trailing whitespace.
 - All 65,288 messages entered the role-grouped population in both the raw and filtered paths.
 
-This explains the exact zero filtering effect on this population: the filter retained every message. The 37 whitespace-only boundary changes do not ordinarily affect TF-IDF tokenization. The result is dataset/population-specific and does not show that filtering is generally useless.
+This explains the exact zero filtering effect on this population: the filter retained every message. The 37 whitespace-only boundary changes do not ordinarily affect TF-IDF tokenization. This result is specific to the audited population.
 
-## Integrated interpretation
+## Direct Stage B-like versus Stage C-like endpoint comparison
 
-The primary endpoint and the supplementary candidate-level analysis agree on the direction of the main effects:
+A further read-only paired comparison directly contrasted the two endpoint configurations on the same 235 TEST questions, using the already-computed `RUNS` metrics. No model training or experiment rerun was performed.
 
-1. Z-score scaling is the dominant improvement.
+- **Stage B-like:** `scale=raw|cap=20000|filtered=False`
+- **Stage C-like:** `scale=zscore|cap=none|filtered=True`
+
+| Measure | Result |
+|---|---:|
+| Stage B-like mean budgeted evidence recall | 0.709433 (70.943%) |
+| Stage C-like mean budgeted evidence recall | 0.820638 (82.064%) |
+| Paired mean improvement (C-like − B-like) | **+0.111206 (+11.121 pp)** |
+| Paired question-level bootstrap 95% CI | **[+7.099, +15.411] pp** |
+| Questions where C-like was better | 39 |
+| Questions where B-like was better | 8 |
+| Ties | 188 |
+| Exact paired sign-test p-value (ties excluded) | **5.5396 × 10⁻⁶** |
+
+The direct endpoint contrast supports a higher mean budgeted evidence recall for the Stage C-like configuration in this controlled reconstruction. The direction counts show that most questions tie; the aggregate improvement is driven by the subset with non-zero differences, where C-like wins substantially more often than B-like.
+
+This direct comparison is consistent with the factorial findings: z-score scaling is the dominant positive factor, the 20,000 cap has a smaller positive main effect, and filtering is a no-op on this audited message population. The endpoint contrast combines these factor changes and any interactions; it should not be interpreted as the effect of scaling alone.
+
+## Integrated interpretation and claim boundaries
+
+1. Z-score scaling is the dominant improvement on the primary evidence-recall endpoint.
 2. A 20,000-feature vocabulary cap provides a smaller positive improvement.
 3. Message filtering is redundant for the audited candidate-session population.
-4. The scale × cap interaction is not established by the paired bootstrap interval.
+4. The scale × cap interaction is not established by its bootstrap interval.
+5. The direct Stage C-like endpoint has +11.12 pp mean recall over the Stage B-like endpoint on the paired TEST questions.
 
-The primary evidence-recall effect for scaling (+12.68 pp) is distinct from the supplementary +7.482 pp effect on selected-candidate gold fraction. They are different metrics and must not be conflated.
+These findings identify configuration effects in a controlled reconstruction. They do **not** prove which implementation generated the historical Stage B or Stage C artifacts, nor do they establish the historical discrepancy's cause. Keep historical Stage B and Stage C headline metrics unchanged.
 
-## Historical discrepancy: status
-
-These findings identify which switches alter outcomes in a controlled reconstruction. They make scaling and vocabulary capping plausible contributors to the historical Stage B/Stage C difference, but they do not prove that either switch caused the historical discrepancy. That would require the original execution states/artifacts or an independently reproducible reconstruction of both historical pipelines. Keep the Stage B and Stage C historical headline results unchanged.
+Do not describe candidate-gold fraction or budgeted evidence recall as answer accuracy. Do not pool these results with Stage A, historical Stage B, or regenerated Stage C headline results. The retention traces have `not_evaluated` outcomes and no retrieval/answer traces; no downstream QA claim is supported.
