@@ -33,3 +33,26 @@ Endpoints: GET /health, GET /results/summary, GET /results/question-types.
 ## Next integration step
 
 The package currently contains shared metric helpers, safe YAML configuration loading, CLI orchestration, unit tests, CI, a dashboard and a read-only API. The research algorithms remain in canonical notebooks. The next substantive step is to extract the exact tested preprocessing, feature and retrieval pipeline into versioned modules, then add end-to-end tests against synthetic fixtures. Do not silently substitute a new implementation for the historical experimental pipeline.
+
+
+## Experiment run registry
+
+The extracted pipeline records each successful execution in a local SQLite registry. The registry stores a unique run ID, UTC creation time, output directory, input checksum, manifest checksum, configuration, and a compact result summary. It stores provenance pointers and summaries—not raw benchmark data or full per-question predictions.
+
+By default, the registry is written to `results/run_registry.sqlite3` beside the configured pipeline output directory. Override this with `pipeline.registry_path` in `configs/pipeline.yaml`.
+
+After a pipeline run:
+
+```bash
+memweave runs list
+memweave runs list --limit 50
+memweave runs show <RUN_ID>
+```
+
+To inspect a registry at a custom location:
+
+```bash
+memweave runs --registry /path/to/run_registry.sqlite3 list
+```
+
+The registry is append-only at the run-ID level: recording an existing ID fails rather than overwriting its provenance. It is a local convenience index, not a replacement for preserving the run output directory and its `manifest.json`. Back up both the registry and the referenced artifacts when archiving a study.
