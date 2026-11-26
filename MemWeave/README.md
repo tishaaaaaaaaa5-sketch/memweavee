@@ -69,6 +69,6 @@ The final role-aware audit uses 50,000 question-level paired bootstrap resamples
 
 ## Data and reporting guidance
 
-Raw benchmark JSONs, feature caches and large per-question exports are not stored in this source tree. Keep data outside Git unless licensing and size have been reviewed. For large reproducibility artifacts, use Git LFS or a stable artifact host and record checksums.
+The full raw benchmark JSONs are not stored as standalone files in this source tree. However, the archived bundle at `results/artifacts/2026-11-26/MemWeave_Research_Artifacts.zip` does contain per-question exports and cleartext LoCoMo-derived selected spans in `locomo_reader_qa_evidence_span_flan_t5_base/evidence_span_selections.csv`; it must not be described as a privacy-safe export. Its ZIP and per-file manifest integrity have been checked, but that does not clear privacy or redistribution rights. Review the [research archive content audit](docs/reproducibility/RESEARCH_ARCHIVE_CONTENT_AUDIT_2026-11-27.md) before redistributing it. Keep raw or text-bearing benchmark material outside public Git unless the relevant dataset terms, attribution, privacy and size have been reviewed.
 
 Distinguish evidence retention from answer accuracy, the original v2.3 experiment from the role-aware follow-up, and a held-out split from independent replication. The research process was iterative rather than preregistered. Do not claim that the six role-aware features have individually established causal effects.
