@@ -35,3 +35,9 @@ A gold candidate that was not selected is reported as a **retention-stage omissi
 Consequently, all four MFAR failure labels remain `NOT_OBSERVABLE` in the audit CSV, and all diagnosis probabilities remain unestimated. This script does not train a failure detector, assign oracle labels, or claim end-to-end answer accuracy.
 
 The recorded budget is a word-count proxy, not exact tokenizer-based token usage. Treat all hashes and opaque identifiers as potentially linkable metadata and keep outputs access-controlled.
+
+## Observed run results
+
+The original-data audit has now been run in Kaggle on 2,115 traces across 235 questions. Candidate-pool consistency and evidence-provenance checks passed. The best observed condition was z-score scaling with a 20,000-feature cap (micro retention recall 0.750552; 113 gold candidates not retained; mean word-count-proxy budget utilization 0.898518). Baseline micro retention recall was 0.423841 with 261 gold candidates not retained. Filtered and unfiltered results were identical in every paired condition. All four MFAR failure modes remained `NOT_OBSERVABLE`; no labels or probabilities were inferred.
+
+See the [full results and interpretation limits](../results/stage_bc_2026-11-26/MFAR_RETENTION_AUDIT_RESULTS.md). The report records descriptive results only; it does not claim retrieval or answer accuracy, nor statistical significance for the small differences between factorial settings.
