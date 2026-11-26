@@ -6,7 +6,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from memweave.comparison import compare_run_metrics, configuration_differences
+from memweave.comparison import (
+    assess_run_comparability,
+    compare_run_metrics,
+    configuration_differences,
+)
 from memweave.registry import RunRegistry
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,6 +114,55 @@ else:
         selected_ids = [option_to_id[label] for label in selected_labels]
 
         if selected_ids:
+            comparability = assess_run_comparability(run_records, selected_ids)
+            st.subheader("Provenance and comparability")
+            status = comparability["status"]
+            if status == "directly_comparable":
+                st.success(
+                    "Directly comparable on the primary LongMemEval evidence-recall "
+                    "protocol: dataset, DEV/TEST splits, metric definition, budget, "
+                    "budget unit and primary pool all match."
+                )
+            elif status == "not_comparable":
+                st.warning(
+                    "These runs are not directly comparable at the primary metric level. "
+                    "At least one dataset, split, metric, budget or pool field differs."
+                )
+            elif status == "insufficient_provenance":
+                st.info(
+                    "Comparability cannot be established: one or more selected runs predate "
+                    "the structured provenance fields. Missing provenance is not evidence "
+                    "that runs match."
+                )
+            else:
+                st.caption("Select at least two registered runs to assess comparability.")
+
+            if comparability["differences"]:
+                st.caption("Mismatched provenance fields")
+                st.dataframe(
+                    pd.DataFrame([
+                        {"field": field, **values}
+                        for field, values in comparability["differences"].items()
+                    ]),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+            if comparability["missing"]:
+                st.caption("Missing provenance fields")
+                st.dataframe(
+                    pd.DataFrame([
+                        {"run_id": run_id, "missing_fields": ", ".join(fields)}
+                        for run_id, fields in comparability["missing"].items()
+                    ]),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+            st.caption(
+                "This gate checks primary LongMemEval evidence-recall comparability. "
+                "It does not prove causal attribution or independent replication; "
+                "model/configuration differences remain visible below."
+            )
+
             metric_rows = compare_run_metrics(run_records, selected_ids)
             if metric_rows:
                 metrics = pd.DataFrame(metric_rows)
