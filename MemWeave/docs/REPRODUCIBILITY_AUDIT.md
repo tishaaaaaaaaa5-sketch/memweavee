@@ -1,32 +1,51 @@
 # Reproducibility audit
 
-## Current state
+## Release status by experiment stage
 
-The role-aware locked-test report records LongMemEval-S cleaned and the expected file name, but the exact dataset revision and SHA-256 for the evaluated file were not preserved in the supplied run outputs. The raw per-question export and audit manifest described by the notebook are also absent from the repository snapshot.
+### Stage B — Earlier role-aware locked-test run
 
-The repository supports inspection of the notebook and aggregate findings, but is not yet a complete end-to-end reproduction package.
+The earlier locked-test notebook snapshot did not preserve the exact dataset revision/SHA-256 or the privacy-safe per-question export. Its aggregate report remains a historical result. Do not apply Stage C provenance to Stage B or retroactively claim that Stage B's original source file was checksum-verified.
 
-## Committed artifact consistency check
+### Stage C — Regenerated follow-up
 
-From the repository root, run `python MemWeave/scripts/validate_release.py`. This checks internal agreement among the committed run manifest, paired audit JSON, and question-type aggregate CSV using only the Python standard library. A successful check does not rerun training/evaluation, recover missing per-question rows, verify the source dataset, or establish independent generalization. The current release is expected to warn that the dataset SHA-256 and privacy-safe per-question export are absent.
+A later executed Kaggle notebook supplied for review regenerated the per-question export, pinned both datasets, recorded SHA-256 checksums, ran feature ablations, evaluated frozen LongMemEval models on LoCoMo, and executed a final artifact audit.
 
-## Required additions for the next rerun
+Recorded provenance:
 
-- [ ] Pin the LongMemEval dataset revision or immutable download URL.
-- [ ] Save SHA-256 of the exact source dataset file before preprocessing.
-- [ ] Record Python, OS, package versions, and a full dependency lock.
-- [ ] Record preprocessing configuration and hash the processed dataset.
-- [ ] Record git commit SHA, random seeds, feature schema, hyperparameters, and split IDs.
-- [ ] Save a run manifest with exact commands and timestamps.
-- [ ] Export per-example identifiers, ranks, recall values, and paired differences without conversation text or answers.
-- [ ] Hash each result export and link it to source data and code commit.
-- [ ] Provide a clean-kernel reproduction command or notebook sequence.
-- [ ] Verify a clean rerun reproduces aggregate tables within a stated tolerance.
+| Dataset | Immutable revision | SHA-256 |
+|---|---|---|
+| LongMemEval-S cleaned | `98d7416c24c778c2fee6e6f3006e7a073259d48f` | `d6f21ea9d60a0d56f34a05b609c79c88a451d2ae03597821ea3d5a9678c3a442` |
+| LoCoMo | `cbfbc1dba6bc53d00625212a0f22d55ffee7c1fc` | `79fa87e90f04081343b8c8debecb80a9a6842b76a7aa537dc9fdf651ea698ff4` |
+
+The Stage C notebook's final audit reported 54 PASS, 3 WARNING, and 0 FAIL. This validates the checks implemented in that notebook against its generated files. It is not an independent rerun of the experiment or proof that every evaluator mapping is correct.
+
+The Stage C notebook and its separate generated CSV/JSON outputs have not yet been committed to this repository branch. The report at [results/followup_2026/README.md](../results/followup_2026/README.md) records the results and explicitly identifies this artifact gap.
+
+## Committed artifact consistency check for the earlier release
+
+From the repository root:
+
+```bash
+python MemWeave/scripts/validate_release.py
+```
+
+This standard-library validator checks internal agreement among the earlier run manifest, paired audit JSON, and question-type aggregate CSV. A successful check does not rerun training/evaluation, recover missing per-question rows, verify the source dataset, or establish independent generalization. Its warnings apply to the earlier release snapshot; they should not be confused with Stage C's separately recorded provenance.
+
+## Remaining work before Stage C is a complete release
+
+- [ ] Commit the reviewed Stage C notebook with obsolete/debug outputs removed.
+- [ ] Attach the six generated CSV/JSON artifacts from the Kaggle output directory.
+- [ ] Verify each artifact checksum against the run manifest; include the per-question CSV checksum already printed by the notebook.
+- [ ] Re-run the final audit from the committed artifacts in a clean environment.
+- [ ] Independently reconstruct the word-count budget from selected session IDs and word costs.
+- [ ] Audit gold-evidence-to-session mapping end to end.
+- [ ] Verify LoCoMo speaker-role mapping and annotation alignment.
+- [ ] Obtain an independent reproduction before claiming independent replication.
 
 ## Privacy and licensing
 
-Do not commit raw conversation histories, answers, or session text merely to make the experiment reproducible. Use benchmark-provided access routes and publish only minimal derived audit data allowed by the dataset terms. Include license and attribution for every dataset.
+Do not commit raw conversation histories, answers, or session text merely to make the experiment reproducible. Publish only minimal derived audit data permitted by the dataset terms. Include license and attribution for every dataset.
 
 ## Claims
 
-Until missing provenance and exports are restored, describe the result as an aggregate result documented by the saved notebook, not as a fully independently reproducible artifact. See [INDEPENDENT_VALIDATION_PLAN.md](INDEPENDENT_VALIDATION_PLAN.md).
+Stage B and Stage C are distinct runs with materially different role-aware recall estimates (0.709433 and 0.820638). Report them separately until the source of the difference is understood. Stage C's LoCoMo results are preliminary transfer evidence over ten conversation clusters, not definitive independent replication. Evidence recall is not end-to-end answer accuracy.
