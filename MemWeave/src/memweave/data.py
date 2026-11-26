@@ -17,8 +17,8 @@ import numpy as np
 from scipy import sparse
 from sklearn.feature_extraction.text import HashingVectorizer, TfidfTransformer
 
-FP_RE = re.compile(r"\\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself)\\b", re.I)
-DAY_RE = re.compile(r"\\s*(\\d{4})/(\\d{2})/(\\d{2})(?:\\s*\\(\\w+\\))?\\s*(?:(\\d{2}):(\\d{2}))?")
+FP_RE = re.compile(r"\b(?:i|i'm|i've|i'd|i'll|my|me|mine|myself)\b", re.I)
+DAY_RE = re.compile(r"\s*(\d{4})/(\d{2})/(\d{2})(?:\s*\(\w+\))?\s*(?:(\d{2}):(\d{2}))?")
 
 
 def parse_day(value: str) -> float:
@@ -33,7 +33,7 @@ def parse_day(value: str) -> float:
 
 def session_stats(turns: list[tuple[str, str]], user_name: str = "user"):
     """Return rendered text and label-free session statistics."""
-    full = "\\n".join(f"{role}: {text}" for role, text in turns)
+    full = "\n".join(f"{role}: {text}" for role, text in turns)
     words = sum(len(text.split()) for _, text in turns)
     user_text = " ".join(text for role, text in turns if role == user_name)
     user_words = len(user_text.split())
@@ -81,7 +81,7 @@ def build_longmemeval_records(raw: list[dict[str, Any]]) -> tuple[dict, list[dic
         )):
             turns = [(turn["role"], turn["content"]) for turn in session]
             digest = hashlib.md5(
-                "\\n".join(f"{role}:{text}" for role, text in turns).encode()
+                "\n".join(f"{role}:{text}" for role, text in turns).encode()
             ).hexdigest()
             if digest not in hash_to_index:
                 index = len(unique["text"])
@@ -119,7 +119,7 @@ def build_text_vectorizer():
     hashing = HashingVectorizer(
         n_features=2**19, alternate_sign=False, norm=None, lowercase=True,
         stop_words="english",
-        token_pattern=r"(?u)\\b[a-zA-Z][a-zA-Z0-9']+\\b",
+        token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z0-9']+\b",
         dtype=np.float32,
     )
     return hashing, TfidfTransformer(sublinear_tf=True)
