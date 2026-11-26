@@ -45,7 +45,7 @@ All three reported role-aware comparison intervals exclude zero. The baseline al
 - The generation tokenizer call disables truncation and asserts that the batched input length does not exceed 512 tokens.
 - The reported context truncation rate is 1.00 for all three memory methods: every retrieved context was shortened to fit the fixed reader input budget. This is expected under the observed context lengths, but it means the experiment compares selectors after a second-stage context-packing operation.
 - Mean post-packing context length is nearly identical across memory methods (about 459 tokens), and mean total reader input length is about 512 tokens. This makes the reader's consumed input budgets comparable across those methods.
-- The tokenizer emitted a warning about a 680-token sequence exceeding the model's nominal maximum. The corrected generation path disables silent truncation and asserts that actual batched model inputs fit within 512 tokens. The warning can arise while measuring/encoding a longer candidate before packing; the successful full generation and input-length assertion are the relevant safeguards. Retain the per-prompt input-length audit in future runs.
+- A post-run audit of all 800 prompt records passed: all 800 preserve the complete question and answer suffix, and all 800 inputs are <=512 tokens. By method, each of baseline, recency, role-aware, and question-only has 200/200 preserved questions and 200/200 in-limit inputs; maximum input lengths were 512, 512, 512, and 61 tokens respectively. The tokenizer emitted a warning about a 680-token candidate during context packing, but no generated input exceeded the model limit.
 - The question-only method has no memory context and uses substantially fewer input tokens (mean 42.77), so it is a useful no-memory control but not a matched-token-budget competitor.
 
 ## Interpretation limits
@@ -62,8 +62,8 @@ All three reported role-aware comparison intervals exclude zero. The baseline al
 Retain role-aware selection as the leading candidate for further downstream QA evaluation. The corrected result is materially stronger than the invalid initial comparison and supports continued investigation, but not a definitive superiority claim.
 
 Next:
-- Audit all 800 generated prompt records for preserved question suffixes and input lengths <=512.
-- Measure gold-evidence retention after context packing, by method.
+- Completed: audit all 800 generated prompt records; 800/800 preserve the question and 800/800 fit within 512 tokens.
+- Next: measure gold-evidence retention after context packing, by method.
 - Repeat with more independent conversations and preferably a second reader model.
 - Keep reader model revision, sample, prompt template, context budget, and decoding settings fixed for paired comparisons.
 - Preserve the per-question output, summary, bootstrap JSON, and manifest as run artifacts; do not claim those raw outputs are committed unless they are separately uploaded.
