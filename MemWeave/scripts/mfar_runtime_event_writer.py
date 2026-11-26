@@ -182,5 +182,5 @@ class MFARRuntimeEventWriter:
             "run_metadata": self.run_metadata,
         }
         with self.output_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\\n")
+            handle.write(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n")
         return event
