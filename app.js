@@ -87,7 +87,7 @@ function renderBaselineComparison(scored,sourceWords,lambda){
    rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+r.selected.length+'/'+scored.length+'</td><td>'+r.usedWords+'/'+cap+'</td><td>'+r.coveredFacets.length+'</td><td>'+Math.round(r.weightedFacetCoverage*100)+'%</td></tr>');
   }
  }
- return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser ablation: identical candidates, scores, word-proxy caps, and λ. Only the selection policy changes. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
+ return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser comparison: identical candidates, scores, word-proxy caps, and λ. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
 }
 
 function card(m,showScore=false,trace=null){
@@ -147,7 +147,7 @@ function readSample(){
  ].join("\n");
  $("source-name").value="MemWeave sample conversation";
  $("input-count").textContent=Engine.countWords($("conversation").value).toLocaleString()+" message words";
- notify("Research sample loaded. Compare rank, density, MMR, and coverage + MMR under the same word-proxy cap.");
+ notify("Research sample loaded. Compare rank, exact knapsack, density, MMR, and coverage policies under the same word-proxy cap.");
 }
 document.querySelectorAll(".side-tab").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
 $("conversation").addEventListener("input",()=>{$("input-count").textContent=Engine.countWords($("conversation").value).toLocaleString()+" message words"});
