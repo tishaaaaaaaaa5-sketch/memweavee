@@ -27,3 +27,13 @@
 .sweep-table details summary{cursor:pointer;color:#9bd8e9}
 .sweep-table ul{padding-left:17px;max-width:460px;white-space:normal;line-height:1.7}
 .sweep-table li{margin:5px 0;color:#d4deec}
+
+/* Manual question-level evidence annotation */
+.annotation-list{display:grid;gap:7px;margin:12px 0}
+.annotation-card{display:flex;align-items:flex-start;gap:11px;border:1px solid #2a3e56;background:#0d1827;border-radius:8px;padding:11px 13px;cursor:pointer}
+.annotation-card:has(input:checked){border-color:#6b9d91;background:#10251f}
+.annotation-card input{margin:3px 0 0;accent-color:#80d9bd}
+.annotation-card>span{display:grid;gap:4px;min-width:0}
+.annotation-card strong{font:8px 'DM Mono';color:#a69cff;letter-spacing:.4px}
+.annotation-card span span{font-size:10px;line-height:1.65;color:#e0e8f4;overflow-wrap:anywhere}
+.annotation-card small{font:8px 'DM Mono';color:#8194ae}
