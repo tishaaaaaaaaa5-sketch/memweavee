@@ -6,7 +6,16 @@ const DB="memweave.browser.workspace.v2";let items=load(),pending=[];
 const $=id=>document.getElementById(id);
 const newId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function load(){try{const v=JSON.parse(localStorage.getItem(DB)||"[]");return Array.isArray(v)?v.filter(x=>x&&typeof x.text==="string"):[]}catch{return []}}
+function load(){
+ for(const key of [DB,"memweave.browser.workspace.v1"]){
+  try{
+   const v=JSON.parse(localStorage.getItem(key)||"[]");
+   const saved=Array.isArray(v)?v:(v&&Array.isArray(v.items)?v.items:[]);
+   if(saved.length)return saved.filter(x=>x&&typeof x.text==="string");
+  }catch{}
+ }
+ return [];
+}
 function persist(){try{localStorage.setItem(DB,JSON.stringify(items));updateStats();return true}catch(e){notify("Could not save memory in this browser: "+e.message,true);return false}}
 function notify(msg,error=false){$("notice").textContent=msg;$("notice").classList.toggle("error",error)}
 function parseAndScore(raw,source){return Engine.scoreCandidates(Engine.buildCandidates(Engine.parseConversation(raw,source)))}
@@ -30,7 +39,7 @@ function analyze(){
   ["UNUSED CAP",result.remainingWords]
  ].map(([label,value])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join("");
  const policyName=({rank:"stable score rank",density:"score / word-cost density",mmr:"greedy MMR diversity"})[mode];
- $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> message-text word count only. '+(mode==="mmr"?"MMR subtracts maximum TF-IDF cosine similarity to already selected units. ":"")+"The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Exact tokenizer cost and full metadata cost are not available in this static demo.";
+ $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> message-text word count only. '+(mode==="mmr"?"MMR subtracts maximum TF-IDF cosine similarity to already selected units. ":"")+"The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. This front-end splits messages into sentence-level evidence units; the Python research experiments use session-level candidates, so this is not a direct reproduction. Exact tokenizer cost and full metadata cost are not available in this static demo.";
  $("retained-items").innerHTML=result.selected.length?result.selected.map(m=>card(m,true,traceById.get(m.id))).join(""):'<div class="empty">No complete evidence unit fit the current word-proxy budget. Increase the budget or shorten the source.</div>';
  $("not-retained-count").textContent=result.skipped.length+" not retained";
  $("not-retained-items").innerHTML=result.skipped.length?result.skipped.map(x=>{
