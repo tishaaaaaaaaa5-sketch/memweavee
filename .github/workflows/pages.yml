@@ -26,6 +26,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Validate Pages payload
+        run: |
+          test -s site/index.html
+          test -s site/workspace.html
+          test -s site/app.js
+          test -s site/memory-engine.js
+          test -s site/safe-files.js
+          test -s site/research.js
+          test -s site/charts.js
+          test -s site/styles.css
       - name: Validate workspace JavaScript
         run: node --check MemWeave/web/app.js
       - name: Validate research portal JavaScript
