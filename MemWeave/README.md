@@ -52,7 +52,7 @@ The current CLI evaluate mode validates the consistency of committed aggregate a
 
 ### Public web application
 
-The GitHub Pages homepage is an interactive, browser-local memory workspace in [web/](web/). It supports transcript ingestion, a configurable word-count retention budget, an inspectable heuristic retention audit, persistent local memory, lexical evidence retrieval, item deletion, and JSON backup/import. Conversation data stays in the visitor's browser; it is not uploaded to a server. The retention and retrieval logic is a transparent application baseline, not the trained research selector or a reproduction of the reported experiments. The research overview is available at [web/research.html](web/research.html). See [the web app guide](WEB_APP_GUIDE.md) for scope and limitations.
+The GitHub Pages homepage is an interactive, browser-local memory workspace. It supports transcript ingestion, a configurable word-count retention budget, an inspectable heuristic retention audit, persistent local memory, intent-aware evidence retrieval, item deletion, and JSON backup/import. Conversation data stays in the visitor's browser; it is not uploaded to a server. This workspace remains an application baseline, not the trained research selector or a reproduction of the reported experiments. The full research portal at [site/research.html](../site/research.html) documents the algorithm families, experiment history, results, limitations, and an illustrative selection-mechanism explorer. GitHub Pages is static; the Python research package, API, and Streamlit dashboard run separately. See [the web app guide](WEB_APP_GUIDE.md) for scope and limitations.
 
 ## Canonical notebook sequence
 
