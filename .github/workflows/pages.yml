@@ -31,6 +31,7 @@ jobs:
       - name: Validate research portal JavaScript
         run: |
           node --check site/memory-engine.js
+          node --check site/safe-files.js
           node --check site/app.js
           node --check site/research.js
           node --check site/charts.js
