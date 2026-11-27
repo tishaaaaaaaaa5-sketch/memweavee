@@ -50,7 +50,8 @@ function score(m){
 }
 function analyze(){const raw=$("conversation").value.trim();if(!raw){notify("Paste a conversation first.",true);return}
  const source=$("source-name").value.trim()||"Pasted conversation",parsed=parse(raw,source).map(m=>({...m,...score(m)}));
- const budget=Math.max(1,Math.floor(words(raw)*Number($("budget").value)/100));let used=0;const selected=[];
+ const sourceWordCount=parsed.reduce((sum,m)=>sum+m.words,0);
+ const budget=Math.max(1,Math.floor(sourceWordCount*Number($("budget").value)/100));let used=0;const selected=[];
  const remaining=[...parsed];while(remaining.length){let bestIndex=-1,bestUtility=-Infinity;
   for(let i=0;i<remaining.length;i++){const m=remaining[i];if(used+m.words>budget)continue;
    const mt=new Set(tokens(m.text));let redundancy=0;
@@ -62,7 +63,7 @@ function analyze(){const raw=$("conversation").value.trim();if(!raw){notify("Pas
  }
  pending=selected.sort((a,b)=>a.position-b.position);
  $("retained-count").textContent=selected.length+" / "+parsed.length+" units";
- $("retention-summary").innerHTML='<div><strong>'+used+'</strong><span>retained words</span></div><div><strong>'+words(raw)+'</strong><span>source words</span></div><div><strong>'+Math.round(used/Math.max(1,words(raw))*100)+'%</strong><span>actual budget used</span></div>';
+ $("retention-summary").innerHTML='<div><strong>'+used+' / '+budget+'</strong><span>words used / word cap</span></div><div><strong>'+sourceWordCount+'</strong><span>message words (speaker labels excluded)</span></div><div><strong>'+Math.round(used/Math.max(1,sourceWordCount)*100)+'%</strong><span>of source words retained</span></div>';
  $("retained-items").innerHTML=selected.length?selected.map(m=>card(m,true)).join(""):'<div class="empty">No units fit this budget. Increase the budget or use a shorter source.</div>';
  $("retention-result").hidden=false;$("retention-result").scrollIntoView({behavior:"smooth",block:"start"});notify("Analysis complete. Review the selected evidence before saving.");
 }
