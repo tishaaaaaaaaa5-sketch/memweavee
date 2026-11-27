@@ -25,8 +25,8 @@ assert.equal(units.filter(x => x.kind === "priorities").length, 3,
 assert.deepEqual(units.filter(x => x.kind === "priorities").map(x => x.facet), [
   "priority:evidence_retention", "priority:downstream_answer_quality", "priority:reproducibility"
 ], "each named research priority receives its own coverage facet");
-assert.ok(units.some(x => x.text === "I want exact token-cost accounting rather than a word-count estimate."),
-  "contrastive token-cost constraint remains intact");
+assert.ok(units.some(x => x.text === "Cost requirement: exact tokenizer tokens, not word-count estimates." && x.facet === "hard:token_accounting"),
+  "token-cost constraint is compacted into a high-priority, source-linked hard requirement");
 assert.ok(units.some(x => x.text === "Tie claims to benchmark reports; separate evidence recall from answer accuracy."),
   "linked reporting constraints are compacted without losing their meaning");
 assert.ok(units.every(x => x.sourceText && x.sourceId && Number.isInteger(x.messageIndex)),
@@ -42,7 +42,7 @@ assert.ok(scored.some(x => x.role === "assistant" && x.score <= .02),
 
 const sourceWords = messages.reduce((n, x) => n + x.words, 0);
 const budget = Math.floor(sourceWords * .20);
-for (const mode of ["rank", "density", "mmr", "coverage"]) {
+for (const mode of ["rank", "density", "mmr", "coverage_only", "coverage"]) {
   const result = Engine.selectCandidates(scored, budget, { mode, lambda: 0.25 });
   assert.ok(result.usedWords <= budget, mode + " must respect the word-proxy budget");
   assert.equal(result.usedWords, result.selected.reduce((n, x) => n + x.words, 0));
@@ -56,6 +56,11 @@ assert.ok(coverage.coveredFacets.length >= 2,
   "coverage policy should preserve more than one evidence facet");
 assert.ok(coverage.coveredFacets.some(x => x.startsWith("priority:")),
   "coverage audit should expose fine-grained priority facets");
+const coverageOnly = Engine.selectCandidates(scored, budget, {mode:"coverage_only",lambda:.25});
+assert.ok(coverageOnly.trace.every(x => x.redundancy === 0), "coverage-only has no MMR redundancy penalty");
+assert.ok(coverageOnly.trace.some(x => x.facetWeight > 1), "explicit priorities and hard requirements receive weighted facet gains");
+const hardConstraint = units.find(x => x.facet === "hard:token_accounting");
+assert.ok(hardConstraint && hardConstraint.words <= 9, "token-accounting evidence is compact enough to compete under tight budgets");
 const sweep = [20, 30, 40, 50].map(p => Engine.selectCandidates(scored, Math.floor(sourceWords*p/100), {mode:"coverage",lambda:.25}));
 assert.equal(sweep.length, 4);
 assert.ok(sweep.every((r,i) => r.usedWords <= Math.floor(sourceWords*[20,30,40,50][i]/100)),
@@ -90,4 +95,4 @@ assert.ok(retrieved[0].diversityPenalty >= 0);
 
 assert.deepEqual(Engine.parseConversation("one paragraph\n\nsecond paragraph").map(x => x.text),
   ["one paragraph", "second paragraph"]);
-console.log("MemWeave atomic-evidence and coverage tests passed.");
+console.log("MemWeave atomic-evidence, weighted-priority, and baseline-ablation tests passed.");
