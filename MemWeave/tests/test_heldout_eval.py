@@ -10,7 +10,7 @@ READER = {
 
 
 def test_tokenizer_injected_cost():
-    result = measure_token_cost("a b", lambda text: text.split(), "fixture")
+    result = measure_token_cost("a b", lambda text: range(len(text.split())), "fixture")
     assert result["token_count"] == 2
     assert result["utf8_bytes"] == 3
     assert len(result["serialized_text_sha256"]) == 64
