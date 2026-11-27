@@ -105,7 +105,7 @@ assert.ok(retrieved[0].diversityPenalty >= 0);
 
 assert.deepEqual(Engine.parseConversation("one paragraph\n\nsecond paragraph").map(x => x.text),
   ["one paragraph", "second paragraph"]);
-const exactOversized = Engine.selectCandidates(exactFixture, 100000, {mode:"knapsack"});
+const exactOversized = Engine.selectCandidates(exactFixture, 2000000, {mode:"knapsack"});
 assert.equal(exactOversized.optimal, false, "large DP workloads report their explicit greedy fallback");
 assert.equal(exactOversized.mode, "knapsack");
 console.log("MemWeave atomic-evidence, provenance, weighted-priority, knapsack, and baseline tests passed.");
