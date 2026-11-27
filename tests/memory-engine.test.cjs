@@ -109,6 +109,16 @@ assert.equal(retrieved[0].id, "1");
 assert.ok(retrieved[0].matched.includes("memweave"));
 assert.ok(retrieved[0].diversityPenalty >= 0);
 
+// Keep retention and question-conditioned retrieval as separate evaluation stages.
+const relevantForQuestion = ["1", "2"];
+const retainedSubset = [saved[0]];
+const retentionStage = Engine.evaluateEvidenceSelection(retainedSubset.map(x => x.id), relevantForQuestion);
+const retrievedFromRetained = Engine.rankEvidence("Where does MemWeave preserve evidence under a strict memory budget?", retainedSubset, {limit:5});
+const retrievalStage = Engine.evaluateEvidenceSelection(retrievedFromRetained.map(x => x.id), relevantForQuestion);
+assert.equal(retentionStage.recall, 0.5, "retention recall measures gold evidence surviving the budget");
+assert.equal(retrievalStage.precision, 1, "retrieval precision measures returned evidence against the labelled set");
+assert.equal(retrievalStage.recall, 0.5, "retrieval recall is measured only over evidence available in the retained subset");
+
 assert.deepEqual(Engine.parseConversation("one paragraph\n\nsecond paragraph").map(x => x.text),
   ["one paragraph", "second paragraph"]);
 const exactOversized = Engine.selectCandidates(exactFixture, 2000000, {mode:"knapsack"});
