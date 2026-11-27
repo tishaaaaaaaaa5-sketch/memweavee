@@ -43,18 +43,21 @@ function analyze(){
   ["WORD PROXY",result.usedWords+" / "+result.wordBudget],
   ["UNUSED CAP",result.remainingWords]
  ].map(([label,value])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join("");
- const policyName=({rank:"greedy score rank (reference structure)",density:"score / word-cost density",mmr:"MMR redundancy control",coverage:"coverage + MMR (experimental ablation)"})[mode];
+ const policyName=({rank:"rank-only baseline",density:"score / word-cost density",mmr:"MMR-only baseline",coverage_only:"coverage-only baseline",coverage:"coverage + MMR (experimental ablation)"})[mode];
  const policyDetails=mode==="coverage"
-  ?"Fine-grained evidence facets receive a fixed +0.22 marginal bonus; similarity to selected evidence is penalised by λ. Candidates are greedily chosen by marginal utility per word to reduce budget lock-up. This is a browser ablation, not a globally optimal knapsack solver or validated MW-ECS implementation."
-  :mode==="mmr"?"MMR subtracts λ × maximum TF-IDF cosine similarity to already selected units."
-  :"No facet bonus is applied; this remains a simple greedy baseline.";
+  ?"Priority-weighted facet gains are combined with an MMR redundancy penalty; candidates are greedily chosen by marginal utility per word. This is a browser ablation, not a globally optimal solver or validated MW-ECS implementation."
+  :mode==="coverage_only"?"Priority-weighted facet gains are applied without a redundancy penalty."
+  :mode==="mmr"?"MMR subtracts λ × maximum TF-IDF cosine similarity to already selected units, without facet bonuses."
+  :mode==="density"?"Candidates are ranked by heuristic score divided by word-proxy cost."
+  :"Candidates are ranked by the transparent heuristic score without coverage or MMR.";
  $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> selected-text word count proxy. '+policyDetails+' The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Context-resolved units retain a link to the full original source message. Exact tokenizer cost and full metadata cost are not available in this static demo.';
  $("budget-sweep").innerHTML=renderBudgetSweep(scored,sourceWords,mode,lambda);
+ $("baseline-comparison").innerHTML=renderBaselineComparison(scored,sourceWords,lambda);
  $("retained-items").innerHTML=result.selected.length?result.selected.map(m=>card(m,true,traceById.get(m.id))).join(""):'<div class="empty">No complete evidence unit fit the current word-proxy budget. Increase the budget or shorten the source.</div>';
  $("not-retained-count").textContent=result.skipped.length+" not retained";
  $("not-retained-items").innerHTML=result.skipped.length?result.skipped.map(x=>{
   const m=scored.find(y=>y.id===x.id);
-  return '<article class="evidence-card not-retained"><div class="evidence-top"><span class="role-tag">'+esc((m?.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">NOT RETAINED · '+esc(m?.kind||"general")+'</span><span class="score-tag">SCORE '+Number(x.score).toFixed(3)+'</span></div><p>'+esc(m?.text||x.id)+'</p><div class="evidence-foot"><span>'+x.words+' word-proxy units · '+esc(x.reason)+'</span></div>'+(m?.sourceText?'<details class="source-detail"><summary>Show source message</summary><p>'+esc(m.sourceText)+'</p></details>':"")+'</article>';
+  return '<article class="evidence-card not-retained"><div class="evidence-top"><span class="role-tag">'+esc((m?.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">NOT RETAINED · '+esc(m?.facet||m?.kind||"general")+'</span><span class="score-tag">SCORE '+Number(x.score).toFixed(3)+'</span></div><p>'+esc(m?.text||x.id)+'</p><div class="evidence-foot"><span>'+x.words+' word-proxy units · '+esc(x.reason)+'</span></div>'+(m?.sourceText?'<details class="source-detail"><summary>Show source message</summary><p>'+esc(m.sourceText)+'</p></details>':"")+'</article>';
  }).join(""):'<div class="empty">Every candidate unit was retained.</div>';
  $("retention-result").hidden=false;
  $("retention-result").scrollIntoView({behavior:"smooth",block:"start"});
@@ -70,6 +73,21 @@ function renderBudgetSweep(scored,sourceWords,mode,lambda){
   return '<tr><td>'+percent+'%</td><td>'+result.selected.length+'/'+scored.length+'</td><td>'+result.usedWords+'/'+cap+'</td><td>'+facets.length+'</td><td><details><summary>View retained units</summary><ul>'+names.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details></td></tr>';
  }).join('');
  return '<div class="sweep-wrap"><div class="sweep-intro">Same candidates, scoring, policy, and λ; only the word-proxy cap changes. These are descriptive browser results, not benchmark measurements.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Retained</th><th>Words used / cap</th><th>Facets</th><th>Retained evidence</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function renderBaselineComparison(scored,sourceWords,lambda){
+ const budgets=[20,30,40,50],policies=[
+  ["rank","Rank-only"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]
+ ];
+ const rows=[];
+ for(const percent of budgets){
+  const cap=Math.floor(sourceWords*percent/100);
+  for(const [mode,label] of policies){
+   const r=Engine.selectCandidates(scored,cap,{mode,lambda,coverageBonus:.22});
+   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+r.selected.length+'/'+scored.length+'</td><td>'+r.usedWords+'/'+cap+'</td><td>'+r.coveredFacets.length+'</td><td>'+Math.round(r.weightedFacetCoverage*100)+'%</td></tr>');
+  }
+ }
+ return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser ablation: identical candidates, scores, word-proxy caps, and λ. Only the selection policy changes. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
 }
 
 function card(m,showScore=false,trace=null){
