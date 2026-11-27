@@ -43,7 +43,7 @@ function analyze(){
   ["WORD PROXY",result.usedWords+" / "+result.wordBudget],
   ["UNUSED CAP",result.remainingWords]
  ].map(([label,value])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join("");
- const policyName=({rank:"rank-only baseline",density:"score / word-cost density",mmr:"MMR-only baseline",coverage_only:"coverage-only baseline",coverage:"coverage + MMR (experimental ablation)"})[mode];
+ const policyName=({rank:"rank-only baseline",density:"score / word-cost density",mmr:"MMR-only baseline",coverage_only:"coverage-only baseline",coverage:"coverage + MMR (experimental ablation)",knapsack:"exact additive-score knapsack baseline"})[mode];
  const policyDetails=mode==="coverage"
   ?"Priority-weighted facet gains are combined with an MMR redundancy penalty; candidates are greedily chosen by marginal utility per word. This is a browser ablation, not a globally optimal solver or validated MW-ECS implementation."
   :mode==="coverage_only"?"Priority-weighted facet gains are applied without a redundancy penalty."
@@ -77,7 +77,7 @@ function renderBudgetSweep(scored,sourceWords,mode,lambda){
 
 function renderBaselineComparison(scored,sourceWords,lambda){
  const budgets=[20,30,40,50],policies=[
-  ["rank","Rank-only"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]
+  ["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]
  ];
  const rows=[];
  for(const percent of budgets){
@@ -103,7 +103,7 @@ function save(){
  if(!pending.length){notify("There is no selected evidence to save.",true);return}
  const now=new Date().toISOString();
  const clean=pending.map(m=>{
-  const {similarities,sourceText,selected,selectionOrder,...stored}=m;
+  const {similarities,selected,selectionOrder,...stored}=m;
   return {...stored,createdAt:now,id:newId()};
  });
  items.push(...clean);
