@@ -49,6 +49,7 @@ function analyze(){
   :mode==="coverage_only"?"Priority-weighted facet gains are applied without a redundancy penalty."
   :mode==="mmr"?"MMR subtracts λ × maximum TF-IDF cosine similarity to already selected units, without facet bonuses."
   :mode==="density"?"Candidates are ranked by heuristic score divided by word-proxy cost."
+  :mode==="knapsack"?"Exact 0/1 dynamic programming maximises additive heuristic score under the integer word-proxy cap when within the browser work limit; it does not optimise coverage or MMR."
   :"Candidates are ranked by the transparent heuristic score without coverage or MMR.";
  $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> selected-text word count proxy. '+policyDetails+' The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Context-resolved units retain a link to the full original source message. Exact tokenizer cost and full metadata cost are not available in this static demo.';
  $("budget-sweep").innerHTML=renderBudgetSweep(scored,sourceWords,mode,lambda);
@@ -84,10 +85,11 @@ function renderBaselineComparison(scored,sourceWords,lambda){
   const cap=Math.floor(sourceWords*percent/100);
   for(const [mode,label] of policies){
    const r=Engine.selectCandidates(scored,cap,{mode,lambda,coverageBonus:.22});
-   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+r.selected.length+'/'+scored.length+'</td><td>'+r.usedWords+'/'+cap+'</td><td>'+r.coveredFacets.length+'</td><td>'+Math.round(r.weightedFacetCoverage*100)+'%</td></tr>');
+   const method=r.optimal===true?"Exact DP":r.optimal===false?"Density fallback":"Heuristic";
+   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+r.selected.length+'/'+scored.length+'</td><td>'+r.usedWords+'/'+cap+'</td><td>'+r.coveredFacets.length+'</td><td>'+Math.round(r.weightedFacetCoverage*100)+'%</td><td>'+method+'</td></tr>');
   }
  }
- return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser comparison: identical candidates, scores, word-proxy caps, and λ. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
+ return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser comparison: identical candidates, scores, word-proxy caps, and λ. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
 }
 
 function card(m,showScore=false,trace=null){
