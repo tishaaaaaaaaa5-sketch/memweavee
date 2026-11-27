@@ -2,7 +2,7 @@
 (()=>{"use strict";
 const Engine=window.MemWeaveEngine;
 if(!Engine){document.body.innerHTML='<main style="padding:32px;color:#fff">MemWeave could not load its evidence engine. Refresh the page or check the deployed files.</main>';return}
-const DB="memweave.browser.workspace.v2";let items=load(),pending=[];
+const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set();
 const $=id=>document.getElementById(id);
 const newId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -28,6 +28,7 @@ function analyze(){
  const source=$("source-name").value.trim()||"Pasted conversation";
  const parsed=parseAndScore(raw,source);
  const scored=parsed.candidates;
+ evaluationCandidates=scored;goldEvidenceIds=new Set();
  if(!scored.length){notify("No evidence units could be extracted from this text.",true);return}
  const sourceWords=parsed.messages.reduce((sum,m)=>sum+m.words,0);
  const wordBudget=Math.floor(sourceWords*Number($("budget").value)/100);
@@ -54,6 +55,7 @@ function analyze(){
  $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> selected-text word count proxy. '+policyDetails+' The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Context-resolved units retain a link to the full original source message. Exact tokenizer cost and full metadata cost are not available in this static demo.';
  $("budget-sweep").innerHTML=renderBudgetSweep(scored,sourceWords,mode,lambda);
  $("baseline-comparison").innerHTML=renderBaselineComparison(scored,sourceWords,lambda);
+ renderEvidenceEvaluation(scored,sourceWords,lambda);
  $("retained-items").innerHTML=result.selected.length?result.selected.map(m=>card(m,true,traceById.get(m.id))).join(""):'<div class="empty">No complete evidence unit fit the current word-proxy budget. Increase the budget or shorten the source.</div>';
  $("not-retained-count").textContent=result.skipped.length+" not retained";
  $("not-retained-items").innerHTML=result.skipped.length?result.skipped.map(x=>{
@@ -90,6 +92,43 @@ function renderBaselineComparison(scored,sourceWords,lambda){
   }
  }
  return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser comparison: identical candidates, scores, word-proxy caps, and λ. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
+}
+
+function renderEvidenceEvaluation(scored,sourceWords,lambda){
+ $("eval-question").value="";
+ $("eval-labels").innerHTML=scored.map(m=>'<label class="annotation-card"><input type="checkbox" data-gold-id="'+esc(m.id)+'"><span><strong>'+esc(m.facet||m.kind||"general")+'</strong><span>'+esc(m.text)+'</span><small>'+esc((m.role||"unlabelled").toUpperCase())+' · '+m.words+' word-proxy units · '+esc(m.source||"source")+'</small></span></label>').join("");
+ $("eval-metrics").innerHTML='<div class="sweep-intro">Enter a held-out question and mark every candidate unit that contains evidence needed to answer it. Metrics remain empty until at least one evidence unit is labelled.</div>';
+}
+function updateEvidenceEvaluation(){
+ const question=$("eval-question").value.trim();
+ if(!question||!goldEvidenceIds.size){
+  $("eval-metrics").innerHTML='<div class="sweep-intro">Add a held-out question and mark its required evidence units to calculate question-level precision, recall, and F1.</div>';
+  return;
+ }
+ const sourceWords=evaluationCandidates.reduce((sum,x)=>sum+(Number(x.words)||0),0);
+ const lambda=Number($("redundancy").value);
+ const policies=[["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]];
+ const rows=[];
+ for(const percent of [20,30,40,50]){
+  const cap=Math.floor(sourceWords*percent/100);
+  for(const [mode,label] of policies){
+   const result=Engine.selectCandidates(evaluationCandidates,cap,{mode,lambda,coverageBonus:.22});
+   const metric=Engine.evaluateEvidenceSelection(result.selected.map(x=>x.id),[...goldEvidenceIds]);
+   const solver=result.optimal===true?"Exact DP":result.optimal===false?"Fallback":"Heuristic";
+   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+metric.truePositives+'</td><td>'+metric.falsePositives+'</td><td>'+metric.falseNegatives+'</td><td>'+Math.round(metric.precision*100)+'%</td><td>'+Math.round(metric.recall*100)+'%</td><td>'+Math.round(metric.f1*100)+'%</td><td>'+solver+'</td></tr>');
+  }
+ }
+ $("eval-metrics").innerHTML='<div class="sweep-wrap"><div class="sweep-intro">Manual labels for one question: "'+esc(question)+'" · '+goldEvidenceIds.size+' relevant evidence units. These are annotation-based candidate evidence metrics, not benchmark results or answer accuracy.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>TP</th><th>FP</th><th>FN</th><th>Precision</th><th>Recall</th><th>F1</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+}
+function exportEvidenceLabels(){
+ const question=$("eval-question").value.trim();
+ if(!question||!goldEvidenceIds.size){notify("Enter an evaluation question and label at least one relevant evidence unit first.",true);return}
+ const payload={format:"memweave-question-evidence-labels-v1",source:$("source-name").value.trim(),question,annotatedAt:new Date().toISOString(),wordBudgetProxyOnly:true,
+  relevantEvidence:evaluationCandidates.filter(x=>goldEvidenceIds.has(x.id)).map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,sourceText:x.sourceText,facet:x.facet,words:x.words})),
+  candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,facet:x.facet,words:x.words}))};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="memweave-evidence-labels.json";a.click();URL.revokeObjectURL(url);
+ notify("Question-level evidence labels exported as JSON.");
 }
 
 function card(m,showScore=false,trace=null){
@@ -160,6 +199,13 @@ $("example-btn").addEventListener("click",readSample);
 $("save-btn").addEventListener("click",save);
 $("discard-btn").addEventListener("click",()=>{$("retention-result").hidden=true;pending=[]});
 $("memory-filter").addEventListener("input",renderMemory);
+$("eval-question").addEventListener("input",updateEvidenceEvaluation);
+$("eval-labels").addEventListener("change",e=>{
+ const id=e.target.dataset.goldId;if(!id)return;
+ if(e.target.checked)goldEvidenceIds.add(id);else goldEvidenceIds.delete(id);
+ updateEvidenceEvaluation();
+});
+$("eval-export-btn").addEventListener("click",exportEvidenceLabels);
 $("search-form").addEventListener("submit",search);
 $("memory-list").addEventListener("click",e=>{
  const id=e.target.dataset.remove;if(!id)return;
