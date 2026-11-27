@@ -37,3 +37,7 @@
 .annotation-card strong{font:8px 'DM Mono';color:#a69cff;letter-spacing:.4px}
 .annotation-card span span{font-size:10px;line-height:1.65;color:#e0e8f4;overflow-wrap:anywhere}
 .annotation-card small{font:8px 'DM Mono';color:#8194ae}
+
+
+/* Safe local backup import guidance */
+.file-safety-note{display:block;color:#8498b2;font:8px/1.7 "DM Mono",monospace;margin:7px 3px 0;max-width:190px}
