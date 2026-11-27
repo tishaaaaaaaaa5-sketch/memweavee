@@ -36,7 +36,7 @@ assert.match(portal, /Token F1 0\.2057/);
 
 // Protect the interpretation boundary: the repeatedly inspected TEST split
 // must not be presented as an untouched confirmatory set.
-assert.match(releaseAudit, /TEST set has been inspected repeatedly/);
+assert.match(releaseAudit, /TEST set used in the Stage B\/C analysis has now been inspected repeatedly/);
 assert.match(freeze, /not an untouched confirmatory test set/);
 assert.match(portal, /not an untouched confirmatory test set/);
 assert.match(portal, /historical held-out result/);
