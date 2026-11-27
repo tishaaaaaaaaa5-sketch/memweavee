@@ -30,9 +30,12 @@ jobs:
         run: node --check MemWeave/web/app.js
       - name: Validate research portal JavaScript
         run: |
+          node --check site/memory-engine.js
           node --check site/app.js
           node --check site/research.js
           node --check site/charts.js
+      - name: Test research-aligned browser evidence engine
+        run: node tests/memory-engine.test.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static website
