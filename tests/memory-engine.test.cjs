@@ -59,7 +59,38 @@ const exact = Engine.selectCandidates(exactFixture, 9, {mode:"knapsack"});
 assert.equal(exact.optimal, true, "small additive-score budgets use exact DP");
 assert.equal(exact.usedWords, 9);
 assert.deepEqual(exact.selected.map(x=>x.id), ["a","b"], "exact knapsack chooses the maximum total score feasible subset");
-const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
+// Selection traces expose distinct, correctly dimensioned quantities:
+ // raw utility, utility per word, and the actual greedy priority used by each policy.
+const traceCoverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
+for (const step of traceCoverage.trace) {
+  assert.ok(Math.abs(step.marginalUtilityPerWord - step.utility / step.words) < 1e-12,
+    "coverage trace reports marginal utility per word, not raw utility");
+  assert.equal(step.priorityBasis, "marginal_utility_per_word");
+  assert.ok(Math.abs(step.selectionPriority - step.marginalUtilityPerWord) < 1e-12,
+    "coverage selection priority is utility per word");
+}
+const traceRank = Engine.selectCandidates(scored, budget, { mode: "rank", lambda: .25 });
+for (const step of traceRank.trace) {
+  assert.equal(step.priorityBasis, "utility");
+  assert.equal(step.selectionPriority, step.utility,
+    "rank policy priority is raw utility, not utility per word");
+  assert.ok(Math.abs(step.marginalUtilityPerWord - step.utility / step.words) < 1e-12);
+}
+const traceDensity = Engine.selectCandidates(scored, budget, { mode: "density", lambda: .25 });
+for (const step of traceDensity.trace) {
+  assert.equal(step.priorityBasis, "score_per_word");
+  assert.ok(Math.abs(step.selectionPriority - step.score / step.words) < 1e-12,
+    "density priority is score per word");
+}
+const traceKnapsack = Engine.selectCandidates(scored, budget, { mode: "knapsack" });
+for (const step of traceKnapsack.trace) {
+  assert.equal(step.priorityBasis, "exact_additive_score",
+    "exact knapsack is not presented as a greedy marginal-priority policy");
+  assert.equal(step.selectionPriority, null);
+  assert.ok(Math.abs(step.marginalUtilityPerWord - step.score / step.words) < 1e-12);
+}
+
+const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
 assert.ok(coverage.selected.length >= 2,
   "atomic evidence extraction and coverage selection should avoid a one-item result on the research sample");
 assert.ok(coverage.coveredFacets.length >= 2,
