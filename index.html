@@ -34,7 +34,7 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 <div class="stat"><strong>0.2057</strong><span>LoCoMo reader token F1</span><small>Corrected FLAN-T5-small exploratory run</small></div>
 <div class="stat"><strong>4 stages</strong><span>MFAR failure taxonomy</span><small>Construction · compression · retrieval · answering</small></div>
 </div>
-<div class="navchips"><a href="#question">RESEARCH QUESTION</a><a href="#algorithms">ALGORITHM INVENTORY</a><a href="#simulator">SELECTION LAB</a><a href="#experiments">EXPERIMENT HISTORY</a><a href="#results">RESULTS</a><a href="#mfar">MFAR</a><a href="#limits">LIMITATIONS</a><a href="#reproduce">REPRODUCE</a></div>
+<div class="navchips"><a href="#question">RESEARCH QUESTION</a><a href="#algorithms">ALGORITHM INVENTORY</a><a href="#simulator">SELECTION LAB</a><a href="#browser-audit">BROWSER AUDIT</a><a href="#experiments">EXPERIMENT HISTORY</a><a href="#results">RESULTS</a><a href="#mfar">MFAR</a><a href="#limits">LIMITATIONS</a><a href="#reproduce">REPRODUCE</a></div>
 
 <section id="question" class="section">
 <div class="section-head"><div class="kicker">01 / RESEARCH QUESTION</div><h2>What should memory preserve?</h2><p>The central problem is a constrained selection task: preserve useful evidence from a long history before the future question is known, then test whether that evidence can be recovered and used.</p></div>
@@ -77,8 +77,68 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </div>
 </section>
 
+<section id="browser-audit" class="section">
+<div class="section-head"><div class="kicker">04 / ATOMIC-EVIDENCE BROWSER AUDIT</div><h2>What survives when the memory budget is tight?</h2><p>The local workspace now exposes the selection trace at atomic-evidence level: each candidate carries a source link, role, facet, feature signals, and an explicit reason when it is rejected. The figures below are a reproducible example of the browser heuristic on the eight-unit sample conversation—not a benchmark result or a trained-model evaluation.</p></div>
+<div class="grid" style="margin:18px 0 22px">
+<div class="stat"><strong>8</strong><span>Evidence candidates</span><small>Atomic claims from one sample conversation</small></div>
+<div class="stat"><strong>1 / 8</strong><span>Retained at 10%</span><small>One complete unit fits the word-proxy cap</small></div>
+<div class="stat"><strong>90</strong><span>Source words</span><small>9-word cap at the 10% setting</small></div>
+<div class="stat"><strong>5 / 9</strong><span>Words used / cap</span><small>4 word-proxy units remain unused</small></div>
+</div>
+<div class="two">
+<div class="panel"><span class="status audit">Selected · browser heuristic</span><h3>Research priority: improving evidence retention.</h3><p>One user-authored, five-word evidence unit is retained. It adds the evidence-retention facet and has low measured redundancy in this candidate pool.</p><div class="metricline"><span>Score 0.659</span><span>Marginal utility 0.956</span><span>Redundancy 0.00</span></div><p class="small">Feature trace: novelty 0.78 · mean similarity 0.10 · top-3 similarity 0.17 · recency 0.25 · role 1.00 · first-person 0.00 · digits 0.00.</p></div>
+<div class="panel"><span class="status proposed">Explicit rejection reasons</span><h3>Not retained does not mean irrelevant.</h3><p>At the 10% setting, seven candidates do not fit after the selected unit. Examples include the 12-word project goal, six-word downstream-answer-quality priority, and nine-word exact-token-accounting requirement.</p><p class="small">The workspace records “remaining word-proxy budget is too small for this complete evidence unit” rather than silently truncating a claim. Rejection is a budget outcome, not a relevance judgement.</p></div>
+</div>
+<h3 style="margin-top:26px">Budget sweep · Coverage + MMR · λ = 0.25</h3>
+<p class="small">Same eight candidates, feature scores, policy, and redundancy weight. Only the word-count proxy cap changes. “Facets” counts distinct weighted facets represented among retained units.</p>
+<div class="table-wrap"><table><thead><tr><th>Budget</th><th>Retained</th><th>Words used / cap</th><th>Facets</th><th>What changes</th></tr></thead><tbody>
+<tr><td>10%</td><td>1 / 8</td><td>5 / 9</td><td>1</td><td>Only the short evidence-retention priority fits</td></tr>
+<tr><td>20%</td><td>2 / 8</td><td>14 / 18</td><td>2</td><td>Two facets represented</td></tr>
+<tr><td>30%</td><td>4 / 8</td><td>26 / 27</td><td>4</td><td>Four facets represented</td></tr>
+<tr><td>40%</td><td>5 / 8</td><td>36 / 36</td><td>5</td><td>Five facets represented; cap fully used</td></tr>
+<tr><td>50%</td><td>5 / 8</td><td>36 / 45</td><td>5</td><td>No additional complete unit is selected by this policy</td></tr>
+</tbody></table></div>
+<h3 style="margin-top:26px">Matched browser-policy comparison</h3>
+<p class="small">All policies use identical candidate units and scores, the same word-proxy caps, and λ = 0.25. Exact knapsack is exact only for the additive browser heuristic objective when its dynamic-programming work limit is met; it is not a relevance oracle.</p>
+<div class="table-wrap"><table><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th><th>Solver</th></tr></thead><tbody>
+<tr><td>10%</td><td>Rank-only</td><td>1 / 8</td><td>9 / 9</td><td>1</td><td>23%</td><td>Heuristic</td></tr>
+<tr><td>10%</td><td>Exact knapsack</td><td>1 / 8</td><td>9 / 9</td><td>1</td><td>23%</td><td>Exact DP</td></tr>
+<tr><td>10%</td><td>Coverage-only</td><td>1 / 8</td><td>5 / 9</td><td>1</td><td>16%</td><td>Heuristic</td></tr>
+<tr><td>10%</td><td>MMR-only</td><td>1 / 8</td><td>9 / 9</td><td>1</td><td>23%</td><td>Heuristic</td></tr>
+<tr><td>10%</td><td>Coverage + MMR</td><td>1 / 8</td><td>5 / 9</td><td>1</td><td>16%</td><td>Heuristic</td></tr>
+<tr><td>20%</td><td>Rank-only</td><td>2 / 8</td><td>15 / 18</td><td>2</td><td>37%</td><td>Heuristic</td></tr>
+<tr><td>20%</td><td>Exact knapsack</td><td>3 / 8</td><td>17 / 18</td><td>3</td><td>44%</td><td>Exact DP</td></tr>
+<tr><td>20%</td><td>Coverage-only</td><td>3 / 8</td><td>17 / 18</td><td>3</td><td>44%</td><td>Heuristic</td></tr>
+<tr><td>20%</td><td>MMR-only</td><td>2 / 8</td><td>15 / 18</td><td>2</td><td>37%</td><td>Heuristic</td></tr>
+<tr><td>20%</td><td>Coverage + MMR</td><td>2 / 8</td><td>14 / 18</td><td>2</td><td>39%</td><td>Heuristic</td></tr>
+<tr><td>30%</td><td>Rank-only</td><td>3 / 8</td><td>25 / 27</td><td>3</td><td>47%</td><td>Heuristic</td></tr>
+<tr><td>30%</td><td>Exact knapsack</td><td>4 / 8</td><td>26 / 27</td><td>4</td><td>68%</td><td>Exact DP</td></tr>
+<tr><td>30%</td><td>Coverage-only</td><td>4 / 8</td><td>26 / 27</td><td>4</td><td>68%</td><td>Heuristic</td></tr>
+<tr><td>30%</td><td>MMR-only</td><td>3 / 8</td><td>25 / 27</td><td>3</td><td>47%</td><td>Heuristic</td></tr>
+<tr><td>30%</td><td>Coverage + MMR</td><td>4 / 8</td><td>26 / 27</td><td>4</td><td>68%</td><td>Heuristic</td></tr>
+<tr><td>40%</td><td>Rank-only</td><td>4 / 8</td><td>36 / 36</td><td>4</td><td>61%</td><td>Heuristic</td></tr>
+<tr><td>40%</td><td>Exact knapsack</td><td>5 / 8</td><td>36 / 36</td><td>5</td><td>78%</td><td>Exact DP</td></tr>
+<tr><td>40%</td><td>Coverage-only</td><td>5 / 8</td><td>36 / 36</td><td>5</td><td>78%</td><td>Heuristic</td></tr>
+<tr><td>40%</td><td>MMR-only</td><td>4 / 8</td><td>36 / 36</td><td>4</td><td>61%</td><td>Heuristic</td></tr>
+<tr><td>40%</td><td>Coverage + MMR</td><td>5 / 8</td><td>36 / 36</td><td>5</td><td>78%</td><td>Heuristic</td></tr>
+<tr><td>50%</td><td>Rank-only</td><td>4 / 8</td><td>42 / 45</td><td>4</td><td>56%</td><td>Heuristic</td></tr>
+<tr><td>50%</td><td>Exact knapsack</td><td>5 / 8</td><td>42 / 45</td><td>5</td><td>75%</td><td>Exact DP</td></tr>
+<tr><td>50%</td><td>Coverage-only</td><td>5 / 8</td><td>36 / 45</td><td>5</td><td>78%</td><td>Heuristic</td></tr>
+<tr><td>50%</td><td>MMR-only</td><td>4 / 8</td><td>42 / 45</td><td>4</td><td>56%</td><td>Heuristic</td></tr>
+<tr><td>50%</td><td>Coverage + MMR</td><td>5 / 8</td><td>36 / 45</td><td>5</td><td>78%</td><td>Heuristic</td></tr>
+</tbody></table></div>
+<div class="callout" style="margin-top:14px"><strong>Interpretation:</strong> weighted facet coverage is a policy diagnostic, not gold evidence recall. Gold evidence recall has not been measured here because no held-out relevance labels are supplied by default. Downstream answer quality has not been measured because this static demo does not run the fixed reader and evaluator.</div>
+<h3 style="margin-top:26px">From a browser trace to a question-level audit</h3>
+<div class="two">
+<div class="panel"><h3>1 · Label the evidence</h3><p>Enter a held-out question and mark every candidate unit containing evidence needed to answer it. The workspace then reports retention precision/recall/F1 and separately evaluates BM25+MMR retrieval from the retained subset.</p></div>
+<div class="panel"><h3>2 · Export matched questions</h3><p>Export one v2 JSON per distinct question while keeping the same conversation and candidate units loaded. Batch audit checks matched candidates and selections, then reports macro metrics, question-bootstrap 95% intervals, and paired deltas versus rank-only.</p></div>
+</div>
+<p class="small">The browser selector is a transparent heuristic, not the trained logistic-regression model. Cost is selected-text word count only: exact tokenizer cost and full metadata cost are unavailable. The workspace does not generate answers. These browser atomic-evidence diagnostics are not LongMemEval results, do not validate MW-ECS, and must not be presented as downstream answer-quality measurements.</p>
+<p><a class="code-link" href="./workspace.html">Open the interactive evidence workspace ↗</a> <a class="code-link" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/blob/main/MemWeave/src/memweave/browser_audit.py">Browser audit batch implementation ↗</a></p>
+</section>
+
 <section id="experiments" class="section">
-<div class="section-head"><div class="kicker">04 / EXPERIMENT HISTORY</div><h2>What each research stage investigated</h2><p>The stages are intentionally kept separate. Later corrections do not overwrite earlier experiments, and historical results are not pooled into a single headline.</p></div>
+<div class="section-head"><div class="kicker">05 / EXPERIMENT HISTORY</div><h2>What each research stage investigated</h2><p>The stages are intentionally kept separate. Later corrections do not overwrite earlier experiments, and historical results are not pooled into a single headline.</p></div>
 <div class="two">
 <article class="panel"><span class="status audit">Historical</span><h3>v2.0 · Adaptive temporal memory</h3><p>Initial real-data pipeline. Compared query-agnostic Setting B with query-conditioned Setting A. Proposed a memory encoder, temporal intelligence, rarity/importance features, learned utility model, MMR/cost/supersession-aware budget optimizer, and extensive ablations. MLP was the initial primary model; LR and gradient boosting were model-class alternatives.</p><a class="code-link" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/blob/main/MemWeave/notebooks/00_MemWeave_2_0.ipynb">Notebook ↗</a><a class="code-link" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/main/MemWeave/results/v2_0">Results ↗</a></article>
 <article class="panel"><span class="status audit">Benchmark audit</span><h3>v2.1 · Fair baselines & diagnostics</h3><p>Revised the interpretation after v2.0 showed the headline learned-selector story did not survive stronger fair baselines. Added within-history feature AUC, nearest-neighbour structure diagnostics, signed rarity/novelty baselines, and stronger controls.</p><a class="code-link" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/blob/main/MemWeave/notebooks/01_MemWeave_2_1.ipynb">Notebook ↗</a><a class="code-link" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/main/MemWeave/results/v2_1">Diagnostics ↗</a></article>
@@ -90,7 +150,7 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </section>
 
 <section id="results" class="section">
-<div class="section-head"><div class="kicker">05 / REPORTED RESULTS</div><h2>Evidence, not a pooled leaderboard</h2><p>Each row belongs to a distinct experimental stage and endpoint. Read the scope and limitations alongside every number.</p></div>
+<div class="section-head"><div class="kicker">06 / REPORTED RESULTS</div><h2>Evidence, not a pooled leaderboard</h2><p>Each row belongs to a distinct experimental stage and endpoint. Read the scope and limitations alongside every number.</p></div>
 <div class="table-wrap"><table><thead><tr><th>Study / setting</th><th>Scope</th><th>Baseline</th><th>Role-aware / method</th><th>Interpretation</th></tr></thead><tbody>
 <tr><td>Stage B · LongMemEval-S</td><td>235 held-out questions</td><td>40.42%</td><td class="good">70.94% recall</td><td>Historical role-aware evidence recall; separate from Stage C.</td></tr>
 <tr><td>Stage C · LongMemEval-S</td><td>235-question test</td><td>40.42%</td><td class="good">82.06% recall</td><td>Regenerated run; 10% word-count proxy budget. Do not merge with Stage B.</td></tr>
@@ -120,7 +180,7 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </section>
 
 <section id="mfar" class="section">
-<div class="section-head"><div class="kicker">06 / FAILURE ANALYSIS</div><h2>MFAR: diagnose the stage before spending more budget</h2><p>Memory Failure-Aware Retrieval is a proposed lifecycle-aware controller. It should identify where evidence disappears and choose a targeted intervention instead of blindly increasing top-k or memory size.</p></div>
+<div class="section-head"><div class="kicker">07 / FAILURE ANALYSIS</div><h2>MFAR: diagnose the stage before spending more budget</h2><p>Memory Failure-Aware Retrieval is a proposed lifecycle-aware controller. It should identify where evidence disappears and choose a targeted intervention instead of blindly increasing top-k or memory size.</p></div>
 <div class="four three">
 <div class="method"><span class="status proposed">Failure mode 1</span><h3>Construction</h3><p>Relevant source information never becomes a candidate memory item. Potential intervention: source re-ingestion or extraction repair.</p></div>
 <div class="method"><span class="status proposed">Failure mode 2</span><h3>Compression</h3><p>Evidence exists before compression but is omitted, distorted, or loses qualifiers/provenance. Potential intervention: revise compression or preserve a source span.</p></div>
@@ -131,7 +191,7 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </section>
 
 <section id="limits" class="section">
-<div class="section-head"><div class="kicker">07 / LIMITATIONS & RESEARCH INTEGRITY</div><h2>What the evidence does not establish</h2><p>The site reports positive results and negative findings together. These boundaries are part of the research, not footnotes to hide.</p></div>
+<div class="section-head"><div class="kicker">08 / LIMITATIONS & RESEARCH INTEGRITY</div><h2>What the evidence does not establish</h2><p>The site reports positive results and negative findings together. These boundaries are part of the research, not footnotes to hide.</p></div>
 <div class="two">
 <div class="audit"><h3>Evaluation limits</h3><ul class="list"><li>Stage B, Stage C, v2.3, and final role-aware results are different experimental records; do not average or substitute them.</li><li>The main role-aware test is one LongMemEval-S split. The project process was iterative, not preregistered.</li><li>Question-level bootstrap may understate dependence when questions share conversations.</li><li>LoCoMo and Long-MT-Bench+ reader studies have only 10 and 11 conversation clusters respectively.</li><li>Token F1 and exact match are lexical metrics, not semantic entailment or factual-grounding audits.</li></ul></div>
 <div class="audit"><h3>Method and release limits</h3><ul class="list"><li>The 10% primary budget in several role-aware reports is a word-count proxy, not exact tokenizer cost.</li><li>Novelty blends did not improve the DEV result; the tested 50/50 blend materially reduced recall.</li><li>The v2.3 learned-selector edge over low-novelty was small and sensitivity-dependent.</li><li>MFAR remains a proposal/partial trace audit, not a validated failure detector.</li><li>The 2026-11-27 release audit withdrew a ZIP containing cleartext LoCoMo-derived spans. Do not redistribute historical ZIP copies; privacy and license review remains open.</li></ul></div>
@@ -140,7 +200,7 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </section>
 
 <section id="reproduce" class="section">
-<div class="section-head"><div class="kicker">08 / REPRODUCIBILITY & CODE</div><h2>Run the research, not just the demo</h2><p>The Python package and notebooks contain the actual research pipeline. GitHub Pages serves a static research portal and cannot execute the Python/sklearn backend by itself.</p></div>
+<div class="section-head"><div class="kicker">09 / REPRODUCIBILITY & CODE</div><h2>Run the research, not just the demo</h2><p>The Python package and notebooks contain the actual research pipeline. GitHub Pages serves a static research portal and cannot execute the Python/sklearn backend by itself.</p></div>
 <div class="panel">
 <h3>Canonical research assets</h3>
 <div class="two">
