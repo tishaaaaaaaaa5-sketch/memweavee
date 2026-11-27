@@ -16,3 +16,14 @@
 /* Compact evidence coverage controls */
 .retention-summary{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(max-width:760px){.retention-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Budget-sweep audit table */
+.sweep-wrap{border:1px solid #2c4058;background:#0b1523;border-radius:8px;overflow-x:auto;margin:12px 0 20px}
+.sweep-intro{padding:11px 13px;color:#91a5bf;font-size:9px;line-height:1.7;border-bottom:1px solid #293950}
+.sweep-table{width:100%;border-collapse:collapse;min-width:560px;text-align:left}
+.sweep-table th,.sweep-table td{padding:11px 12px;border-bottom:1px solid #26384e;font:9px 'DM Mono';color:#b8c7da;vertical-align:top}
+.sweep-table th{color:#8e9fb8;font-size:8px;letter-spacing:.05em;text-transform:uppercase}
+.sweep-table tr:last-child td{border-bottom:0}
+.sweep-table details summary{cursor:pointer;color:#9bd8e9}
+.sweep-table ul{padding-left:17px;max-width:460px;white-space:normal;line-height:1.7}
+.sweep-table li{margin:5px 0;color:#d4deec}
