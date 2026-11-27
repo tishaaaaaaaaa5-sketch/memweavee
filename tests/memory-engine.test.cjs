@@ -22,6 +22,9 @@ assert.ok(units.length >= 8, "lists and independent clauses become atomic eviden
 assert.ok(units.some(x => x.text.includes("MemWeave goal: preserve evidence")));
 assert.equal(units.filter(x => x.kind === "priorities").length, 3,
   "the three research priorities become independently selectable evidence");
+assert.deepEqual(units.filter(x => x.kind === "priorities").map(x => x.facet), [
+  "priority:evidence_retention", "priority:downstream_answer_quality", "priority:reproducibility"
+], "each named research priority receives its own coverage facet");
 assert.ok(units.some(x => x.text === "I want exact token-cost accounting rather than a word-count estimate."),
   "contrastive token-cost constraint remains intact");
 assert.ok(units.some(x => x.text === "Tie claims to benchmark reports; separate evidence recall from answer accuracy."),
@@ -51,6 +54,13 @@ assert.ok(coverage.selected.length >= 2,
   "atomic evidence extraction and coverage selection should avoid a one-item result on the research sample");
 assert.ok(coverage.coveredFacets.length >= 2,
   "coverage policy should preserve more than one evidence facet");
+assert.ok(coverage.coveredFacets.some(x => x.startsWith("priority:")),
+  "coverage audit should expose fine-grained priority facets");
+const sweep = [20, 30, 40, 50].map(p => Engine.selectCandidates(scored, Math.floor(sourceWords*p/100), {mode:"coverage",lambda:.25}));
+assert.equal(sweep.length, 4);
+assert.ok(sweep.every((r,i) => r.usedWords <= Math.floor(sourceWords*[20,30,40,50][i]/100)),
+  "every budget-sweep point must respect its own cap");
+assert.ok(sweep.every(r => Array.isArray(r.coveredFacets)), "each sweep point reports covered facets");
 assert.equal(Engine.selectCandidates(scored, 0, { mode: "coverage" }).selected.length, 0);
 
 const synthetic = [

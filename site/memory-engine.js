@@ -28,7 +28,23 @@
   }
   function queryIntent(text) { return evidenceType(text); }
 
-  function queryIntent(text) { return evidenceType(text); }
+  // Fine-grained selection facets are separate from coarse retrieval evidence types.
+  function evidenceFacet(text) {
+    const value = String(text || "").toLowerCase();
+    const kind = evidenceType(value);
+    if (kind === "priorities") {
+      if (/evidence retention|retaining evidence|retain evidence/.test(value)) return "priority:evidence_retention";
+      if (/downstream answer quality|answer quality/.test(value)) return "priority:downstream_answer_quality";
+      if (/reproducib|reproducible|reproducibility/.test(value)) return "priority:reproducibility";
+      return "priority:other";
+    }
+    if (kind === "technical") {
+      if (/token.cost|word.count estimate|exact token/.test(value)) return "technical:token_accounting";
+      if (/python|scikit.learn|pytorch|tensorflow|cuda|gpu/.test(value)) return "technical:stack";
+    }
+    if (kind === "principles" && /benchmark|evidence recall|answer accuracy/.test(value)) return "principles:benchmark_reporting";
+    return kind;
+  }
 
   function parseConversation(input, source = "Pasted conversation") {
     const raw = String(input || "").replace(/\r/g, "");
@@ -160,6 +176,7 @@
             sourceText: message.text,
             words,
             kind: evidenceType(claim.text),
+            facet: evidenceFacet(claim.text),
             derivation: claim.derivation
           });
         });
@@ -269,7 +286,7 @@
     const coveredFacets = new Set();
     let used = 0;
     while (available.size) {
-      let best = -1, bestUtility = -Infinity, bestPenalty = 0, bestCoverageGain = 0;
+      let best = -1, bestUtility = -Infinity, bestPriority = -Infinity, bestPenalty = 0, bestCoverageGain = 0;
       for (const index of [...available].sort((a, b) => a - b)) {
         const item = candidates[index];
         if (used + item.words > budget) continue;
@@ -278,18 +295,22 @@
           redundancy = Math.max(redundancy, candidates[prior].similarities?.[index] ??
             cosine(tfidfVectors([item.text, candidates[prior].text])[0], tfidfVectors([item.text, candidates[prior].text])[1]));
         }
-        const facet = item.kind || "general";
+        const facet = item.facet || item.kind || "general";
         const facetGain = mode === "coverage" && facet !== "general" && !coveredFacets.has(facet) ? coverageBonus : 0;
         const base = mode === "density" ? item.score / Math.max(1, item.words) : item.score;
         const utility = base + facetGain - ((mode === "mmr" || mode === "coverage") ? lambda * redundancy : 0);
-        if (utility > bestUtility + 1e-12) {
-          best = index; bestUtility = utility; bestPenalty = redundancy; bestCoverageGain = facetGain;
+        // Coverage uses marginal utility per word to reduce budget lock-up by long units.
+        // This deterministic greedy heuristic is not a globally optimal knapsack solver.
+        const priority = mode === "coverage" ? utility / Math.max(1, item.words) : utility;
+        if (priority > bestPriority + 1e-12) {
+          best = index; bestUtility = utility; bestPriority = priority;
+          bestPenalty = redundancy; bestCoverageGain = facetGain;
         }
       }
       if (best < 0) break;
       const chosenItem = candidates[best];
       chosen.push(best); available.delete(best); used += chosenItem.words;
-      const facet = chosenItem.kind || "general";
+      const facet = chosenItem.facet || chosenItem.kind || "general";
       if (facet !== "general") coveredFacets.add(facet);
       trace.push({
         id: chosenItem.id, order: chosen.length, score: chosenItem.score,
@@ -302,7 +323,7 @@
     candidates.forEach((candidate, index) => {
       if (selectedSet.has(index)) return;
       const remaining = Math.max(0, budget - used);
-      const facet = candidate.kind || "general";
+      const facet = candidate.facet || candidate.kind || "general";
       let reason;
       if (candidate.words > remaining) {
         reason = "Remaining word-proxy budget is too small for this complete evidence unit.";
@@ -392,6 +413,6 @@
   return {
     countWords, tokens, parseConversation, splitSentences, buildCandidates,
     similarityMatrix, scoreCandidates, selectCandidates, rankEvidence,
-    evidenceType, queryIntent
+    evidenceType, evidenceFacet, queryIntent
   };
 });

@@ -45,10 +45,11 @@ function analyze(){
  ].map(([label,value])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join("");
  const policyName=({rank:"greedy score rank (reference structure)",density:"score / word-cost density",mmr:"MMR redundancy control",coverage:"coverage + MMR (experimental ablation)"})[mode];
  const policyDetails=mode==="coverage"
-  ?"New evidence facets receive a fixed +0.22 marginal bonus; similarity to selected evidence is penalised by λ. This is a browser ablation inspired by the proposed relevance + coverage − redundancy objective, not a validated MW-ECS implementation."
+  ?"Fine-grained evidence facets receive a fixed +0.22 marginal bonus; similarity to selected evidence is penalised by λ. Candidates are greedily chosen by marginal utility per word to reduce budget lock-up. This is a browser ablation, not a globally optimal knapsack solver or validated MW-ECS implementation."
   :mode==="mmr"?"MMR subtracts λ × maximum TF-IDF cosine similarity to already selected units."
   :"No facet bonus is applied; this remains a simple greedy baseline.";
  $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> selected-text word count proxy. '+policyDetails+' The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Context-resolved units retain a link to the full original source message. Exact tokenizer cost and full metadata cost are not available in this static demo.';
+ $("budget-sweep").innerHTML=renderBudgetSweep(scored,sourceWords,mode,lambda);
  $("retained-items").innerHTML=result.selected.length?result.selected.map(m=>card(m,true,traceById.get(m.id))).join(""):'<div class="empty">No complete evidence unit fit the current word-proxy budget. Increase the budget or shorten the source.</div>';
  $("not-retained-count").textContent=result.skipped.length+" not retained";
  $("not-retained-items").innerHTML=result.skipped.length?result.skipped.map(x=>{
@@ -59,6 +60,18 @@ function analyze(){
  $("retention-result").scrollIntoView({behavior:"smooth",block:"start"});
  notify("Analysis complete. Review coverage, source provenance, and rejected evidence before saving.");
 }
+
+function renderBudgetSweep(scored,sourceWords,mode,lambda){
+ const rows=[20,30,40,50].map(percent=>{
+  const cap=Math.floor(sourceWords*percent/100);
+  const result=Engine.selectCandidates(scored,cap,{mode,lambda,coverageBonus:0.22});
+  const facets=result.coveredFacets||[];
+  const names=result.selected.map(x=>x.text);
+  return '<tr><td>'+percent+'%</td><td>'+result.selected.length+'/'+scored.length+'</td><td>'+result.usedWords+'/'+cap+'</td><td>'+facets.length+'</td><td><details><summary>View retained units</summary><ul>'+names.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details></td></tr>';
+ }).join('');
+ return '<div class="sweep-wrap"><div class="sweep-intro">Same candidates, scoring, policy, and λ; only the word-proxy cap changes. These are descriptive browser results, not benchmark measurements.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Retained</th><th>Words used / cap</th><th>Facets</th><th>Retained evidence</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
 function card(m,showScore=false,trace=null){
  const feat=m.features||{};
  const reasons=(m.reasons||[]).map(esc).join(" · ");
