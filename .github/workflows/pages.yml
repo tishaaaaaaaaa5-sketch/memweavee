@@ -28,6 +28,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Validate workspace JavaScript
         run: node --check MemWeave/web/app.js
+      - name: Validate research portal JavaScript
+        run: |
+          node --check site/app.js
+          node --check site/research.js
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static website
