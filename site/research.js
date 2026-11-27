@@ -9,7 +9,7 @@ const candidates=[
 ];
 const $=id=>document.getElementById(id);
 function run(){
- const mode=$("mode").value,budget=+$("budget").value/100,lambda=+$("lambda").value,gamma=+$("gamma").value,nu=$("supersede").checked?.2:0;
+ const mode=$("mode").value,budget=+$("budget").value/100,lambda=+$("lambda").value,gamma=+$("gamma").value,nu=$("supersede").checked ? 0.2 : 0;
  $("budget-label").textContent=Math.round(budget*100)+"%";$("lambda-label").textContent=lambda.toFixed(2);$("gamma-label").textContent=gamma.toFixed(2);
  const limit=budget*candidates.reduce((a,x)=>a+x.cost,0);let used=0,chosen=[],available=new Set(candidates.map((_,i)=>i)),trace=[];
  while(available.size){
