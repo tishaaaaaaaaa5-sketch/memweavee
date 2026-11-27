@@ -90,7 +90,7 @@ for (const step of traceKnapsack.trace) {
   assert.ok(Math.abs(step.marginalUtilityPerWord - step.score / step.words) < 1e-12);
 }
 
-const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
+const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
 assert.ok(coverage.selected.length >= 2,
   "atomic evidence extraction and coverage selection should avoid a one-item result on the research sample");
 assert.ok(coverage.coveredFacets.length >= 2,
