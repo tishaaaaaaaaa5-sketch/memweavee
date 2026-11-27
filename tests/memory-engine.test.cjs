@@ -115,3 +115,27 @@ const exactOversized = Engine.selectCandidates(exactFixture, 2000000, {mode:"kna
 assert.equal(exactOversized.optimal, false, "large DP workloads report their explicit greedy fallback");
 assert.equal(exactOversized.mode, "knapsack");
 console.log("MemWeave atomic-evidence, provenance, weighted-priority, knapsack, and baseline tests passed.");
+
+
+// Bounded backup-file validation and sanitisation.
+const SafeFiles = require("../site/safe-files.js");
+const backup = SafeFiles.exportBackup(saved);
+const restored = SafeFiles.parseBackup(backup);
+assert.equal(restored.items.length, saved.length);
+assert.equal(restored.items[0].words, Engine.countWords(restored.items[0].text), "word counts are recomputed, not trusted from uploaded JSON");
+assert.ok(!Object.prototype.hasOwnProperty.call(restored.items[0], "unexpected"), "unknown uploaded fields are discarded");
+assert.throws(() => SafeFiles.parseBackup("not json"), /valid JSON/);
+assert.throws(() => SafeFiles.parseBackup(JSON.stringify({format:"unknown",items:[]})), /Unsupported backup format/);
+assert.throws(() => SafeFiles.parseBackup(" ".repeat(SafeFiles.MAX_FILE_BYTES+1)), /5 MB/);
+assert.throws(() => SafeFiles.normalizeItems(new Array(SafeFiles.MAX_ITEMS+1).fill({text:"x"})), /too many items/);
+const untrusted = SafeFiles.parseBackup(JSON.stringify({format:"memweave-local-v2",items:[
+  {text:"  Safe evidence <script>alert(1)</script>  ",role:"user",source:"test",words:999,id:"attacker-id",isAdmin:true,features:{novelty:4,meanSimilarity:.4},facet:"not-an-allowed-facet"},
+  {text:"  Safe evidence <script>alert(1)</script>  ",role:"user",source:"test"}
+]}));
+assert.equal(untrusted.items.length,1,"duplicate records are collapsed during import");
+assert.notEqual(untrusted.items[0].id,"attacker-id","uploaded identifiers are not trusted");
+assert.equal(untrusted.items[0].isAdmin,undefined,"unknown fields cannot be imported");
+assert.equal(untrusted.items[0].features.novelty,undefined,"out-of-range feature values are discarded");
+assert.equal(untrusted.items[0].facet,undefined,"unknown facets are discarded");
+assert.ok(!untrusted.items[0].text.includes("\\u0000"),"control characters are removed from imported text");
+console.log("MemWeave safe-file validation tests passed.");
