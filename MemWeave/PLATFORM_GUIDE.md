@@ -15,6 +15,7 @@ From the repository root:
     memweave evaluate --config MemWeave/configs/role_aware.yaml
     pytest MemWeave/tests
     memweave serve
+    memweave browser-audit --input /private/path/memweave-evidence-labels.json --output-dir results/browser_audit
 
 The evaluate command currently performs aggregate artifact validation using the committed manifest, paired audit JSON and question-type CSV. It checks internal consistency; it does not retrain a model, fetch benchmark data, or recreate missing per-question predictions.
 
@@ -94,3 +95,10 @@ The dashboard now gates primary LongMemEval evidence-recall comparisons:
 Model and feature configuration differences remain visible in the separate configuration-difference table. They are not automatically treated as a comparability failure because changing the selector may be the intended experimental variable. The gate does not establish causality or independent replication.
 
 Legacy registry records are not retroactively upgraded. Re-run them with the updated pipeline if a structured provenance record is required. LoCoMo transfer comparability is a separate question: compare its dataset checksum, conversation set, reader and evaluation protocol before interpreting transfer metrics.
+
+
+## Browser atomic-evidence audit import
+
+The static workspace exports versioned manual annotations plus selected and top-5 retrieved evidence IDs for five browser policies at 10–50% word-proxy budgets. The memweave browser-audit command validates that export and recomputes retention recall separately from retrieval precision/recall/F1@5. It writes derived metrics and an input/output SHA-256 manifest without copying candidate text into the output directory.
+
+This bridge does not convert atomic claims into LongMemEval sessions and does not run the trained LR selector. It is a complementary annotation diagnostic; the canonical pipeline remains session-level and uses its own benchmark labels, features, split, and frozen model protocol. Neither metric substitutes for fixed-reader downstream answer quality.
