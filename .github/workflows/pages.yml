@@ -5,11 +5,28 @@ on:
     branches: [main]
     paths:
       - "MemWeave/web/**"
+      - "MemWeave/results/**"
+      - "MemWeave/docs/reproducibility/**"
+      - "MemWeave/docs/research/**"
       - "index.html"
       - "app.js"
       - "styles.css"
       - ".nojekyll"
       - "site/**"
+      - "tests/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "MemWeave/web/**"
+      - "MemWeave/results/**"
+      - "MemWeave/docs/reproducibility/**"
+      - "MemWeave/docs/research/**"
+      - "index.html"
+      - "app.js"
+      - "styles.css"
+      - ".nojekyll"
+      - "site/**"
+      - "tests/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -47,6 +64,8 @@ jobs:
           node --check site/charts.js
       - name: Test research-aligned browser evidence engine
         run: node tests/memory-engine.test.cjs
+      - name: Test research portal result provenance
+        run: node tests/research-portal-provenance.test.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static website
@@ -55,6 +74,7 @@ jobs:
           path: site
 
   deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
