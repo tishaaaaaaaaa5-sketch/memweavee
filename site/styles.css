@@ -41,3 +41,42 @@
 
 /* Safe local backup import guidance */
 .file-safety-note{display:block;color:#8498b2;font:8px/1.7 "DM Mono",monospace;margin:7px 3px 0;max-width:190px}
+
+
+/* Workspace refinement: stronger hierarchy, legibility, and responsive controls */
+.workspace-page{background:radial-gradient(ellipse at 10% 0%,#6555a51b,transparent 34%),radial-gradient(ellipse at 92% 50%,#1d8b9912,transparent 30%),var(--bg)}
+.workspace-page .top{max-width:none;padding-left:max(20px,calc((100vw - 1440px)/2));padding-right:max(20px,calc((100vw - 1440px)/2));background:#090d18d9;backdrop-filter:blur(14px);position:sticky;top:0;z-index:10}
+.workspace-page .brand{font-size:20px}
+.workspace-page .app-shell{max-width:1440px;min-height:calc(100vh - 76px);margin:0 auto;grid-template-columns:250px minmax(0,1fr);gap:0}
+.workspace-page .app-sidebar{background:#0b1422a8;border-right:1px solid #ffffff12;padding:26px 18px}
+.workspace-page .side-tab{width:100%;text-align:left;border-radius:10px;padding:12px 13px;font-size:12px;transition:background .18s ease,border-color .18s ease}
+.workspace-page .side-tab:hover{background:#ffffff0a}
+.workspace-page .side-tab.active{background:linear-gradient(100deg,#8c79ff22,#57dce011);border:1px solid #8e83f044;color:#f0efff}
+.workspace-page .side-bottom{border-top:1px solid #ffffff12;padding-top:18px}
+.workspace-page .app-main{max-width:1060px;width:100%;padding:42px clamp(18px,4vw,54px) 34px;margin:0 auto}
+.workspace-page .app-heading{margin-bottom:22px}
+.workspace-page .app-heading h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.055em;line-height:1.1}
+.workspace-page .app-heading p{max-width:680px;line-height:1.75}
+.workspace-page .notice{border-radius:12px;padding:13px 16px;line-height:1.75;background:#142131;border-color:#344a65}
+.workspace-page .panel{border-radius:16px;padding:clamp(16px,2.5vw,25px);box-shadow:0 18px 50px #0000001c}
+.workspace-page .panel-title{align-items:flex-start}
+.workspace-page .panel-title h2{font-size:21px;letter-spacing:-.035em}
+.workspace-page .panel-title p{max-width:650px;line-height:1.75}
+.workspace-page .big-input{min-height:250px;font:13px/1.85 Manrope,Arial,sans-serif;padding:16px;background:#080f1b}
+.workspace-page .text-input{min-height:44px;font-size:12px}
+.workspace-page .field-label{font-size:9px;letter-spacing:.1em}
+.workspace-page .field-hint{display:block;line-height:1.7;margin-top:6px}
+.workspace-page .btn{border-radius:10px;padding:12px 17px}
+.workspace-page .btn.primary{box-shadow:0 8px 22px #5c4cc32c}
+.workspace-page button,.workspace-page input,.workspace-page textarea,.workspace-page select{font-family:inherit}
+.workspace-page .evidence-card{border-radius:12px;padding:16px;transition:border-color .18s ease,transform .18s ease}
+.workspace-page .evidence-card:hover{border-color:#526985;transform:translateY(-1px)}
+.workspace-page .annotation-card{border-radius:11px;padding:13px 14px}
+.workspace-page .annotation-card:hover{border-color:#5b7090}
+.workspace-page .retention-summary>div{border-radius:11px;padding:13px}
+.workspace-page .sweep-wrap{border-radius:11px}
+.workspace-page .app-footer{font-size:9px;line-height:1.8}
+.workspace-page :focus-visible{outline:3px solid #6de1eb;outline-offset:3px}
+@media(max-width:980px){.workspace-page .app-shell{grid-template-columns:210px minmax(0,1fr)}.workspace-page .app-sidebar{padding:20px 12px}.workspace-page .app-main{padding:30px 22px}}
+@media(max-width:760px){.workspace-page .top{min-height:68px;height:auto;gap:10px;flex-wrap:wrap;padding:10px 14px}.workspace-page .app-shell{display:flex;flex-direction:column}.workspace-page .app-sidebar{position:sticky;top:68px;z-index:8;display:flex;flex-direction:row;gap:7px;padding:9px 12px;background:#0b1422ed;overflow-x:auto;border-right:0;border-bottom:1px solid #ffffff18}.workspace-page .side-tab{width:auto;flex:0 0 auto}.workspace-page .side-bottom,.workspace-page .side-kicker{display:none}.workspace-page .app-main{padding:24px 14px}.workspace-page .app-heading{gap:12px}.workspace-page .panel{padding:16px}.workspace-page .big-input{min-height:220px}.workspace-page .retention-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-page .app-footer{padding-bottom:22px}}
+@media(max-width:420px){.workspace-page .retention-summary{grid-template-columns:1fr 1fr}.workspace-page .local-pill{margin-left:auto}.workspace-page .panel-actions{align-items:stretch}.workspace-page .panel-actions .btn{width:100%;text-align:center}}
