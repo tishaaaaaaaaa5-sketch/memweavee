@@ -76,7 +76,7 @@ function analyze(){
 }
 
 function renderBudgetSweep(scored,sourceWords,mode,lambda){
- const rows=[20,30,40,50].map(percent=>{
+ const rows=[10,20,30,40,50].map(percent=>{
   const cap=Math.floor(sourceWords*percent/100);
   const result=Engine.selectCandidates(scored,cap,{mode,lambda,coverageBonus:0.22});
   const facets=result.coveredFacets||[];
@@ -87,7 +87,7 @@ function renderBudgetSweep(scored,sourceWords,mode,lambda){
 }
 
 function renderBaselineComparison(scored,sourceWords,lambda){
- const budgets=[20,30,40,50],policies=[
+ const budgets=[10,20,30,40,50],policies=[
   ["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]
  ];
  const rows=[];
@@ -99,7 +99,7 @@ function renderBaselineComparison(scored,sourceWords,lambda){
    rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+r.selected.length+'/'+scored.length+'</td><td>'+r.usedWords+'/'+cap+'</td><td>'+r.coveredFacets.length+'</td><td>'+Math.round(r.weightedFacetCoverage*100)+'%</td><td>'+method+'</td></tr>');
   }
  }
- return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser comparison: identical candidates, scores, word-proxy caps, and λ. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
+ return '<div class="sweep-wrap"><div class="sweep-intro">Matched browser-heuristic comparison: identical candidates, scores, word-proxy caps, and λ. The primary LongMemEval study uses a 10% word-count proxy, so 10% is shown explicitly. Exact knapsack maximises additive heuristic score when its DP work limit is met; it is not a relevance oracle. Weighted facet coverage is a policy diagnostic, not gold evidence recall. The trained logistic-regression selector is not loaded in this static browser demo and must be compared from the research pipeline using its frozen feature schema and weights.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retained</th><th>Words / cap</th><th>Facets</th><th>Weighted facet coverage</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro"><strong>Gold evidence recall:</strong> not measured; this requires annotated relevant-evidence labels. <strong>Downstream answer quality:</strong> not measured; this requires a fixed reader, answer set, and task-appropriate evaluator. Keep both as separate evaluation outcomes.</p></div>';
 }
 
 function renderEvidenceEvaluation(scored,sourceWords,lambda){
@@ -118,16 +118,18 @@ function updateEvidenceEvaluation(){
  const lambda=Number($("redundancy").value);
  const policies=[["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]];
  const rows=[];
- for(const percent of [20,30,40,50]){
+ for(const percent of [10,20,30,40,50]){
   const cap=Math.floor(sourceWords*percent/100);
   for(const [mode,label] of policies){
    const result=Engine.selectCandidates(evaluationCandidates,cap,{mode,lambda,coverageBonus:.22});
-   const metric=Engine.evaluateEvidenceSelection(result.selected.map(x=>x.id),[...goldEvidenceIds]);
+   const retained=Engine.evaluateEvidenceSelection(result.selected.map(x=>x.id),[...goldEvidenceIds]);
+   const retrieved=Engine.rankEvidence(question,result.selected,{lambda:.18,limit:5});
+   const retrieval=Engine.evaluateEvidenceSelection(retrieved.map(x=>x.id),[...goldEvidenceIds]);
    const solver=result.optimal===true?"Exact DP":result.optimal===false?"Fallback":"Heuristic";
-   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+metric.truePositives+'</td><td>'+metric.falsePositives+'</td><td>'+metric.falseNegatives+'</td><td>'+Math.round(metric.precision*100)+'%</td><td>'+Math.round(metric.recall*100)+'%</td><td>'+Math.round(metric.f1*100)+'%</td><td>'+solver+'</td></tr>');
+   rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+Math.round(retained.recall*100)+'%</td><td>'+Math.round(retrieval.precision*100)+'%</td><td>'+Math.round(retrieval.recall*100)+'%</td><td>'+Math.round(retrieval.f1*100)+'%</td><td>'+result.usedWords+'/'+cap+'</td><td>'+solver+'</td></tr>');
   }
  }
- $("eval-metrics").innerHTML='<div class="sweep-wrap"><div class="sweep-intro">Manual labels for one question: "'+esc(question)+'" · '+goldEvidenceIds.size+' relevant evidence units. These are annotation-based candidate evidence metrics, not benchmark results or answer accuracy.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>TP</th><th>FP</th><th>FN</th><th>Precision</th><th>Recall</th><th>F1</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+ $("eval-metrics").innerHTML='<div class="sweep-wrap"><div class="sweep-intro">Manual labels for one question: "'+esc(question)+'" · '+goldEvidenceIds.size+' relevant evidence units. Retention recall asks whether gold evidence survived selection. Retrieval P/R/F1 measures whether the browser BM25+MMR retriever returns gold evidence from the retained subset (top 5). These are annotation-based diagnostics, not answer quality, benchmark results, or the trained research model.</div><table class="sweep-table"><thead><tr><th>Budget</th><th>Policy</th><th>Retention recall</th><th>Retrieval P@5</th><th>Retrieval R@5</th><th>Retrieval F1@5</th><th>Words / cap</th><th>Solver</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><p class="sweep-intro">The fixed reader / answer-generation stage is not run here. To measure downstream answer quality, evaluate the same retained evidence with the frozen reader and task evaluator used in the research pipeline.</p></div>';
 }
 function exportEvidenceLabels(){
  const question=$("eval-question").value.trim();
