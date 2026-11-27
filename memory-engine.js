@@ -419,6 +419,20 @@
     };
   }
 
+  function evaluateEvidenceSelection(selectedIds, relevantIds) {
+    const selected = new Set((selectedIds || []).map(x => typeof x === "string" ? x : x.id).filter(Boolean));
+    const relevant = new Set((relevantIds || []).map(x => typeof x === "string" ? x : x.id).filter(Boolean));
+    let truePositives = 0;
+    for (const id of selected) if (relevant.has(id)) truePositives++;
+    const falsePositives = selected.size - truePositives;
+    const falseNegatives = relevant.size - truePositives;
+    const precision = selected.size ? truePositives / selected.size : 0;
+    const recall = relevant.size ? truePositives / relevant.size : 0;
+    const f1 = precision + recall ? 2 * precision * recall / (precision + recall) : 0;
+    return { truePositives, falsePositives, falseNegatives, precision, recall, f1,
+      selectedCount: selected.size, relevantCount: relevant.size };
+  }
+
   function rankEvidence(query, items, options = {}) {
     const qTokens = uniqueTokens(query);
     if (!qTokens.length || !items.length) return [];
@@ -487,6 +501,6 @@
   return {
     countWords, tokens, parseConversation, splitSentences, buildCandidates,
     similarityMatrix, scoreCandidates, selectCandidates, rankEvidence,
-    evidenceType, evidenceFacet, queryIntent
+    evidenceType, evidenceFacet, queryIntent, evaluateEvidenceSelection
   };
 });
