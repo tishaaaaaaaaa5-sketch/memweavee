@@ -49,6 +49,16 @@ Run tests and launch the dashboard:
 
 The current CLI evaluate mode validates the consistency of committed aggregate artifacts. It does not retrain the model, fetch benchmark data, or recreate missing per-question predictions. See the [platform guide](PLATFORM_GUIDE.md) for exact scope and API endpoints.
 
+### Browser atomic-evidence audit bridge
+
+The static browser workspace exports a versioned question-level annotation file (`memweave-question-evidence-labels-v2`). It contains candidate IDs, manually labelled gold evidence IDs, and selected/retrieved IDs for each browser policy and budget. Import it with the Python package:
+
+    memweave browser-audit --input /private/path/memweave-evidence-labels.json --output-dir results/browser_audit
+
+The importer validates the export, recomputes retention recall and retrieval precision/recall/F1@5 from the ID sets, and writes derived JSON/CSV plus a SHA-256 manifest. The output intentionally omits evidence text; keep the input export private because it contains source excerpts.
+
+This is an **atomic-evidence diagnostic**, not a LongMemEval run. The browser uses sentence/claim candidates and transparent heuristic policies; the primary research pipeline uses session-level LongMemEval candidates, its frozen feature schema, and a trained logistic-regression selector. Do not pool these metrics or claim the browser export evaluates the trained selector. Both stages share the retention-versus-retrieval metric distinction, while downstream answer quality remains a separate fixed-reader evaluation.
+
 
 ### Public web application
 
