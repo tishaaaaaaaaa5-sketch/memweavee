@@ -2,7 +2,7 @@
 (()=>{"use strict";
 const Engine=window.MemWeaveEngine;
 if(!Engine){document.body.innerHTML='<main style="padding:32px;color:#fff">MemWeave could not load its evidence engine. Refresh the page or check the deployed files.</main>';return}
-const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set();
+const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set(),evaluationSourceWords=0;
 const $=id=>document.getElementById(id);
 const newId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -95,6 +95,7 @@ function renderBaselineComparison(scored,sourceWords,lambda){
 }
 
 function renderEvidenceEvaluation(scored,sourceWords,lambda){
+ evaluationSourceWords=sourceWords;
  $("eval-question").value="";
  $("eval-labels").innerHTML=scored.map(m=>'<label class="annotation-card"><input type="checkbox" data-gold-id="'+esc(m.id)+'"><span><strong>'+esc(m.facet||m.kind||"general")+'</strong><span>'+esc(m.text)+'</span><small>'+esc((m.role||"unlabelled").toUpperCase())+' · '+m.words+' word-proxy units · '+esc(m.source||"source")+'</small></span></label>').join("");
  $("eval-metrics").innerHTML='<div class="sweep-intro">Enter a held-out question and mark every candidate unit that contains evidence needed to answer it. Metrics remain empty until at least one evidence unit is labelled.</div>';
@@ -105,7 +106,7 @@ function updateEvidenceEvaluation(){
   $("eval-metrics").innerHTML='<div class="sweep-intro">Add a held-out question and mark its required evidence units to calculate question-level precision, recall, and F1.</div>';
   return;
  }
- const sourceWords=evaluationCandidates.reduce((sum,x)=>sum+(Number(x.words)||0),0);
+ const sourceWords=evaluationSourceWords;
  const lambda=Number($("redundancy").value);
  const policies=[["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]];
  const rows=[];
@@ -125,7 +126,7 @@ function exportEvidenceLabels(){
  if(!question||!goldEvidenceIds.size){notify("Enter an evaluation question and label at least one relevant evidence unit first.",true);return}
  const payload={format:"memweave-question-evidence-labels-v1",source:$("source-name").value.trim(),question,annotatedAt:new Date().toISOString(),wordBudgetProxyOnly:true,
   relevantEvidence:evaluationCandidates.filter(x=>goldEvidenceIds.has(x.id)).map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,sourceText:x.sourceText,facet:x.facet,words:x.words})),
-  candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,facet:x.facet,words:x.words}))};
+  candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,facet:x.facet,words:x.words,sourceText:x.sourceText}))};
  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="memweave-evidence-labels.json";a.click();URL.revokeObjectURL(url);
  notify("Question-level evidence labels exported as JSON.");
