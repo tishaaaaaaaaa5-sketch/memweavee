@@ -102,3 +102,12 @@ Legacy registry records are not retroactively upgraded. Re-run them with the upd
 The static workspace exports versioned manual annotations plus selected and top-5 retrieved evidence IDs for five browser policies at 10–50% word-proxy budgets. The memweave browser-audit command validates that export and recomputes retention recall separately from retrieval precision/recall/F1@5. It writes derived metrics and an input/output SHA-256 manifest without copying candidate text into the output directory.
 
 This bridge does not convert atomic claims into LongMemEval sessions and does not run the trained LR selector. It is a complementary annotation diagnostic; the canonical pipeline remains session-level and uses its own benchmark labels, features, split, and frozen model protocol. Neither metric substitutes for fixed-reader downstream answer quality.
+
+For multiple questions, save one v2 export per question in a dedicated input
+directory and run the same `memweave browser-audit` command with that directory.
+Batch mode enforces the same candidate evidence set, policy/budget comparisons,
+and retention selections across questions. It calculates macro means, 95%
+question-bootstrap percentile intervals, and paired deltas versus rank-only.
+The bootstrap unit is the question, and its intervals are descriptive of the
+annotated question set rather than population-level benchmark confidence
+intervals. Aggregate outputs exclude question text and raw evidence excerpts.
