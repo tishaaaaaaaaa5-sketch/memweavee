@@ -2,7 +2,7 @@
 (()=>{"use strict";
 const Engine=window.MemWeaveEngine,SafeFiles=window.MemWeaveSafeFiles;
 if(!Engine||!SafeFiles){document.body.innerHTML='<main style="padding:32px;color:#fff">MemWeave could not load its evidence engine. Refresh the page or check the deployed files.</main>';return}
-const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set(),evaluationSourceWords=0;
+const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set(),evaluationSourceWords=0,lastEvaluationQuestion="";
 const $=id=>document.getElementById(id);
 const newId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -103,7 +103,7 @@ function renderBaselineComparison(scored,sourceWords,lambda){
 }
 
 function renderEvidenceEvaluation(scored,sourceWords,lambda){
- evaluationSourceWords=sourceWords;
+ evaluationSourceWords=sourceWords;lastEvaluationQuestion="";
  $("eval-question").value="";
  $("eval-labels").innerHTML=scored.map(m=>'<label class="annotation-card"><input type="checkbox" data-gold-id="'+esc(m.id)+'"><span><strong>'+esc(m.facet||m.kind||"general")+'</strong><span>'+esc(m.text)+'</span><small>'+esc((m.role||"unlabelled").toUpperCase())+' · '+m.words+' word-proxy units · '+esc(m.source||"source")+'</small></span></label>').join("");
  $("eval-metrics").innerHTML='<div class="sweep-intro">Enter a held-out question and mark every candidate unit that contains evidence needed to answer it. Metrics remain empty until at least one evidence unit is labelled.</div>';
@@ -231,7 +231,15 @@ $("example-btn").addEventListener("click",readSample);
 $("save-btn").addEventListener("click",save);
 $("discard-btn").addEventListener("click",()=>{$("retention-result").hidden=true;pending=[]});
 $("memory-filter").addEventListener("input",renderMemory);
-$("eval-question").addEventListener("input",updateEvidenceEvaluation);
+$("eval-question").addEventListener("input",()=>{
+ const question=$("eval-question").value.trim();
+ if(question!==lastEvaluationQuestion){
+  goldEvidenceIds.clear();
+  $("eval-labels").querySelectorAll("input[data-gold-id]").forEach(input=>{input.checked=false});
+  lastEvaluationQuestion=question;
+ }
+ updateEvidenceEvaluation();
+});
 $("eval-labels").addEventListener("change",e=>{
  const id=e.target.dataset.goldId;if(!id)return;
  if(e.target.checked)goldEvidenceIds.add(id);else goldEvidenceIds.delete(id);
