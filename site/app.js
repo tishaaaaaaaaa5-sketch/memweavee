@@ -17,38 +17,38 @@ function parse(text,source){const lines=text.replace(/\r/g,"").split("\n"),messa
 }
 function evidenceType(text){
  const t=text.toLowerCase();
- if(/\\b(three main priorities|research priorities|priorities are|top priorities|priority is)\\b/.test(t))return "priorities";
- if(/\\b(main goal|primary goal|research objective|objective is|goal is|purpose of|aims? to|studies how|designed to preserve|intended to preserve)\\b/.test(t))return "goal";
- if(/\\b(milestone|deliverable|working demonstration|immediate project|next step|deadline)\\b/.test(t))return "milestone";
- if(/\\b(evaluation metrics?|measuring|accuracy|evidence coverage|answerability|retrieval accuracy|token f1|recall)\\b/.test(t))return "metrics";
- if(/\\b(pytorch|tensorflow|python|cuda|gpu|programming language|technical stack|fixed random seeds)\\b/.test(t))return "technical";
- if(/\\b(should prioritize|durable preferences|technical constraints|important decisions|selection principle)\\b/.test(t))return "principles";
+ if(/\b(three main priorities|research priorities|priorities are|top priorities|priority is)\b/.test(t))return "priorities";
+ if(/\b(main goal|primary goal|research objective|objective is|goal is|purpose of|aims? to|studies how|designed to preserve|intended to preserve)\b/.test(t))return "goal";
+ if(/\b(milestone|deliverable|working demonstration|immediate project|next step|deadline)\b/.test(t))return "milestone";
+ if(/\b(evaluation metrics?|measuring|accuracy|evidence coverage|answerability|retrieval accuracy|token f1|recall)\b/.test(t))return "metrics";
+ if(/\b(pytorch|tensorflow|python|cuda|gpu|programming language|technical stack|fixed random seeds)\b/.test(t))return "technical";
+ if(/\b(should prioritize|durable preferences|technical constraints|important decisions|selection principle)\b/.test(t))return "principles";
  return "general";
 }
 function queryIntent(text){return evidenceType(text)}
 function score(m){
  const t=m.text.toLowerCase();let s=.7;const reasons=[],kind=evidenceType(t);
- const isQuestion=m.role==="assistant"&&(/\\?/.test(t)||/^\\s*(what|which|who|where|when|why|how)\\b/i.test(t));
+ const isQuestion=m.role==="assistant"&&(/\?/.test(t)||/^\s*(what|which|who|where|when|why|how)\b/i.test(t));
  if(isQuestion){s-=1.65;reasons.push("assistant prompt, not supporting evidence");return {score:Math.max(.05,s),reasons,kind};}
  if(m.role==="user"){s+=.8;reasons.push("user-authored evidence")}
  const rules=[
-  [/\\b(three main priorities|research priorities|priorities are|top priorities|priority is)\\b/,3.1,"explicit research priorities"],
-  [/\\b(main goal|primary goal|research objective|aims? to|purpose of|objective is|goal is|studies how|designed to preserve)\\b/,3.2,"project goal or research objective"],
-  [/\\b(milestone|deliverable|working demonstration|immediate project|next step|deadline)\\b/,2.2,"project milestone or deliverable"],
-  [/\\b(pytorch|tensorflow|python|cuda|gpu|framework|programming language|technical stack|fixed random seeds)\\b/,2.0,"technical fact or constraint"],
-  [/\\b(evaluation metrics?|measure|measuring|accuracy|evidence coverage|answerability|token budget|storage cost|retention quality|retrieval accuracy|token f1|recall)\\b/,2.0,"evaluation metric or research measure"],
-  [/\\b(research project|research|experiment|benchmark|dataset|model|method|baseline|retention|retrieval|evidence|memory budget|constrained budget)\\b/,1.0,"research-relevant information"],
-  [/\\b(remember|prefer|always|never|important|i need|i want|i use|i work|i am|i'm)\\b/,.65,"explicit preference or durable statement"],
-  [/\\b(should prioritize|prioritise|durable preferences|technical constraints|important decisions)\\b/,.65,"memory-selection principle"]
+  [/\b(three main priorities|research priorities|priorities are|top priorities|priority is)\b/,3.1,"explicit research priorities"],
+  [/\b(main goal|primary goal|research objective|aims? to|purpose of|objective is|goal is|studies how|designed to preserve)\b/,3.2,"project goal or research objective"],
+  [/\b(milestone|deliverable|working demonstration|immediate project|next step|deadline)\b/,2.2,"project milestone or deliverable"],
+  [/\b(pytorch|tensorflow|python|cuda|gpu|framework|programming language|technical stack|fixed random seeds)\b/,2.0,"technical fact or constraint"],
+  [/\b(evaluation metrics?|measure|measuring|accuracy|evidence coverage|answerability|token budget|storage cost|retention quality|retrieval accuracy|token f1|recall)\b/,2.0,"evaluation metric or research measure"],
+  [/\b(research project|research|experiment|benchmark|dataset|model|method|baseline|retention|retrieval|evidence|memory budget|constrained budget)\b/,1.0,"research-relevant information"],
+  [/\b(remember|prefer|always|never|important|i need|i want|i use|i work|i am|i'm)\b/,.65,"explicit preference or durable statement"],
+  [/\b(should prioritize|prioritise|durable preferences|technical constraints|important decisions)\b/,.65,"memory-selection principle"]
  ];
  for(const [re,w,label] of rules)if(re.test(t)){s+=w;reasons.push(label)}
- if(/\\b(favourite colour|favorite color|coffee|tea|vacation|visited)\\b/i.test(t)){s-=1.8;reasons.push("incidental personal detail; lower future research value")}
- if(/\\b(because|therefore|result|found|decided|must|constraint)\\b/i.test(t)){s+=.35;reasons.push("reasoning or decision signal")}
+ if(/\b(favourite colour|favorite color|coffee|tea|vacation|visited)\b/i.test(t)){s-=1.8;reasons.push("incidental personal detail; lower future research value")}
+ if(/\b(because|therefore|result|found|decided|must|constraint)\b/i.test(t)){s+=.35;reasons.push("reasoning or decision signal")}
  if(m.words>=8&&m.words<=85){s+=.35;reasons.push("compact evidence unit")}else if(m.words>100){s-=.35;reasons.push("long passage")}
  if(m.role==="system")s-=.5;
  return {score:Math.max(.1,s),reasons:reasons.length?reasons:["general conversation evidence"],kind};
 }
-function analyze(){function analyze(){const raw=$("conversation").value.trim();if(!raw){notify("Paste a conversation first.",true);return}
+function analyze(){const raw=$("conversation").value.trim();if(!raw){notify("Paste a conversation first.",true);return}
  const source=$("source-name").value.trim()||"Pasted conversation",parsed=parse(raw,source).map(m=>({...m,...score(m)}));
  const budget=Math.max(1,Math.floor(words(raw)*Number($("budget").value)/100));let used=0;const selected=[];
  const remaining=[...parsed];while(remaining.length){let bestIndex=-1,bestUtility=-Infinity;
@@ -75,12 +75,12 @@ function retrieve(query){
  const weights=qt.map(term=>({term,weight:Math.log(1+(N+1)/(1+docs.filter(d=>d.has(term)).length))}));
  const total=weights.reduce((a,x)=>a+x.weight,0)||1;
  return items.map((m,i)=>{
-  const assistantQuestion=m.role==="assistant"&&(/\\?/.test(m.text)||/^\\s*(what|which|who|where|when|why|how)\\b/i.test(m.text));
+  const assistantQuestion=m.role==="assistant"&&(/\?/.test(m.text)||/^\s*(what|which|who|where|when|why|how)\b/i.test(m.text));
   if(assistantQuestion)return null;
   const mt=docs[i],matched=weights.filter(x=>mt.has(x.term)).map(x=>x.term);
   const coverage=weights.filter(x=>mt.has(x.term)).reduce((a,x)=>a+x.weight,0)/total;
-  const kind=m.kind||evidenceType(m.text),phrase=qt.length>1&&m.text.toLowerCase().includes(query.toLowerCase())?.15:0;
-  const intentBonus=intent&&intent!=="general"?(kind===intent?.58:(kind!=="general"?-.28:0)):0;
+  const kind=m.kind||evidenceType(m.text),phrase=qt.length>1&&m.text.toLowerCase().includes(query.toLowerCase()) ? .15 : 0;
+  const intentBonus=intent&&intent!=="general" ? (kind===intent ? .58 : (kind!=="general" ? -.28 : 0)) : 0;
   const score=Math.max(0,Math.min(1,coverage+phrase+intentBonus));
   return {...m,matched,coverage,score,intent,kind,intentMatch:!!(intent&&intent!=="general"&&kind===intent)};
  }).filter(x=>x&&x.matched.length>0&&x.score>.04).sort((a,b)=>b.score-a.score||b.coverage-a.coverage||b.matched.length-a.matched.length).slice(0,12);
