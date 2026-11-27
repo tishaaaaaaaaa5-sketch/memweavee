@@ -25,6 +25,7 @@ assert.equal(units.filter(x => x.kind === "priorities").length, 3,
 assert.deepEqual(units.filter(x => x.kind === "priorities").map(x => x.facet), [
   "priority:evidence_retention", "priority:downstream_answer_quality", "priority:reproducibility"
 ], "each named research priority receives its own coverage facet");
+assert.ok(units.some(x => x.text.includes("I use Python and scikit-learn")), "the independent technical-stack clause is not lost during compression");
 assert.ok(units.some(x => x.text === "Cost requirement: exact tokenizer tokens, not word-count estimates." && x.facet === "hard:token_accounting"),
   "token-cost constraint is compacted into a high-priority, source-linked hard requirement");
 assert.ok(units.some(x => x.text === "Tie claims to benchmark reports; separate evidence recall from answer accuracy."),
@@ -42,13 +43,22 @@ assert.ok(scored.some(x => x.role === "assistant" && x.score <= .02),
 
 const sourceWords = messages.reduce((n, x) => n + x.words, 0);
 const budget = Math.floor(sourceWords * .20);
-for (const mode of ["rank", "density", "mmr", "coverage_only", "coverage"]) {
+for (const mode of ["rank", "density", "mmr", "coverage_only", "coverage", "knapsack"]) {
   const result = Engine.selectCandidates(scored, budget, { mode, lambda: 0.25 });
   assert.ok(result.usedWords <= budget, mode + " must respect the word-proxy budget");
   assert.equal(result.usedWords, result.selected.reduce((n, x) => n + x.words, 0));
   assert.equal(result.trace.length, result.selected.length);
   assert.equal(result.skipped.length + result.selected.length, scored.length);
 }
+const exactFixture = [
+  {id:"a",text:"high value compact",words:4,score:.95,kind:"goal"},
+  {id:"b",text:"high value longer",words:5,score:.90,kind:"goal"},
+  {id:"c",text:"alternative compact",words:4,score:.82,kind:"technical"}
+];
+const exact = Engine.selectCandidates(exactFixture, 9, {mode:"knapsack"});
+assert.equal(exact.optimal, true, "small additive-score budgets use exact DP");
+assert.equal(exact.usedWords, 9);
+assert.deepEqual(exact.selected.map(x=>x.id), ["a","b"], "exact knapsack chooses the maximum total score feasible subset");
 const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
 assert.ok(coverage.selected.length >= 2,
   "atomic evidence extraction and coverage selection should avoid a one-item result on the research sample");
@@ -95,4 +105,7 @@ assert.ok(retrieved[0].diversityPenalty >= 0);
 
 assert.deepEqual(Engine.parseConversation("one paragraph\n\nsecond paragraph").map(x => x.text),
   ["one paragraph", "second paragraph"]);
-console.log("MemWeave atomic-evidence, weighted-priority, and baseline-ablation tests passed.");
+const exactOversized = Engine.selectCandidates(exactFixture, 100000, {mode:"knapsack"});
+assert.equal(exactOversized.optimal, false, "large DP workloads report their explicit greedy fallback");
+assert.equal(exactOversized.mode, "knapsack");
+console.log("MemWeave atomic-evidence, provenance, weighted-priority, knapsack, and baseline tests passed.");
