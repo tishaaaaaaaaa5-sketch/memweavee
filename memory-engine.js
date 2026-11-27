@@ -117,7 +117,7 @@
 
     // Split only when the second clause repeats its subject. Do this before
     // specialised compression so a separate technical clause is never discarded.
-    const repeatedSubject = clean.match(/^(.+?),\\s+and\\s+(I|we|they|he|she)\\s+(.+)$/i);
+    const repeatedSubject = clean.match(/^(.+?),\s+and\s+(I|we|they|he|she)\s+(.+)$/i);
     if (repeatedSubject) return [
       ...atomicClaims(repeatedSubject[1]),
       ...atomicClaims(repeatedSubject[2] + " " + repeatedSubject[3])
@@ -129,16 +129,16 @@
       derivation: "context_resolved"
     }];
 
-    const priority = clean.match(/^(?:my\\s+)?research priorities are\\s+(.+)$/i);
+    const priority = clean.match(/^(?:my\s+)?research priorities are\s+(.+)$/i);
     if (priority) {
-      const parts = priority[1].split(/,\\s*(?:and\\s+)?/i).map(x => x.trim()).filter(Boolean);
+      const parts = priority[1].split(/,\s*(?:and\s+)?/i).map(x => x.trim()).filter(Boolean);
       if (parts.length > 1) return parts.map(part => ({
         text: "Research priority: " + part.replace(/^[a-z]/, c => c.toLowerCase()) + ".",
         derivation: "context_resolved"
       }));
     }
 
-    const goal = clean.match(/^(?:my\\s+)?main goal is to build\\s+([^,]+),\\s+a research system that preserves\\s+(.+?)\\s+under a strict memory budget$/i);
+    const goal = clean.match(/^(?:my\s+)?main goal is to build\s+([^,]+),\s+a research system that preserves\s+(.+?)\s+under a strict memory budget$/i);
     if (goal) return [{
       text: goal[1].trim() + " goal: preserve " + goal[2].trim() + " under a strict memory budget.",
       derivation: "context_resolved"
