@@ -147,3 +147,28 @@ def test_batch_rejects_unmatched_retention_selection(tmp_path):
     p2.write_text(json.dumps(second), encoding="utf-8")
     with pytest.raises(ValueError, match="not matched"):
         load_browser_audit_batch([p1, p2])
+
+
+
+def test_browser_audit_cli_accepts_export_directory(tmp_path, capsys):
+    from memweave.cli import main
+
+    exports = tmp_path / "questions"
+    exports.mkdir()
+    (exports / "q1.json").write_text(
+        json.dumps(batch_export("Which claim A?", ["a"], ["a"], ["c"])),
+        encoding="utf-8",
+    )
+    (exports / "q2.json").write_text(
+        json.dumps(batch_export("Which claim C?", ["c"], ["a"], ["c"])),
+        encoding="utf-8",
+    )
+    output = tmp_path / "derived"
+
+    assert main([
+        "browser-audit", "--input", str(exports), "--output-dir", str(output)
+    ]) == 0
+    printed = capsys.readouterr().out
+    assert "Aggregated 2 matched questions" in printed
+    assert "question-bootstrap 95% CIs" in printed
+    assert (output / "browser_atomic_batch.json").is_file()
