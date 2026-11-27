@@ -47,6 +47,8 @@ jobs:
           node --check site/charts.js
       - name: Test research-aligned browser evidence engine
         run: node tests/memory-engine.test.cjs
+      - name: Test research portal result provenance
+        run: node tests/research-portal-provenance.test.cjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload static website
