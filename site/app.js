@@ -18,46 +18,55 @@ function load(){
 }
 function persist(){try{localStorage.setItem(DB,JSON.stringify(items));updateStats();return true}catch(e){notify("Could not save memory in this browser: "+e.message,true);return false}}
 function notify(msg,error=false){$("notice").textContent=msg;$("notice").classList.toggle("error",error)}
-function parseAndScore(raw,source){return Engine.scoreCandidates(Engine.buildCandidates(Engine.parseConversation(raw,source)))}
+function parseAndScore(raw,source){
+ const messages=Engine.parseConversation(raw,source);
+ return {messages,candidates:Engine.scoreCandidates(Engine.buildCandidates(messages))};
+}
 function analyze(){
  const raw=$("conversation").value.trim();
  if(!raw){notify("Paste a conversation first.",true);return}
  const source=$("source-name").value.trim()||"Pasted conversation";
- const scored=parseAndScore(raw,source);
+ const parsed=parseAndScore(raw,source);
+ const scored=parsed.candidates;
  if(!scored.length){notify("No evidence units could be extracted from this text.",true);return}
- const sourceWords=scored.reduce((sum,x)=>sum+x.words,0);
+ const sourceWords=parsed.messages.reduce((sum,m)=>sum+m.words,0);
  const wordBudget=Math.floor(sourceWords*Number($("budget").value)/100);
  const mode=$("policy").value,lambda=Number($("redundancy").value);
- const result=Engine.selectCandidates(scored,wordBudget,{mode,lambda});
+ const result=Engine.selectCandidates(scored,wordBudget,{mode,lambda,coverageBonus:0.22});
  pending=result.selected.map((x,i)=>({...x,selectionOrder:i+1,selected:true}));
  const traceById=new Map(result.trace.map(x=>[x.id,x]));
  $("retained-count").textContent=result.selected.length+" / "+scored.length+" evidence units";
  $("retention-summary").innerHTML=[
   ["CANDIDATES",scored.length],
   ["RETAINED",result.selected.length],
+  ["SOURCE WORDS",sourceWords],
   ["WORD PROXY",result.usedWords+" / "+result.wordBudget],
   ["UNUSED CAP",result.remainingWords]
  ].map(([label,value])=>'<div><strong>'+esc(value)+'</strong><span>'+esc(label)+'</span></div>').join("");
- const policyName=({rank:"stable score rank",density:"score / word-cost density",mmr:"greedy MMR diversity"})[mode];
- $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> message-text word count only. '+(mode==="mmr"?"MMR subtracts maximum TF-IDF cosine similarity to already selected units. ":"")+"The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. This front-end splits messages into sentence-level evidence units; the Python research experiments use session-level candidates, so this is not a direct reproduction. Exact tokenizer cost and full metadata cost are not available in this static demo.";
+ const policyName=({rank:"greedy score rank (reference structure)",density:"score / word-cost density",mmr:"MMR redundancy control",coverage:"coverage + MMR (experimental ablation)"})[mode];
+ const policyDetails=mode==="coverage"
+  ?"New evidence facets receive a fixed +0.22 marginal bonus; similarity to selected evidence is penalised by λ. This is a browser ablation inspired by the proposed relevance + coverage − redundancy objective, not a validated MW-ECS implementation."
+  :mode==="mmr"?"MMR subtracts λ × maximum TF-IDF cosine similarity to already selected units."
+  :"No facet bonus is applied; this remains a simple greedy baseline.";
+ $("selection-note").innerHTML='<strong>Policy:</strong> '+esc(policyName)+' · <strong>λ:</strong> '+lambda.toFixed(2)+' · <strong>Cost:</strong> selected-text word count proxy. '+policyDetails+' The utility score is a transparent browser heuristic, not the trained logistic-regression model or a benchmark result. Context-resolved units retain a link to the full original source message. Exact tokenizer cost and full metadata cost are not available in this static demo.';
  $("retained-items").innerHTML=result.selected.length?result.selected.map(m=>card(m,true,traceById.get(m.id))).join(""):'<div class="empty">No complete evidence unit fit the current word-proxy budget. Increase the budget or shorten the source.</div>';
  $("not-retained-count").textContent=result.skipped.length+" not retained";
  $("not-retained-items").innerHTML=result.skipped.length?result.skipped.map(x=>{
   const m=scored.find(y=>y.id===x.id);
-  return '<article class="evidence-card not-retained"><div class="evidence-top"><span class="role-tag">'+esc((m?.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">NOT RETAINED</span><span class="score-tag">SCORE '+Number(x.score).toFixed(3)+'</span></div><p>'+esc(m?.text||x.id)+'</p><div class="evidence-foot"><span>'+x.words+' word-proxy units · '+esc(x.reason)+'</span></div></article>';
+  return '<article class="evidence-card not-retained"><div class="evidence-top"><span class="role-tag">'+esc((m?.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">NOT RETAINED · '+esc(m?.kind||"general")+'</span><span class="score-tag">SCORE '+Number(x.score).toFixed(3)+'</span></div><p>'+esc(m?.text||x.id)+'</p><div class="evidence-foot"><span>'+x.words+' word-proxy units · '+esc(x.reason)+'</span></div>'+(m?.sourceText?'<details class="source-detail"><summary>Show source message</summary><p>'+esc(m.sourceText)+'</p></details>':"")+'</article>';
  }).join(""):'<div class="empty">Every candidate unit was retained.</div>';
  $("retention-result").hidden=false;
  $("retention-result").scrollIntoView({behavior:"smooth",block:"start"});
- notify("Analysis complete. Inspect the selected and rejected evidence, then save only what you want to keep.");
+ notify("Analysis complete. Review coverage, source provenance, and rejected evidence before saving.");
 }
 function card(m,showScore=false,trace=null){
  const feat=m.features||{};
  const reasons=(m.reasons||[]).map(esc).join(" · ");
- const metadata=(m.source||"local memory")+" · message "+((m.messageIndex??0)+1)+" · sentence "+((m.sentenceIndex??0)+1);
+ const metadata=(m.source||"local memory")+" · message "+((m.messageIndex??0)+1)+" · unit "+((m.sentenceIndex??0)+1);
  const detail=m.sourceText&&m.sourceText!==m.text?'<details class="source-detail"><summary>Show full source message</summary><p>'+esc(m.sourceText)+'</p></details>':"";
- const featureLine=showScore?'<div class="feature-line">novelty '+Number(feat.novelty||0).toFixed(2)+' · recency '+Number(feat.recencyRank||0).toFixed(2)+' · role '+Number(feat.userFraction||0).toFixed(2)+' · first-person '+Number(feat.firstPersonRate||0).toFixed(2)+'</div>':"";
- const order=trace?'<span class="order-tag">SELECTED #'+trace.order+'</span>':"";
- return '<article class="evidence-card"><div class="evidence-top"><span class="role-tag">'+esc((m.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">'+esc(metadata)+'</span>'+order+(showScore?'<span class="score-tag">SCORE '+Number(m.score||0).toFixed(3)+'</span>':"")+'</div><p>'+esc(m.text)+'</p><div class="evidence-foot"><span>'+m.words+' word-proxy units · '+reasons+'</span>'+(showScore&&trace?'<span>marginal '+Number(trace.utility).toFixed(3)+' · redundancy '+Number(trace.redundancy).toFixed(2)+'</span>':showScore?"":'<button class="remove-item" data-remove="'+esc(m.id)+'">Remove</button>')+'</div>'+featureLine+detail+'</article>';
+ const featureLine=showScore?'<div class="feature-line">novelty '+Number(feat.novelty||0).toFixed(2)+' · mean sim '+Number(feat.meanSimilarity||0).toFixed(2)+' · top-3 sim '+Number(feat.top3Similarity||0).toFixed(2)+' · recency '+Number(feat.recencyRank||0).toFixed(2)+' · role '+Number(feat.userFraction||0).toFixed(2)+' · first-person '+Number(feat.firstPersonRate||0).toFixed(2)+' · digits '+Number(feat.digitRate||0).toFixed(2)+'</div>':"";
+ const order=trace?'<span class="order-tag">SELECTED #'+trace.order+'</span>'+(trace.coverageGain>0?'<span class="order-tag">NEW FACET +'+Number(trace.coverageGain).toFixed(2)+'</span>':""):"";
+ return '<article class="evidence-card"><div class="evidence-top"><span class="role-tag">'+esc((m.role||"unlabelled").toUpperCase())+'</span><span class="source-tag">'+esc(metadata)+'</span>'+order+(showScore?'<span class="score-tag">SCORE '+Number(m.score||0).toFixed(3)+'</span>':"")+'</div><p>'+esc(m.text)+'</p><div class="evidence-foot"><span>'+m.words+' word-proxy units · '+reasons+'</span>'+(showScore&&trace?'<span>marginal '+Number(trace.utility).toFixed(3)+' · redundancy '+Number(trace.redundancy).toFixed(2)+' · facet '+esc(trace.facet)+'</span>':showScore?"":'<button class="remove-item" data-remove="'+esc(m.id)+'">Remove</button>')+'</div>'+featureLine+detail+'</article>';
 }
 function save(){
  if(!pending.length){notify("There is no selected evidence to save.",true);return}
@@ -107,7 +116,7 @@ function readSample(){
  ].join("\n");
  $("source-name").value="MemWeave sample conversation";
  $("input-count").textContent=Engine.countWords($("conversation").value).toLocaleString()+" message words";
- notify("Research sample loaded. Compare the rank, density, and MMR policies under the same word-proxy cap.");
+ notify("Research sample loaded. Compare rank, density, MMR, and coverage + MMR under the same word-proxy cap.");
 }
 document.querySelectorAll(".side-tab").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
 $("conversation").addEventListener("input",()=>{$("input-count").textContent=Engine.countWords($("conversation").value).toLocaleString()+" message words"});

@@ -13,39 +13,59 @@ const messages = Engine.parseConversation(sample, "test");
 assert.equal(messages.length, 5, "speaker-labelled messages are separated");
 assert.equal(messages[0].role, "user");
 assert.equal(messages[3].role, "assistant");
-assert.equal(messages.reduce((n, m) => n + m.words, 0), Engine.countWords(messages.map(m => m.text).join(" ")),
-  "speaker labels are excluded from message-word accounting");
+assert.equal(messages.reduce((n, m) => n + m.words, 0),
+  Engine.countWords(messages.map(m => m.text).join(" ")),
+  "speaker labels are excluded from source-word accounting");
 
 const units = Engine.buildCandidates(messages);
-assert.equal(units.length, 6, "the final two-sentence message becomes two source-linked evidence units");
-assert.equal(units[4].messageIndex, 4);
-assert.equal(units[5].sourceId, units[4].sourceId);
-assert.match(units[4].text, /benchmark and report/);
-assert.match(units[5].text, /answer accuracy/);
+assert.ok(units.length >= 8, "lists and independent clauses become atomic evidence units");
+assert.ok(units.some(x => x.text.includes("MemWeave goal: preserve evidence")));
+assert.equal(units.filter(x => x.kind === "priorities").length, 3,
+  "the three research priorities become independently selectable evidence");
+assert.ok(units.some(x => x.text === "I want exact token-cost accounting rather than a word-count estimate."),
+  "contrastive token-cost constraint remains intact");
+assert.ok(units.some(x => x.text === "Tie claims to benchmark reports; separate evidence recall from answer accuracy."),
+  "linked reporting constraints are compacted without losing their meaning");
+assert.ok(units.every(x => x.sourceText && x.sourceId && Number.isInteger(x.messageIndex)),
+  "each evidence unit retains source provenance");
+assert.ok(units.filter(x => x.derivation === "context_resolved").length >= 5,
+  "context-resolved candidates are explicitly marked");
 
 const scored = Engine.scoreCandidates(units);
 assert.ok(scored.every(x => Number.isFinite(x.score) && x.score >= 0 && x.score <= 1));
 assert.ok(scored.every(x => x.features && Number.isFinite(x.features.novelty)));
+assert.ok(scored.some(x => x.role === "assistant" && x.score <= .02),
+  "assistant questions must not outrank user-authored evidence");
 
-for (const mode of ["rank", "density", "mmr"]) {
-  const result = Engine.selectCandidates(scored, 22, { mode, lambda: 0.25 });
-  assert.ok(result.usedWords <= 22, mode + " must respect the word-proxy budget");
+const sourceWords = messages.reduce((n, x) => n + x.words, 0);
+const budget = Math.floor(sourceWords * .20);
+for (const mode of ["rank", "density", "mmr", "coverage"]) {
+  const result = Engine.selectCandidates(scored, budget, { mode, lambda: 0.25 });
+  assert.ok(result.usedWords <= budget, mode + " must respect the word-proxy budget");
   assert.equal(result.usedWords, result.selected.reduce((n, x) => n + x.words, 0));
   assert.equal(result.trace.length, result.selected.length);
+  assert.equal(result.skipped.length + result.selected.length, scored.length);
 }
-assert.equal(Engine.selectCandidates(scored, 0).selected.length, 0);
+const coverage = Engine.selectCandidates(scored, budget, { mode: "coverage", lambda: .25 });
+assert.ok(coverage.selected.length >= 2,
+  "atomic evidence extraction and coverage selection should avoid a one-item result on the research sample");
+assert.ok(coverage.coveredFacets.length >= 2,
+  "coverage policy should preserve more than one evidence facet");
+assert.equal(Engine.selectCandidates(scored, 0, { mode: "coverage" }).selected.length, 0);
 
 const synthetic = [
-  { id: "a", text: "project memory evidence retrieval", words: 4, score: .95 },
-  { id: "b", text: "project memory evidence retrieval system", words: 5, score: .90 },
-  { id: "c", text: "quarterly revenue forecast sales", words: 4, score: .82 }
+  { id: "a", text: "project memory evidence retrieval", words: 4, score: .95, kind: "goal" },
+  { id: "b", text: "project memory evidence retrieval system", words: 5, score: .90, kind: "goal" },
+  { id: "c", text: "quarterly revenue forecast sales", words: 4, score: .82, kind: "technical" }
 ];
 const sim = Engine.similarityMatrix(synthetic.map(x => x.text));
 const withSim = synthetic.map((x, i) => ({ ...x, similarities: sim[i] }));
 const ranked = Engine.selectCandidates(withSim, 9, { mode: "rank" });
 const diversified = Engine.selectCandidates(withSim, 9, { mode: "mmr", lambda: .65 });
+const covered = Engine.selectCandidates(withSim, 9, { mode: "coverage", lambda: .65, coverageBonus: .3 });
 assert.deepEqual(ranked.selected.map(x => x.id), ["a", "b"]);
 assert.ok(diversified.selected.some(x => x.id === "c"), "MMR should preserve complementary evidence when budget permits");
+assert.ok(covered.selected.some(x => x.id === "c"), "coverage + MMR should reward a new evidence facet");
 
 const saved = [
   { id: "1", role: "user", source: "test", text: "MemWeave preserves evidence under strict memory budgets.", words: 8 },
@@ -60,4 +80,4 @@ assert.ok(retrieved[0].diversityPenalty >= 0);
 
 assert.deepEqual(Engine.parseConversation("one paragraph\n\nsecond paragraph").map(x => x.text),
   ["one paragraph", "second paragraph"]);
-console.log("MemWeave evidence-engine tests passed.");
+console.log("MemWeave atomic-evidence and coverage tests passed.");

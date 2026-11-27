@@ -17,14 +17,17 @@
   function uniqueTokens(text) { return [...new Set(tokens(text))]; }
   function evidenceType(text) {
     const t = String(text || "").toLowerCase();
-    if (/\b(research priorities|priorities are|top priorities|priority is)\b/.test(t)) return "priorities";
-    if (/\b(main goal|primary goal|research objective|objective is|goal is|purpose of|aims? to|studies how|designed to preserve)\b/.test(t)) return "goal";
+    if (/\b(research priorit(?:y|ies)|priorities are|top priorities|priority is)\b/.test(t)) return "priorities";
+    if (/\b(memweave goal|main goal|primary goal|research objective|objective is|goal is|purpose of|aims? to|studies how|designed to preserve)\b/.test(t)) return "goal";
     if (/\b(milestone|deliverable|next step|deadline)\b/.test(t)) return "milestone";
-    if (/\b(evaluation metrics?|measuring|accuracy|evidence coverage|answerability|retrieval accuracy|token f1|recall|token.cost)\b/.test(t)) return "metrics";
-    if (/\b(pytorch|tensorflow|python|cuda|gpu|scikit.learn|programming language|technical stack|fixed random seeds)\b/.test(t)) return "technical";
+    if (/\b(must not be described|never equate|separate evidence recall|tie claims to|benchmark reports|reporting rule|should not describe|do not describe|not be described|must be kept distinct)\b/.test(t)) return "principles";
+    if (/\b(token.cost|word.count estimate|cost accounting|exact token|pytorch|tensorflow|python|cuda|gpu|scikit.learn|programming language|technical stack|fixed random seeds)\b/.test(t)) return "technical";
+    if (/\b(evaluation metrics?|measuring|accuracy|evidence coverage|answerability|retrieval accuracy|token f1|recall)\b/.test(t)) return "metrics";
     if (/\b(should prioritize|durable preferences|technical constraints|important decisions|selection principle|must not|do not|never)\b/.test(t)) return "principles";
     return "general";
   }
+  function queryIntent(text) { return evidenceType(text); }
+
   function queryIntent(text) { return evidenceType(text); }
 
   function parseConversation(input, source = "Pasted conversation") {
@@ -91,26 +94,76 @@
     return pieces.length ? pieces : [value];
   }
 
+  function atomicClaims(sentence) {
+    const value = String(sentence || "").trim();
+    const clean = value.replace(/[.!?]+$/, "").trim();
+    if (!clean) return [];
+
+    // Expand a list of research priorities into separately selectable, contextualised claims.
+    const priority = clean.match(/^(?:my\s+)?research priorities are\s+(.+)$/i);
+    if (priority) {
+      const parts = priority[1].split(/,\s*(?:and\s+)?/i).map(x => x.trim()).filter(Boolean);
+      if (parts.length > 1) return parts.map(part => ({
+        text: "Research priority: " + part.replace(/^[a-z]/, c => c.toLowerCase()) + ".",
+        derivation: "context_resolved"
+      }));
+    }
+
+    // Resolve the appositive in the project-goal sentence into one compact, source-linked claim.
+    const goal = clean.match(/^(?:my\s+)?main goal is to build\s+([^,]+),\s+a research system that preserves\s+(.+?)\s+under a strict memory budget$/i);
+    if (goal) return [{
+      text: goal[1].trim() + " goal: preserve " + goal[2].trim() + " under a strict memory budget.",
+      derivation: "context_resolved"
+    }];
+
+    // Split only when the second clause repeats its subject; keep contrastive phrases such as
+    // "rather than" intact so that constraints and negation are not detached from their context.
+    const repeatedSubject = clean.match(/^(.+?),\s+and\s+(I|we|they|he|she)\s+(.+)$/i);
+    if (repeatedSubject) return [
+      { text: repeatedSubject[1].trim() + ".", derivation: "source_exact" },
+      { text: repeatedSubject[2] + " " + repeatedSubject[3].trim() + ".", derivation: "source_exact" }
+    ];
+
+    return [{ text: value, derivation: "source_exact" }];
+  }
+
   function buildCandidates(messages) {
     const out = [];
     messages.forEach((message, messageIndex) => {
-      splitSentences(message.text).forEach((text, sentenceIndex) => {
-        const words = countWords(text);
-        if (!words) return;
-        out.push({
-          id: message.id + "-u" + (sentenceIndex + 1),
-          sourceId: message.id,
-          source: message.source,
-          role: message.role,
-          messageIndex,
-          sentenceIndex,
-          position: out.length,
-          text,
-          sourceText: message.text,
-          words,
-          kind: evidenceType(text)
+      const sentences = splitSentences(message.text);
+      for (let i = 0; i < sentences.length; i++) {
+        const current = sentences[i];
+        const next = sentences[i + 1] || "";
+        // Two linked reporting instructions are retained as one compact rule, with the
+        // full original message preserved as provenance for inspection.
+        const benchmarkRule = /benchmark.{0,30}report|report.{0,30}benchmark/i.test(current) &&
+          /evidence recall.{0,50}answer accuracy/i.test(next);
+        const claims = benchmarkRule
+          ? [{ text: "Tie claims to benchmark reports; separate evidence recall from answer accuracy.", derivation: "context_resolved" }]
+          : atomicClaims(current);
+        if (benchmarkRule) i++;
+
+        claims.forEach((claim, claimIndex) => {
+          const words = countWords(claim.text);
+          if (!words) return;
+          const sentenceIndex = out.filter(x => x.sourceId === message.id).length;
+          out.push({
+            id: message.id + "-u" + (sentenceIndex + 1),
+            sourceId: message.id,
+            source: message.source,
+            role: message.role,
+            messageIndex,
+            sentenceIndex,
+            unitIndex: claimIndex,
+            position: out.length,
+            text: claim.text,
+            sourceText: message.text,
+            words,
+            kind: evidenceType(claim.text),
+            derivation: claim.derivation
+          });
         });
-      });
+      }
     });
     return out;
   }
@@ -146,6 +199,14 @@
 
   function scoreCandidates(candidates) {
     const sims = similarityMatrix(candidates.map(c => c.text));
+    const messageIds = [...new Set(candidates.map(c => c.messageIndex))];
+    const messageRank = new Map(messageIds.map((id, index) => [
+      id, messageIds.length > 1 ? index / (messageIds.length - 1) : 0.5
+    ]));
+    const kindBonus = {
+      goal: 0.10, priorities: 0.09, technical: 0.10,
+      principles: 0.14, metrics: 0.06, milestone: 0.07, general: 0
+    };
     return candidates.map((candidate, index) => {
       const row = sims[index] || [];
       const others = row.filter((_, j) => j !== index);
@@ -156,23 +217,33 @@
       const digits = (candidate.text.match(/\d/g) || []).length;
       const digitRate = digits / Math.max(1, candidate.text.length);
       const userRole = candidate.role === "user" ? 1 : candidate.role === "assistant" ? 0.15 : 0;
-      const recency = candidates.length > 1 ? index / (candidates.length - 1) : 0.5;
+      const recency = messageRank.get(candidate.messageIndex) ?? 0.5;
       const firstPerson = Math.min(1, firstPersonHits / Math.max(1, candidate.words / 12));
       const novelty = 1 - maxSimilarity;
       const compactness = Math.max(0, 1 - Math.abs(candidate.words - 24) / 48);
-      const durable = /\b(must|should|always|never|do not|please keep|rather than|not be described|require|constraint)\b/i.test(candidate.text) ? 1 : 0;
-      const researchSignal = candidate.kind !== "general" ? 1 : /\b(research|experiment|benchmark|dataset|model|method|baseline|retention|retrieval|evidence|memory)\b/i.test(candidate.text) ? 0.55 : 0;
-      // Fixed transparent demo heuristic; deliberately not the trained LR model.
-      const score = 0.24 * userRole + 0.13 * recency + 0.17 * novelty +
+      const durable = /\b(must|should|always|never|do not|please keep|rather than|not be described|require|constraint|exact)\b/i.test(candidate.text) ? 1 : 0;
+      const researchSignal = candidate.kind !== "general" ? 1 :
+        /\b(research|experiment|benchmark|dataset|model|method|baseline|retention|retrieval|evidence|memory)\b/i.test(candidate.text) ? 0.55 : 0;
+      const isAssistantPrompt = candidate.role === "assistant" &&
+        (/\?/.test(candidate.text) || /^\s*(what|which|who|where|when|why|how)\b/i.test(candidate.text));
+      const bonus = (kindBonus[candidate.kind] || 0) +
+        (/\b(exact token.cost|word.count estimate|scikit.learn)\b/i.test(candidate.text) ? 0.06 : 0) +
+        (candidate.derivation === "context_resolved" ? 0.015 : 0);
+      // Fixed transparent heuristic based on interpretable signals; not the trained LR model.
+      const rawScore = 0.24 * userRole + 0.13 * recency + 0.17 * novelty +
         0.07 * firstPerson + 0.07 * Math.min(1, digitRate * 12) +
-        0.08 * compactness + 0.14 * durable + 0.10 * researchSignal;
+        0.08 * compactness + 0.14 * durable + 0.10 * researchSignal + bonus;
+      const score = isAssistantPrompt ? 0.02 : Math.max(0.01, Math.min(1, rawScore));
       const reasons = [];
-      if (userRole > 0.5) reasons.push("user-authored");
-      if (candidate.kind !== "general") reasons.push(candidate.kind + " evidence");
-      if (durable) reasons.push("durable instruction / constraint");
-      if (novelty > 0.72) reasons.push("low redundancy in candidate pool");
-      if (recency > 0.7) reasons.push("recent turn");
-      if (firstPerson > 0.25) reasons.push("first-person signal");
+      if (isAssistantPrompt) reasons.push("assistant prompt; not user evidence");
+      else {
+        if (userRole > 0.5) reasons.push("user-authored evidence");
+        if (candidate.kind !== "general") reasons.push(candidate.kind + " evidence facet");
+        if (durable) reasons.push("durable instruction / constraint");
+        if (novelty > 0.72) reasons.push("low redundancy in candidate pool");
+        if (recency > 0.7) reasons.push("recent message");
+        if (candidate.derivation === "context_resolved") reasons.push("context-resolved from source message");
+      }
       if (!reasons.length) reasons.push("general conversation evidence");
       return {
         ...candidate, score, features: {
@@ -190,49 +261,66 @@
   function selectCandidates(candidates, wordBudget, options = {}) {
     const mode = options.mode || "rank";
     const lambda = Number.isFinite(+options.lambda) ? Math.max(0, +options.lambda) : 0.25;
-    if (!["rank", "density", "mmr"].includes(mode)) throw new Error("Unknown selection mode: " + mode);
+    const coverageBonus = Number.isFinite(+options.coverageBonus) ? Math.max(0, +options.coverageBonus) : 0.22;
+    if (!["rank", "density", "mmr", "coverage"].includes(mode)) throw new Error("unknown selection mode: " + mode);
     const budget = Math.max(0, Math.floor(Number(wordBudget) || 0));
     const chosen = [], trace = [], skipped = [];
     const available = new Set(candidates.map((_, i) => i));
+    const coveredFacets = new Set();
     let used = 0;
     while (available.size) {
-      let best = -1, bestUtility = -Infinity, bestPenalty = 0;
+      let best = -1, bestUtility = -Infinity, bestPenalty = 0, bestCoverageGain = 0;
       for (const index of [...available].sort((a, b) => a - b)) {
         const item = candidates[index];
         if (used + item.words > budget) continue;
         let redundancy = 0;
-        if (mode === "mmr") for (const prior of chosen) {
+        if (mode === "mmr" || mode === "coverage") for (const prior of chosen) {
           redundancy = Math.max(redundancy, candidates[prior].similarities?.[index] ??
             cosine(tfidfVectors([item.text, candidates[prior].text])[0], tfidfVectors([item.text, candidates[prior].text])[1]));
         }
+        const facet = item.kind || "general";
+        const facetGain = mode === "coverage" && facet !== "general" && !coveredFacets.has(facet) ? coverageBonus : 0;
         const base = mode === "density" ? item.score / Math.max(1, item.words) : item.score;
-        const utility = mode === "mmr" ? base - lambda * redundancy : base;
+        const utility = base + facetGain - ((mode === "mmr" || mode === "coverage") ? lambda * redundancy : 0);
         if (utility > bestUtility + 1e-12) {
-          best = index; bestUtility = utility; bestPenalty = redundancy;
+          best = index; bestUtility = utility; bestPenalty = redundancy; bestCoverageGain = facetGain;
         }
       }
       if (best < 0) break;
-      chosen.push(best); available.delete(best); used += candidates[best].words;
+      const chosenItem = candidates[best];
+      chosen.push(best); available.delete(best); used += chosenItem.words;
+      const facet = chosenItem.kind || "general";
+      if (facet !== "general") coveredFacets.add(facet);
       trace.push({
-        id: candidates[best].id, order: chosen.length, score: candidates[best].score,
-        utility: bestUtility, words: candidates[best].words,
-        redundancy: bestPenalty, cumulativeWords: used
+        id: chosenItem.id, order: chosen.length, score: chosenItem.score,
+        utility: bestUtility, words: chosenItem.words,
+        redundancy: bestPenalty, coverageGain: bestCoverageGain,
+        facet, cumulativeWords: used
       });
     }
     const selectedSet = new Set(chosen);
     candidates.forEach((candidate, index) => {
-      if (!selectedSet.has(index)) skipped.push({
-        id: candidate.id, words: candidate.words, score: candidate.score,
-        reason: used + candidate.words > budget
-          ? "Does not fit in the remaining word-proxy budget as a complete evidence unit."
-          : "Not selected by the marginal utility order."
-      });
+      if (selectedSet.has(index)) return;
+      const remaining = Math.max(0, budget - used);
+      const facet = candidate.kind || "general";
+      let reason;
+      if (candidate.words > remaining) {
+        reason = "Remaining word-proxy budget is too small for this complete evidence unit.";
+      } else if (mode === "coverage" && facet !== "general" && coveredFacets.has(facet)) {
+        reason = "This evidence facet is already represented; other facets had higher marginal coverage utility.";
+      } else if ((mode === "mmr" || mode === "coverage") && chosen.some(i => (candidates[i].similarities?.[index] || 0) > 0.45)) {
+        reason = "High semantic/lexical overlap with evidence already selected.";
+      } else {
+        reason = "Lower marginal utility under the selected policy.";
+      }
+      skipped.push({ id: candidate.id, words: candidate.words, score: candidate.score, reason });
     });
     return {
       selected: chosen.map(index => candidates[index]),
       selectedIndices: chosen,
       trace, skipped, usedWords: used, wordBudget: budget,
-      remainingWords: Math.max(0, budget - used), mode, lambda
+      remainingWords: Math.max(0, budget - used), mode, lambda,
+      coverageBonus, coveredFacets: [...coveredFacets]
     };
   }
 

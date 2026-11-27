@@ -12,3 +12,7 @@
 .feature-line{font:8px 'DM Mono';color:#8398b6;margin-top:9px;letter-spacing:.2px}
 .source-detail{border-top:1px solid #293950;margin-top:10px;padding-top:8px;color:#92a5be;font-size:9px}
 .source-detail summary{cursor:pointer}.source-detail p{font-size:10px;line-height:1.7;white-space:pre-wrap;color:#b9c7d9}
+
+/* Compact evidence coverage controls */
+.retention-summary{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:760px){.retention-summary{grid-template-columns:repeat(3,minmax(0,1fr))}}
