@@ -39,7 +39,7 @@
       return "priority:other";
     }
     if (kind === "technical") {
-      if (/token.cost|word.count estimate|exact token/.test(value)) return "technical:token_accounting";
+      if (/tokenizer|token.cost|word.count estimate|exact token/.test(value)) return "hard:token_accounting";
       if (/python|scikit.learn|pytorch|tensorflow|cuda|gpu/.test(value)) return "technical:stack";
     }
     if (kind === "principles" && /benchmark|evidence recall|answer accuracy/.test(value)) return "principles:benchmark_reporting";
@@ -116,6 +116,12 @@
     if (!clean) return [];
 
     // Expand a list of research priorities into separately selectable, contextualised claims.
+    // Compress the explicit token-accounting contrast without losing its rejection of word-count proxies.
+    if (/token.cost|tokenizer/i.test(clean) && /word.count|word count/i.test(clean)) return [{
+      text: "Cost requirement: exact tokenizer tokens, not word-count estimates.",
+      derivation: "context_resolved"
+    }];
+
     const priority = clean.match(/^(?:my\s+)?research priorities are\s+(.+)$/i);
     if (priority) {
       const parts = priority[1].split(/,\s*(?:and\s+)?/i).map(x => x.trim()).filter(Boolean);
@@ -255,7 +261,7 @@
       if (isAssistantPrompt) reasons.push("assistant prompt; not user evidence");
       else {
         if (userRole > 0.5) reasons.push("user-authored evidence");
-        if (candidate.kind !== "general") reasons.push(candidate.kind + " evidence facet");
+        if (candidate.kind !== "general") reasons.push((candidate.facet || candidate.kind) + " evidence facet");
         if (durable) reasons.push("durable instruction / constraint");
         if (novelty > 0.72) reasons.push("low redundancy in candidate pool");
         if (recency > 0.7) reasons.push("recent message");
@@ -275,36 +281,51 @@
     });
   }
 
+  const FACET_WEIGHTS = Object.freeze({
+    "hard:token_accounting": 2.0,
+    "priority:evidence_retention": 1.35,
+    "priority:downstream_answer_quality": 1.25,
+    "priority:reproducibility": 1.2,
+    "principles:benchmark_reporting": 1.15,
+    "technical:stack": 0.85,
+    "priority:other": 0.8
+  });
+  function facetWeight(facet) {
+    return FACET_WEIGHTS[facet] || (facet && facet !== "general" ? 0.75 : 0);
+  }
   function selectCandidates(candidates, wordBudget, options = {}) {
     const mode = options.mode || "rank";
     const lambda = Number.isFinite(+options.lambda) ? Math.max(0, +options.lambda) : 0.25;
     const coverageBonus = Number.isFinite(+options.coverageBonus) ? Math.max(0, +options.coverageBonus) : 0.22;
-    if (!["rank", "density", "mmr", "coverage"].includes(mode)) throw new Error("unknown selection mode: " + mode);
+    const validModes = ["rank", "density", "mmr", "coverage_only", "coverage"];
+    if (!validModes.includes(mode)) throw new Error("unknown selection mode: " + mode);
+    const usesCoverage = mode === "coverage_only" || mode === "coverage";
+    const usesMmr = mode === "mmr" || mode === "coverage";
     const budget = Math.max(0, Math.floor(Number(wordBudget) || 0));
     const chosen = [], trace = [], skipped = [];
     const available = new Set(candidates.map((_, i) => i));
     const coveredFacets = new Set();
     let used = 0;
     while (available.size) {
-      let best = -1, bestUtility = -Infinity, bestPriority = -Infinity, bestPenalty = 0, bestCoverageGain = 0;
+      let best = -1, bestUtility = -Infinity, bestPriority = -Infinity, bestPenalty = 0, bestCoverageGain = 0, bestFacetWeight = 0;
       for (const index of [...available].sort((a, b) => a - b)) {
         const item = candidates[index];
         if (used + item.words > budget) continue;
         let redundancy = 0;
-        if (mode === "mmr" || mode === "coverage") for (const prior of chosen) {
+        if (usesMmr) for (const prior of chosen) {
           redundancy = Math.max(redundancy, candidates[prior].similarities?.[index] ??
             cosine(tfidfVectors([item.text, candidates[prior].text])[0], tfidfVectors([item.text, candidates[prior].text])[1]));
         }
         const facet = item.facet || item.kind || "general";
-        const facetGain = mode === "coverage" && facet !== "general" && !coveredFacets.has(facet) ? coverageBonus : 0;
+        const weight = facetWeight(facet);
+        const facetGain = usesCoverage && facet !== "general" && !coveredFacets.has(facet) ? coverageBonus * weight : 0;
         const base = mode === "density" ? item.score / Math.max(1, item.words) : item.score;
-        const utility = base + facetGain - ((mode === "mmr" || mode === "coverage") ? lambda * redundancy : 0);
-        // Coverage uses marginal utility per word to reduce budget lock-up by long units.
-        // This deterministic greedy heuristic is not a globally optimal knapsack solver.
-        const priority = mode === "coverage" ? utility / Math.max(1, item.words) : utility;
+        const utility = base + facetGain - (usesMmr ? lambda * redundancy : 0);
+        // Coverage policies use marginal utility per word; this remains a deterministic greedy heuristic.
+        const priority = usesCoverage ? utility / Math.max(1, item.words) : utility;
         if (priority > bestPriority + 1e-12) {
           best = index; bestUtility = utility; bestPriority = priority;
-          bestPenalty = redundancy; bestCoverageGain = facetGain;
+          bestPenalty = redundancy; bestCoverageGain = facetGain; bestFacetWeight = weight;
         }
       }
       if (best < 0) break;
@@ -314,8 +335,9 @@
       if (facet !== "general") coveredFacets.add(facet);
       trace.push({
         id: chosenItem.id, order: chosen.length, score: chosenItem.score,
-        utility: bestUtility, words: chosenItem.words,
-        redundancy: bestPenalty, coverageGain: bestCoverageGain,
+        utility: bestUtility, marginalUtilityPerWord: bestPriority,
+        words: chosenItem.words, redundancy: bestPenalty,
+        coverageGain: bestCoverageGain, facetWeight: bestFacetWeight,
         facet, cumulativeWords: used
       });
     }
@@ -325,23 +347,21 @@
       const remaining = Math.max(0, budget - used);
       const facet = candidate.facet || candidate.kind || "general";
       let reason;
-      if (candidate.words > remaining) {
-        reason = "Remaining word-proxy budget is too small for this complete evidence unit.";
-      } else if (mode === "coverage" && facet !== "general" && coveredFacets.has(facet)) {
-        reason = "This evidence facet is already represented; other facets had higher marginal coverage utility.";
-      } else if ((mode === "mmr" || mode === "coverage") && chosen.some(i => (candidates[i].similarities?.[index] || 0) > 0.45)) {
-        reason = "High semantic/lexical overlap with evidence already selected.";
-      } else {
-        reason = "Lower marginal utility under the selected policy.";
-      }
+      if (candidate.words > remaining) reason = "Remaining word-proxy budget is too small for this complete evidence unit.";
+      else if (usesCoverage && facet !== "general" && coveredFacets.has(facet)) reason = "This evidence facet is already represented; other facets had higher weighted marginal utility.";
+      else if (usesMmr && chosen.some(i => (candidates[i].similarities?.[index] || 0) > 0.45)) reason = "High semantic/lexical overlap with evidence already selected.";
+      else reason = "Lower marginal utility under the selected policy.";
       skipped.push({ id: candidate.id, words: candidate.words, score: candidate.score, reason });
     });
+    const allFacets = [...new Set(candidates.map(x => x.facet || x.kind || "general"))];
+    const totalFacetWeight = allFacets.reduce((sum, facet) => sum + facetWeight(facet), 0);
+    const coveredFacetWeight = [...coveredFacets].reduce((sum, facet) => sum + facetWeight(facet), 0);
     return {
-      selected: chosen.map(index => candidates[index]),
-      selectedIndices: chosen,
+      selected: chosen.map(index => candidates[index]), selectedIndices: chosen,
       trace, skipped, usedWords: used, wordBudget: budget,
-      remainingWords: Math.max(0, budget - used), mode, lambda,
-      coverageBonus, coveredFacets: [...coveredFacets]
+      remainingWords: Math.max(0, budget - used), mode, lambda, coverageBonus,
+      coveredFacets: [...coveredFacets], coveredFacetWeight, totalFacetWeight,
+      weightedFacetCoverage: totalFacetWeight ? coveredFacetWeight / totalFacetWeight : 0
     };
   }
 
