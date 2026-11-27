@@ -219,7 +219,7 @@ $("eval-export-btn").addEventListener("click",exportEvidenceLabels);
 $("search-form").addEventListener("submit",search);
 $("memory-list").addEventListener("click",e=>{
  const id=e.target.dataset.remove;if(!id)return;
- items=items.filter(x=>x.id!==id);persist();renderMemory();notify("Memory item removed.");
+ const previous=items;items=items.filter(x=>x.id!==id);if(!persist()){items=previous;renderMemory();return}renderMemory();notify("Memory item removed.");
 });
 $("export-btn").addEventListener("click",()=>{
  try{downloadJson("memweave-memory-backup.json",SafeFiles.exportBackup(items));notify("Validated JSON backup exported. It contains saved evidence text and may include source excerpts; keep it private.");}
@@ -239,7 +239,7 @@ $("import-file").addEventListener("change",async e=>{
 });
 $("clear-btn").addEventListener("click",()=>{
  if(!confirm("Clear all MemWeave memories saved in this browser? Export a backup first if needed."))return;
- items=[];persist();renderMemory();notify("Local memory store cleared.");
+ const previous=items;items=[];if(!persist()){items=previous;renderMemory();return}renderMemory();notify("Local memory store cleared.");
 });
 updateStats();renderMemory();
 })();
