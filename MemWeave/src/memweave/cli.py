@@ -57,6 +57,21 @@ def _run(config_path: str) -> int:
     return 0
 
 
+def _browser_audit(input_path: str, output_dir: str) -> int:
+    from memweave.browser_audit import load_browser_audit, write_browser_audit
+
+    payload = load_browser_audit(input_path)
+    output = write_browser_audit(payload, output_dir)
+    print(
+        f"Validated {payload['candidate_count']} atomic candidates; "
+        f"{len(payload['results'])} policy/budget rows."
+    )
+    print("Recomputed retention recall and retrieval P/R/F1@5 from exported IDs.")
+    print("This is an atomic-evidence diagnostic, not a LongMemEval or answer-quality result.")
+    print(f"Artifacts: {output}")
+    return 0
+
+
 def _runs(args: argparse.Namespace) -> int:
     from memweave.registry import RunRegistry
 
@@ -93,6 +108,12 @@ def main(argv: list[str] | None = None) -> int:
     evaluate.add_argument("--config", required=True, help="YAML artifact-audit configuration")
     run = commands.add_parser("run", help="run the extracted pipeline on local benchmark data")
     run.add_argument("--config", required=True, help="YAML pipeline configuration")
+    browser_audit = commands.add_parser(
+        "browser-audit",
+        help="validate and score a browser atomic-evidence annotation export",
+    )
+    browser_audit.add_argument("--input", required=True, help="Private v2 browser JSON export")
+    browser_audit.add_argument("--output-dir", required=True, help="Derived audit artifact directory")
     commands.add_parser("validate", help="validate the default aggregate release")
     commands.add_parser("serve", help="launch the optional Streamlit dashboard")
     runs = commands.add_parser("runs", help="inspect the local experiment run registry")
@@ -112,6 +133,8 @@ def main(argv: list[str] | None = None) -> int:
             return _evaluate(args.config)
         if args.command == "run":
             return _run(args.config)
+        if args.command == "browser-audit":
+            return _browser_audit(args.input, args.output_dir)
         if args.command == "validate":
             return _evaluate(str(_repo_root() / "MemWeave" / "configs" / "role_aware.yaml"))
         if args.command == "runs":
