@@ -58,15 +58,30 @@ def _run(config_path: str) -> int:
 
 
 def _browser_audit(input_path: str, output_dir: str) -> int:
-    from memweave.browser_audit import load_browser_audit, write_browser_audit
-
-    payload = load_browser_audit(input_path)
-    output = write_browser_audit(payload, output_dir)
-    print(
-        f"Validated {payload['candidate_count']} atomic candidates; "
-        f"{len(payload['results'])} policy/budget rows."
+    from memweave.browser_audit import (
+        load_browser_audit,
+        load_browser_audit_batch,
+        write_browser_audit,
+        write_browser_audit_batch,
     )
-    print("Recomputed retention recall and retrieval P/R/F1@5 from exported IDs.")
+
+    source = Path(input_path).expanduser().resolve()
+    if source.is_dir():
+        payload = load_browser_audit_batch(sorted(source.glob("*.json")))
+        output = write_browser_audit_batch(payload, output_dir)
+        print(
+            f"Aggregated {payload['question_count']} matched questions over "
+            f"{len(payload['results'])} policy/budget rows."
+        )
+        print("Reported macro means, question-bootstrap 95% CIs and paired deltas vs rank-only.")
+    else:
+        payload = load_browser_audit(source)
+        output = write_browser_audit(payload, output_dir)
+        print(
+            f"Validated {payload['candidate_count']} atomic candidates; "
+            f"{len(payload['results'])} policy/budget rows."
+        )
+        print("Recomputed retention recall and retrieval P/R/F1@5 from exported IDs.")
     print("This is an atomic-evidence diagnostic, not a LongMemEval or answer-quality result.")
     print(f"Artifacts: {output}")
     return 0
@@ -112,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
         "browser-audit",
         help="validate and score a browser atomic-evidence annotation export",
     )
-    browser_audit.add_argument("--input", required=True, help="Private v2 browser JSON export")
+    browser_audit.add_argument("--input", required=True, help="One private v2 browser JSON export or a folder containing multiple exports")
     browser_audit.add_argument("--output-dir", required=True, help="Derived audit artifact directory")
     commands.add_parser("validate", help="validate the default aggregate release")
     commands.add_parser("serve", help="launch the optional Streamlit dashboard")
