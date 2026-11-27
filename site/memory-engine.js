@@ -330,7 +330,8 @@
     const trace = selected.map((item, order) => {
       cumulativeWords += item.words;
       return { id: item.id, order: order + 1, score: item.score, utility: item.score,
-        marginalUtilityPerWord: item.score / Math.max(1, item.words), words: item.words,
+        marginalUtilityPerWord: item.score / Math.max(1, item.words),
+        selectionPriority: null, priorityBasis: "exact_additive_score", words: item.words,
         redundancy: 0, coverageGain: 0, facetWeight: facetWeight(item.facet || item.kind || "general"),
         facet: item.facet || item.kind || "general", cumulativeWords };
     });
@@ -389,7 +390,11 @@
       if (facet !== "general") coveredFacets.add(facet);
       trace.push({
         id: chosenItem.id, order: chosen.length, score: chosenItem.score,
-        utility: bestUtility, marginalUtilityPerWord: bestPriority,
+        utility: bestUtility,
+        marginalUtilityPerWord: bestUtility / Math.max(1, chosenItem.words),
+        selectionPriority: bestPriority,
+        priorityBasis: usesCoverage ? "marginal_utility_per_word" :
+          mode === "density" ? "score_per_word" : "utility",
         words: chosenItem.words, redundancy: bestPenalty,
         coverageGain: bestCoverageGain, facetWeight: bestFacetWeight,
         facet, cumulativeWords: used
