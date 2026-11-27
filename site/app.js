@@ -134,13 +134,30 @@ function updateEvidenceEvaluation(){
 function exportEvidenceLabels(){
  const question=$("eval-question").value.trim();
  if(!question||!goldEvidenceIds.size){notify("Enter an evaluation question and label at least one relevant evidence unit first.",true);return}
- const payload={format:"memweave-question-evidence-labels-v1",source:$("source-name").value.trim(),question,annotatedAt:new Date().toISOString(),wordBudgetProxyOnly:true,
-  relevantEvidence:evaluationCandidates.filter(x=>goldEvidenceIds.has(x.id)).map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,sourceText:x.sourceText,facet:x.facet,words:x.words})),
-  candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,facet:x.facet,words:x.words,sourceText:x.sourceText}))};
+ const lambda=Number($("redundancy").value),retrievalLambda=.18;
+ const policies=[["rank","Rank-only"],["knapsack","Exact knapsack"],["coverage_only","Coverage-only"],["mmr","MMR-only"],["coverage","Coverage + MMR"]];
+ const evaluations=[];
+ for(const budgetPercent of [10,20,30,40,50]){
+  const budgetCap=Math.floor(evaluationSourceWords*budgetPercent/100);
+  for(const [policy,label] of policies){
+   const result=Engine.selectCandidates(evaluationCandidates,budgetCap,{mode:policy,lambda,coverageBonus:.22});
+   const retrieved=Engine.rankEvidence(question,result.selected,{lambda:retrievalLambda,limit:5});
+   evaluations.push({budgetPercent,policy,label,lambda,retrievalLambda,budgetCap,usedCost:result.usedWords,
+    solver:result.optimal===true?"Exact DP":result.optimal===false?"Fallback":"Heuristic",
+    selectedIds:result.selected.map(x=>x.id),retrievalIds:retrieved.map(x=>x.id)});
+  }
+ }
+ const payload={format:"memweave-question-evidence-labels-v2",schemaVersion:2,
+  taskType:"browser_atomic_evidence_diagnostic",source:$("source-name").value.trim(),question,
+  annotatedAt:new Date().toISOString(),wordBudgetProxyOnly:true,costUnit:"browser word-count proxy",
+  relevantEvidenceIds:[...goldEvidenceIds],
+  candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,sourceText:x.sourceText,
+   role:x.role,source:x.source,facet:x.facet,words:x.words})),
+  evaluations};
  const json=JSON.stringify(payload,null,2);
  if(new Blob([json]).size>SafeFiles.MAX_FILE_BYTES){notify("Evidence-label export exceeds the 5 MB safety limit.",true);return}
  downloadJson("memweave-evidence-labels.json",json);
- notify("Question-level evidence labels exported. The file includes evidence excerpts; keep it private.");
+ notify("Reproducible v2 audit exported with gold labels, selected IDs, retrieved IDs and policy/budget settings. The file contains private evidence text.");
 }
 
 function card(m,showScore=false,trace=null){
