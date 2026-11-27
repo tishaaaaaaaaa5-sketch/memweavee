@@ -115,36 +115,34 @@
     const clean = value.replace(/[.!?]+$/, "").trim();
     if (!clean) return [];
 
-    // Expand a list of research priorities into separately selectable, contextualised claims.
-    // Compress the explicit token-accounting contrast without losing its rejection of word-count proxies.
+    // Split only when the second clause repeats its subject. Do this before
+    // specialised compression so a separate technical clause is never discarded.
+    const repeatedSubject = clean.match(/^(.+?),\\s+and\\s+(I|we|they|he|she)\\s+(.+)$/i);
+    if (repeatedSubject) return [
+      ...atomicClaims(repeatedSubject[1]),
+      ...atomicClaims(repeatedSubject[2] + " " + repeatedSubject[3])
+    ];
+
+    // Preserve the contrast while shortening the explicit tokenizer-cost requirement.
     if (/token.cost|tokenizer/i.test(clean) && /word.count|word count/i.test(clean)) return [{
       text: "Cost requirement: exact tokenizer tokens, not word-count estimates.",
       derivation: "context_resolved"
     }];
 
-    const priority = clean.match(/^(?:my\s+)?research priorities are\s+(.+)$/i);
+    const priority = clean.match(/^(?:my\\s+)?research priorities are\\s+(.+)$/i);
     if (priority) {
-      const parts = priority[1].split(/,\s*(?:and\s+)?/i).map(x => x.trim()).filter(Boolean);
+      const parts = priority[1].split(/,\\s*(?:and\\s+)?/i).map(x => x.trim()).filter(Boolean);
       if (parts.length > 1) return parts.map(part => ({
         text: "Research priority: " + part.replace(/^[a-z]/, c => c.toLowerCase()) + ".",
         derivation: "context_resolved"
       }));
     }
 
-    // Resolve the appositive in the project-goal sentence into one compact, source-linked claim.
-    const goal = clean.match(/^(?:my\s+)?main goal is to build\s+([^,]+),\s+a research system that preserves\s+(.+?)\s+under a strict memory budget$/i);
+    const goal = clean.match(/^(?:my\\s+)?main goal is to build\\s+([^,]+),\\s+a research system that preserves\\s+(.+?)\\s+under a strict memory budget$/i);
     if (goal) return [{
       text: goal[1].trim() + " goal: preserve " + goal[2].trim() + " under a strict memory budget.",
       derivation: "context_resolved"
     }];
-
-    // Split only when the second clause repeats its subject; keep contrastive phrases such as
-    // "rather than" intact so that constraints and negation are not detached from their context.
-    const repeatedSubject = clean.match(/^(.+?),\s+and\s+(I|we|they|he|she)\s+(.+)$/i);
-    if (repeatedSubject) return [
-      { text: repeatedSubject[1].trim() + ".", derivation: "source_exact" },
-      { text: repeatedSubject[2] + " " + repeatedSubject[3].trim() + ".", derivation: "source_exact" }
-    ];
 
     return [{ text: value, derivation: "source_exact" }];
   }
@@ -293,12 +291,68 @@
   function facetWeight(facet) {
     return FACET_WEIGHTS[facet] || (facet && facet !== "general" ? 0.75 : 0);
   }
+  function selectKnapsackCandidates(candidates, wordBudget, options = {}) {
+    const budget = Math.max(0, Math.floor(Number(wordBudget) || 0));
+    const maxOperations = 5000000;
+    if (candidates.length * Math.max(1, budget) > maxOperations) {
+      const fallback = selectCandidates(candidates, budget, { ...options, mode: "density" });
+      return { ...fallback, mode: "knapsack", optimal: false,
+        solver: "greedy-density fallback",
+        solverNote: "Exact DP skipped because candidate-count × budget exceeded the 5,000,000-operation safety limit." };
+    }
+    const dp = new Array(budget + 1).fill(null);
+    dp[0] = { value: 0, node: null };
+    for (let i = 0; i < candidates.length; i++) {
+      const cost = Math.max(1, Math.floor(Number(candidates[i].words) || 1));
+      if (cost > budget) continue;
+      for (let cap = budget; cap >= cost; cap--) {
+        const previous = dp[cap - cost];
+        if (!previous) continue;
+        const value = previous.value + Number(candidates[i].score || 0);
+        if (!dp[cap] || value > dp[cap].value + 1e-12) {
+          dp[cap] = { value, node: { index: i, previous: previous.node } };
+        }
+      }
+    }
+    let best = dp[0];
+    for (let cap = 1; cap <= budget; cap++) if (dp[cap] && dp[cap].value > best.value + 1e-12) best = dp[cap];
+    const indices = [];
+    for (let node = best.node; node; node = node.previous) indices.push(node.index);
+    indices.sort((a, b) => a - b);
+    const selectedSet = new Set(indices);
+    const selected = indices.map(i => candidates[i]);
+    const usedWords = selected.reduce((sum, item) => sum + Math.max(1, Math.floor(Number(item.words) || 1)), 0);
+    const coveredFacets = [...new Set(selected.map(x => x.facet || x.kind || "general").filter(x => x !== "general"))];
+    const allFacets = [...new Set(candidates.map(x => x.facet || x.kind || "general"))];
+    const totalFacetWeight = allFacets.reduce((sum, facet) => sum + facetWeight(facet), 0);
+    const coveredFacetWeight = coveredFacets.reduce((sum, facet) => sum + facetWeight(facet), 0);
+    let cumulativeWords = 0;
+    const trace = selected.map((item, order) => {
+      cumulativeWords += item.words;
+      return { id: item.id, order: order + 1, score: item.score, utility: item.score,
+        marginalUtilityPerWord: item.score / Math.max(1, item.words), words: item.words,
+        redundancy: 0, coverageGain: 0, facetWeight: facetWeight(item.facet || item.kind || "general"),
+        facet: item.facet || item.kind || "general", cumulativeWords };
+    });
+    const skipped = candidates.flatMap((candidate, index) => selectedSet.has(index) ? [] : [{
+      id: candidate.id, words: candidate.words, score: candidate.score,
+      reason: "Not included in the maximum additive-score subset that fits the budget."
+    }]);
+    return { selected, selectedIndices: indices, trace, skipped, usedWords,
+      wordBudget: budget, remainingWords: Math.max(0, budget - usedWords),
+      mode: "knapsack", lambda: 0, coverageBonus: 0, coveredFacets,
+      coveredFacetWeight, totalFacetWeight,
+      weightedFacetCoverage: totalFacetWeight ? coveredFacetWeight / totalFacetWeight : 0,
+      optimal: true, solver: "exact 0/1 dynamic programming", objectiveValue: best.value };
+  }
+
   function selectCandidates(candidates, wordBudget, options = {}) {
     const mode = options.mode || "rank";
     const lambda = Number.isFinite(+options.lambda) ? Math.max(0, +options.lambda) : 0.25;
     const coverageBonus = Number.isFinite(+options.coverageBonus) ? Math.max(0, +options.coverageBonus) : 0.22;
-    const validModes = ["rank", "density", "mmr", "coverage_only", "coverage"];
+    const validModes = ["rank", "density", "mmr", "coverage_only", "coverage", "knapsack"];
     if (!validModes.includes(mode)) throw new Error("unknown selection mode: " + mode);
+    if (mode === "knapsack") return selectKnapsackCandidates(candidates, wordBudget, options);
     const usesCoverage = mode === "coverage_only" || mode === "coverage";
     const usesMmr = mode === "mmr" || mode === "coverage";
     const budget = Math.max(0, Math.floor(Number(wordBudget) || 0));
