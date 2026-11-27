@@ -222,7 +222,7 @@ $("memory-list").addEventListener("click",e=>{
  const previous=items;items=items.filter(x=>x.id!==id);if(!persist()){items=previous;renderMemory();return}renderMemory();notify("Memory item removed.");
 });
 $("export-btn").addEventListener("click",()=>{
- try{downloadJson("memweave-memory-backup.json",SafeFiles.exportBackup(items));notify("Validated JSON backup exported. It contains saved evidence text and may include source excerpts; keep it private.");}
+ try{downloadJson("memweave-memory-backup.json",SafeFiles.exportBackup(items));notify("Validated JSON backup exported. It contains saved evidence text and may include source excerpts and is not encrypted; keep it private.");}
  catch(err){notify("Could not export backup: "+err.message,true)}
 });
 $("import-file").addEventListener("change",async e=>{
