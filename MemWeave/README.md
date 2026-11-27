@@ -57,6 +57,19 @@ The static browser workspace exports a versioned question-level annotation file 
 
 The importer validates the export, recomputes retention recall and retrieval precision/recall/F1@5 from the ID sets, and writes derived JSON/CSV plus a SHA-256 manifest. The output intentionally omits evidence text; keep the input export private because it contains source excerpts.
 
+For a matched multi-question diagnostic, export one JSON per distinct question
+against the **same loaded conversation and candidate evidence units**. Put
+only those exports in a dedicated folder, then pass the folder as `--input`:
+
+    memweave browser-audit --input /private/path/question_exports --output-dir results/browser_batch
+
+Batch mode requires identical candidate evidence, policy/budget rows, and
+retention selections across exports. It reports per-policy/budget macro means,
+deterministic question-level bootstrap 95% intervals, and paired metric deltas
+against rank-only. The resampling unit is the question; intervals describe
+only the annotated questions supplied, not a benchmark population. The batch
+output omits question text and evidence excerpts.
+
 This is an **atomic-evidence diagnostic**, not a LongMemEval run. The browser uses sentence/claim candidates and transparent heuristic policies; the primary research pipeline uses session-level LongMemEval candidates, its frozen feature schema, and a trained logistic-regression selector. Do not pool these metrics or claim the browser export evaluates the trained selector. Both stages share the retention-versus-retrieval metric distinction, while downstream answer quality remains a separate fixed-reader evaluation.
 
 
