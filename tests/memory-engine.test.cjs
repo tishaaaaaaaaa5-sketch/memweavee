@@ -97,6 +97,12 @@ const saved = [
   { id: "2", role: "user", source: "test", text: "Evidence recall is not the same as answer accuracy.", words: 9 },
   { id: "3", role: "assistant", source: "test", text: "Would you like to add more detail?", words: 7 }
 ];
+const labelMetrics = Engine.evaluateEvidenceSelection(["a","b"],["b","c"]);
+assert.deepEqual(
+  [labelMetrics.truePositives,labelMetrics.falsePositives,labelMetrics.falseNegatives,labelMetrics.precision,labelMetrics.recall,labelMetrics.f1],
+  [1,1,1,.5,.5,.5],
+  "manual gold-evidence labels produce transparent precision, recall, and F1"
+);
 const retrieved = Engine.rankEvidence("Where is the MemWeave memory budget?", saved);
 assert.ok(retrieved.length >= 1);
 assert.equal(retrieved[0].id, "1");
