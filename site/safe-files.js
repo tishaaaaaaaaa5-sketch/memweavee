@@ -90,7 +90,7 @@
   }
   function exportBackup(items){
     const result=normalizeItems(items,{regenerateIds:false});
-    const payload={format:FORMAT,exportedAt:new Date().toISOString(),privacy:"Contains saved evidence text and may include source excerpts. Keep this file private.",items:result.items};
+    const payload={format:FORMAT,exportedAt:new Date().toISOString(),privacy:"Contains saved evidence text and may include source excerpts. This JSON is not encrypted; keep it private.",items:result.items};
     const json=JSON.stringify(payload,null,2);
     if(byteLength(json)>MAX_FILE_BYTES)throw new Error("Export exceeds the 5 MB backup limit. Export fewer memory items.");
     return json;
