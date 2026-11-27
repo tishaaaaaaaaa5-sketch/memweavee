@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080d18">
-<meta name="description" content="MemWeave research: evidence-centred conversational memory, budgeted selection, LongMemEval results, downstream reader evaluation and reproducibility.">
+<meta name="description" content="MemWeave: an evidence-centred conversational memory research programme. Explore controlled LongMemEval results, cross-dataset transfer, reader QA, statistical audits and reproducibility artifacts.">
+<meta property="og:locale" content="en_US"><meta name="keywords" content="conversational memory, evidence retention, LongMemEval, LoCoMo, memory selection, research">
+<meta name="twitter:title" content="MemWeave — Evidence-centred conversational memory"><meta name="twitter:description" content="Research on retaining future-useful conversational evidence under constrained memory budgets.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MemWeave — Evidence-centred conversational memory">
 <meta property="og:description" content="Research on retaining future-useful conversational evidence under constrained memory budgets.">
@@ -46,6 +48,31 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 :target{scroll-margin-top:90px}
 @media(max-width:900px){.hero{grid-template-columns:1fr;max-width:760px;padding-top:58px}.hero>.eyebrow,.hero>h1,.hero>p:not(.hero-note),.hero>.hero-actions,.hero>.hero-note,.hero-visual{grid-column:1;grid-row:auto}.hero-visual{margin-top:30px;max-width:620px}.research-ribbon{margin-top:0}}
 @media(max-width:600px){.hero{padding:42px 0 34px}.hero h1{font-size:clamp(40px,12vw,56px)}.hero>p:not(.hero-note){font-size:15px}.hero-visual{padding:14px;border-radius:16px}.research-ribbon{font-size:8px;gap:8px}.top{padding:0 14px}.top nav{gap:10px}.top nav a{font-size:10px}}
+
+/* Research-portal showcase refinement */
+body{background:radial-gradient(ellipse at 12% 2%,#5643a526,transparent 32%),radial-gradient(ellipse at 88% 15%,#087f9220,transparent 30%),linear-gradient(180deg,#080d18 0%,#0a1120 48%,#080d18 100%)}
+.top{border-bottom-color:#ffffff16;box-shadow:0 8px 30px #0002}.brand{letter-spacing:-.055em}
+.hero{position:relative;padding-top:88px}.hero:before{content:"";position:absolute;z-index:-1;left:-8vw;top:36px;width:min(70vw,900px);height:440px;background:radial-gradient(ellipse,#6152b21b,transparent 68%);pointer-events:none}
+.hero h1{max-width:850px;font-size:clamp(48px,7.4vw,88px);letter-spacing:-.078em;line-height:.99}
+.hero>p:not(.hero-note){max-width:690px;font-size:17px;line-height:1.85;color:#b9c7db}
+.hero-visual{border-color:#52618170;background:linear-gradient(145deg,#141d32f2,#0b1524f5);box-shadow:0 30px 90px #0007,0 0 80px #7162df12;backdrop-filter:blur(16px)}
+.research-ribbon{border-color:#46557580;background:linear-gradient(100deg,#151c30,#0e1b2a);box-shadow:0 12px 36px #0003}
+.proof-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:-14px 0 34px}
+.proof-strip>div{min-width:0;padding:15px 16px;border:1px solid #293b55;border-radius:12px;background:linear-gradient(145deg,#111d2d,#0c1522);box-shadow:0 10px 28px #0002}
+.proof-label{display:block;font:8px var(--mono);letter-spacing:.13em;color:#8298b8;margin-bottom:8px}
+.proof-strip strong{display:block;font-size:13px;letter-spacing:-.02em;color:#e8effa}
+.proof-strip small{display:block;font-size:10px;line-height:1.55;color:#8fa1ba;margin-top:5px}
+.stat{background:linear-gradient(145deg,#17243a,#0e1928);border-color:#344862}
+.stat strong{font-size:clamp(25px,3vw,34px);background:linear-gradient(100deg,#f0f3ff,#a99cff 68%,#6bdde8);background-clip:text;color:transparent}
+.section{border-top-color:#ffffff13}.section-head .kicker{color:#a99bff}
+.method,.panel,.audit,.viz-card{border-color:#30415b;background:linear-gradient(145deg,#121e30f2,#0d1725f2)}
+.method:hover,.viz-card:hover{border-color:#5b6c91;transform:translateY(-2px);transition:transform .2s ease,border-color .2s ease}
+table tbody tr:hover td{background:#ffffff06}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #8be5ef;outline-offset:3px}
+@media(max-width:900px){.proof-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding-top:58px}}
+@media(max-width:600px){.hero h1{font-size:clamp(42px,12vw,60px)}.hero>p:not(.hero-note){font-size:14px}.proof-strip{grid-template-columns:1fr 1fr;gap:7px}.proof-strip>div{padding:12px}.proof-strip strong{font-size:11px}.proof-strip small{font-size:9px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important;animation:none!important}}
+
 </style>
 </head>
 <body>
@@ -54,9 +81,9 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 <main class="wrap" id="main-content">
 <section class="hero">
 <div class="eyebrow">RESEARCH PORTAL · METHODS · EXPERIMENTS · REPRODUCIBILITY</div>
-<h1>Keep the evidence.<br><span style="color:var(--purple)">Not just the conversation.</span></h1>
-<p><strong>MemWeave</strong> investigates how conversational systems can preserve evidence that supports unknown future questions when memory is constrained. This portal brings the project's algorithm families, benchmark stages, implementation status, results, and limitations into one place.</p>
-<div class="hero-actions"><a class="btn primary" href="./workspace.html">Try the local workspace →</a><a class="btn" href="#results">Explore the evidence</a><a class="btn" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/main/MemWeave/notebooks" target="_blank" rel="noreferrer">Open research notebooks ↗</a></div><p class="hero-note">Stage C is the latest reported LongMemEval-S result; Stage B and the final locked-test report remain separate historical records. The browser demo stores data locally and uses a transparent heuristic baseline—not the trained research selector.</p>
+<h1>Memory should retain<br><span style="color:var(--purple)">evidence, not noise.</span></h1>
+<p><strong>MemWeave</strong> is a research programme on budget-constrained conversational memory: selecting, preserving and retrieving the evidence that future answers depend on. Explore the methods, experimental record, statistical audits and reproducibility artifacts—not just a product demo.</p>
+<div class="hero-actions"><a class="btn primary" href="./workspace.html">Try the local workspace →</a><a class="btn" href="#results">Explore the evidence</a><a class="btn" href="https://github.com/tishaaaaaaaaa5-sketch/memweavee/tree/main/MemWeave/notebooks" target="_blank" rel="noreferrer">Open research notebooks ↗</a></div><p class="hero-note">Stage C is the latest regenerated LongMemEval-S result. Stage B and the final locked-test report remain separate records. The browser workspace is a transparent local heuristic demonstration, not the trained research pipeline.</p>
 <div class="hero-visual" aria-label="Illustration of the MemWeave evidence pipeline">
  <div class="visual-top"><span><i></i> MEMORY PIPELINE</span><span class="visual-live">LOCAL DEMO</span></div>
  <div class="visual-source"><span class="node-icon">↗</span><div><b>Conversation history</b><small>Messages · facts · updates · provenance</small></div><span class="node-count">N items</span></div>
@@ -72,9 +99,15 @@ a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.top{
 </div>
 </section>
 <div class="research-ribbon"><span class="ribbon-dot"></span><b>RESEARCH STATUS</b><span>Historical benchmark results reported</span><i></i><span>Evaluation gaps explicitly tracked</span><i></i><span>Browser demo runs locally</span></div>
+<div class="proof-strip" aria-label="Research provenance summary">
+ <div><span class="proof-label">DATA PROVENANCE</span><strong>Pinned revisions + SHA-256</strong><small>LongMemEval-S and LoCoMo follow-up records</small></div>
+ <div><span class="proof-label">STATISTICAL AUDIT</span><strong>50,000 paired bootstraps</strong><small>Final locked-test report · question-level resampling</small></div>
+ <div><span class="proof-label">ARTIFACT AUDIT</span><strong>54 pass · 3 warnings</strong><small>Follow-up integrity audit · 0 failures</small></div>
+ <div><span class="proof-label">RESEARCH RECORD</span><strong>Notebooks 00–06</strong><small>Executed records, configs, manifests and reports</small></div>
+</div>
 <div class="grid">
-<div class="stat"><strong>0.8206</strong><span>Stage C evidence recall</span><small>LongMemEval-S · 235-question test · 10% word-count proxy</small></div>
-<div class="stat"><strong>+41.65 pp</strong><span>Stage C gain vs baseline</span><small>Paired-question bootstrap 95% CI: +35.87 to +47.42 pp</small></div>
+<div class="stat"><strong>82.06%</strong><span>Stage C evidence recall</span><small>LongMemEval-S · regenerated run · 10% word-count proxy</small></div>
+<div class="stat"><strong>+41.65 pp</strong><span>Paired gain vs baseline</span><small>95% question-bootstrap CI: +35.87 to +47.42 pp</small></div>
 <div class="stat"><strong>0.2057</strong><span>LoCoMo reader token F1</span><small>Corrected FLAN-T5-small exploratory run</small></div>
 <div class="stat"><strong>4 stages</strong><span>MFAR failure taxonomy</span><small>Construction · compression · retrieval · answering</small></div>
 </div>
