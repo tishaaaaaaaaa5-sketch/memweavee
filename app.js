@@ -135,9 +135,10 @@ function exportEvidenceLabels(){
  const payload={format:"memweave-question-evidence-labels-v1",source:$("source-name").value.trim(),question,annotatedAt:new Date().toISOString(),wordBudgetProxyOnly:true,
   relevantEvidence:evaluationCandidates.filter(x=>goldEvidenceIds.has(x.id)).map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,sourceText:x.sourceText,facet:x.facet,words:x.words})),
   candidateEvidence:evaluationCandidates.map(x=>({id:x.id,text:x.text,sourceId:x.sourceId,facet:x.facet,words:x.words,sourceText:x.sourceText}))};
- const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="memweave-evidence-labels.json";a.click();URL.revokeObjectURL(url);
- notify("Question-level evidence labels exported as JSON.");
+ const json=JSON.stringify(payload,null,2);
+ if(new Blob([json]).size>SafeFiles.MAX_FILE_BYTES){notify("Evidence-label export exceeds the 5 MB safety limit.",true);return}
+ downloadJson("memweave-evidence-labels.json",json);
+ notify("Question-level evidence labels exported. The file includes evidence excerpts; keep it private.");
 }
 
 function card(m,showScore=false,trace=null){
@@ -228,7 +229,7 @@ $("import-file").addEventListener("change",async e=>{
  const f=e.target.files[0];if(!f)return;const previous=items;
  try{
   if(f.size>SafeFiles.MAX_FILE_BYTES)throw new Error("File is larger than the 5 MB import limit.");
-  if(!/\\.json$/i.test(f.name))throw new Error("Choose a .json MemWeave backup file.");
+  if(!/\.json$/i.test(f.name))throw new Error("Choose a .json MemWeave backup file.");
   const parsed=SafeFiles.parseBackup(await f.text());
   const merged=SafeFiles.normalizeItems([...items,...parsed.items],{regenerateIds:false});
   items=merged.items.map(x=>({...x,id:x.id||newId()}));
