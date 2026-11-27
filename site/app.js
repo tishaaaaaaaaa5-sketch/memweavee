@@ -125,6 +125,9 @@ function updateEvidenceEvaluation(){
    const retained=Engine.evaluateEvidenceSelection(result.selected.map(x=>x.id),[...goldEvidenceIds]);
    const retrieved=Engine.rankEvidence(question,result.selected,{lambda:.18,limit:5});
    const retrieval=Engine.evaluateEvidenceSelection(retrieved.map(x=>x.id),[...goldEvidenceIds]);
+   retrieval.precision=retrieval.truePositives/5;
+   retrieval.f1=retrieval.precision+retrieval.recall
+     ?2*retrieval.precision*retrieval.recall/(retrieval.precision+retrieval.recall):0;
    const solver=result.optimal===true?"Exact DP":result.optimal===false?"Fallback":"Heuristic";
    rows.push('<tr><td>'+percent+'%</td><td>'+label+'</td><td>'+Math.round(retained.recall*100)+'%</td><td>'+Math.round(retrieval.precision*100)+'%</td><td>'+Math.round(retrieval.recall*100)+'%</td><td>'+Math.round(retrieval.f1*100)+'%</td><td>'+result.usedWords+'/'+cap+'</td><td>'+solver+'</td></tr>');
   }
