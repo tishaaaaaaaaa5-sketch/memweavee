@@ -1,7 +1,7 @@
 /* MemWeave browser-local workspace. The scoring policy is an explicit heuristic baseline, not a trained model. */
 (()=>{"use strict";
-const Engine=window.MemWeaveEngine;
-if(!Engine){document.body.innerHTML='<main style="padding:32px;color:#fff">MemWeave could not load its evidence engine. Refresh the page or check the deployed files.</main>';return}
+const Engine=window.MemWeaveEngine,SafeFiles=window.MemWeaveSafeFiles;
+if(!Engine||!SafeFiles){document.body.innerHTML='<main style="padding:32px;color:#fff">MemWeave could not load its evidence engine. Refresh the page or check the deployed files.</main>';return}
 const DB="memweave.browser.workspace.v2";let items=load(),pending=[],evaluationCandidates=[],goldEvidenceIds=new Set(),evaluationSourceWords=0;
 const $=id=>document.getElementById(id);
 const newId=()=>typeof crypto!=="undefined"&&crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
@@ -11,12 +11,20 @@ function load(){
   try{
    const v=JSON.parse(localStorage.getItem(key)||"[]");
    const saved=Array.isArray(v)?v:(v&&Array.isArray(v.items)?v.items:[]);
-   if(saved.length)return saved.filter(x=>x&&typeof x.text==="string");
+   if(saved.length){const clean=SafeFiles.normalizeItems(saved,{regenerateIds:false}).items;return clean.map(x=>({...x,id:x.id||newId()}));}
   }catch{}
  }
  return [];
 }
-function persist(){try{localStorage.setItem(DB,JSON.stringify(items));updateStats();return true}catch(e){notify("Could not save memory in this browser: "+e.message,true);return false}}
+function persist(){
+ try{
+  if(items.length>SafeFiles.MAX_ITEMS)throw new Error("The local store has reached the "+SafeFiles.MAX_ITEMS+" item limit. Export a backup and remove older items.");
+  const serialized=JSON.stringify(items);
+  if(new Blob([serialized]).size>SafeFiles.MAX_FILE_BYTES)throw new Error("The local store exceeds the 5 MB safety limit. Export a backup and remove older items.");
+  localStorage.setItem(DB,serialized);updateStats();return true;
+ }catch(e){notify("Could not save memory in this browser: "+e.message,true);return false}
+}
+function downloadJson(filename,json){const blob=new Blob([json],{type:"application/json;charset=utf-8"});const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function notify(msg,error=false){$("notice").textContent=msg;$("notice").classList.toggle("error",error)}
 function parseAndScore(raw,source){
  const messages=Engine.parseConversation(raw,source);
@@ -213,18 +221,20 @@ $("memory-list").addEventListener("click",e=>{
  items=items.filter(x=>x.id!==id);persist();renderMemory();notify("Memory item removed.");
 });
 $("export-btn").addEventListener("click",()=>{
- const blob=new Blob([JSON.stringify({format:"memweave-local-v2",exportedAt:new Date().toISOString(),items},null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="memweave-memory-backup.json";a.click();URL.revokeObjectURL(url);notify("Memory backup exported.");
+ try{downloadJson("memweave-memory-backup.json",SafeFiles.exportBackup(items));notify("Validated JSON backup exported. It contains saved evidence text and may include source excerpts; keep it private.");}
+ catch(err){notify("Could not export backup: "+err.message,true)}
 });
 $("import-file").addEventListener("change",async e=>{
- const f=e.target.files[0];if(!f)return;
+ const f=e.target.files[0];if(!f)return;const previous=items;
  try{
-  const data=JSON.parse(await f.text());if(!Array.isArray(data.items))throw Error("Invalid backup format");
-  const incoming=data.items.filter(x=>x&&typeof x.text==="string");
-  items=[...items,...incoming.map(x=>({...x,id:newId(),words:Number(x.words)||Engine.countWords(x.text)}))];
-  if(persist()){renderMemory();notify("Imported "+incoming.length+" memory items.")}
- }catch(err){notify("Could not import backup: "+err.message,true)}
- e.target.value="";
+  if(f.size>SafeFiles.MAX_FILE_BYTES)throw new Error("File is larger than the 5 MB import limit.");
+  if(!/\\.json$/i.test(f.name))throw new Error("Choose a .json MemWeave backup file.");
+  const parsed=SafeFiles.parseBackup(await f.text());
+  const merged=SafeFiles.normalizeItems([...items,...parsed.items],{regenerateIds:false});
+  items=merged.items.map(x=>({...x,id:x.id||newId()}));
+  if(!persist()){items=previous;renderMemory();return}
+  renderMemory();notify("Imported "+parsed.items.length+" valid backup items; "+(parsed.skipped+merged.skipped)+" invalid or duplicate records were skipped. Data remains in this browser.");
+ }catch(err){items=previous;notify("Could not import backup: "+err.message,true)}finally{e.target.value=""}
 });
 $("clear-btn").addEventListener("click",()=>{
  if(!confirm("Clear all MemWeave memories saved in this browser? Export a backup first if needed."))return;
