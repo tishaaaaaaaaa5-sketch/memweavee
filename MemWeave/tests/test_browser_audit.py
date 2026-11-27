@@ -35,10 +35,10 @@ def test_browser_audit_recomputes_retention_and_retrieval_separately(tmp_path):
     result = load_browser_audit(source)
     ten, twenty = result["results"]
     assert ten["retention_recall"] == pytest.approx(0.5)
-    assert ten["retrieval_precision_at_5"] == pytest.approx(1.0)
+    assert ten["retrieval_precision_at_5"] == pytest.approx(0.2)\n    assert ten["retrieval_f1_at_5"] == pytest.approx(2 * 0.2 * 0.5 / 0.7)
     assert ten["retrieval_recall_at_5"] == pytest.approx(0.5)
     assert twenty["retention_recall"] == pytest.approx(1.0)
-    assert twenty["retrieval_precision_at_5"] == pytest.approx(1.0)
+    assert twenty["retrieval_precision_at_5"] == pytest.approx(0.4)
     assert result["task_type"] == "browser_atomic_evidence_diagnostic"
     assert "LongMemEval" in result["limitations"][0]
 
