@@ -53,6 +53,15 @@ def _metric(selected: list[str], gold: set[str]) -> dict[str, float]:
     return {"precision": precision, "recall": recall, "f1": f1}
 
 
+def _metric_at_k(ranked: list[str], gold: set[str], k: int) -> dict[str, float]:
+    """Compute conventional P@k using k as the fixed precision denominator."""
+    hits = len(set(ranked[:k]) & gold)
+    precision = hits / k if k else 0.0
+    recall = hits / len(gold) if gold else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return {"precision": precision, "recall": recall, "f1": f1}
+
+
 def load_browser_audit(path: str | Path) -> dict[str, Any]:
     """Validate one v2 browser export and recompute retention/retrieval metrics."""
     source = Path(path).expanduser().resolve()
@@ -115,7 +124,7 @@ def load_browser_audit(path: str | Path) -> dict[str, Any]:
             raise ValueError("duplicate policy/budget evaluation")
         seen_keys.add(key)
         retained = _metric(selected, gold)
-        retrieved_metrics = _metric(retrieved[:5], gold)
+        retrieved_metrics = _metric_at_k(retrieved, gold, 5)
         rows.append({
             "budget_percent": budget,
             "policy": policy,
