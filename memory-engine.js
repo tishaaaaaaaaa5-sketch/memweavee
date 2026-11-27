@@ -21,7 +21,7 @@
     if (/\b(memweave goal|main goal|primary goal|research objective|objective is|goal is|purpose of|aims? to|studies how|designed to preserve)\b/.test(t)) return "goal";
     if (/\b(milestone|deliverable|next step|deadline)\b/.test(t)) return "milestone";
     if (/\b(must not be described|never equate|separate evidence recall|tie claims to|benchmark reports|reporting rule|should not describe|do not describe|not be described|must be kept distinct)\b/.test(t)) return "principles";
-    if (/\b(token.cost|word.count estimate|cost accounting|exact token|pytorch|tensorflow|python|cuda|gpu|scikit.learn|programming language|technical stack|fixed random seeds)\b/.test(t)) return "technical";
+    if (/\b(tokenizer|token.cost|word.count estimate|cost accounting|exact token|pytorch|tensorflow|python|cuda|gpu|scikit.learn|programming language|technical stack|fixed random seeds)\b/.test(t)) return "technical";
     if (/\b(evaluation metrics?|measuring|accuracy|evidence coverage|answerability|retrieval accuracy|token f1|recall)\b/.test(t)) return "metrics";
     if (/\b(should prioritize|durable preferences|technical constraints|important decisions|selection principle|must not|do not|never)\b/.test(t)) return "principles";
     return "general";
